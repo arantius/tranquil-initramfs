@@ -18,14 +18,12 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-	
-# Version 1.0.1-next
 
-JV_APP_NAME="ZFS Initramfs Creator"
+JV_APP_NAME="ZFS InitramFS Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
-JV_CONTACT="${JV_APP_NAME} <${JV_EMAIL}>"
-JV_VERSION="1.0.1-next"
+JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
+JV_VERSION="1.2"
 
 KERNEL_NAME="${1}"
 ZFS_POOL_NAME="${2}"
@@ -93,14 +91,27 @@ check_zfs_modules() {
 }
 
 # Check to make sure that there is only 1 parameter
-if [[ ${#} != 2 ]]; then
+if [[ ${#} == 1 ]]; then
+    if [[ "${1}" == "--version" ]] || [[ "${1}" == "-v" ]]; then
+        echo "${JV_VERSION}" && exit
+    elif [[ "${1}" == "--author" ]] || [[ "${1}" == "-a" ]]; then
+        echo "${JV_CONTACT}" && exit
+    elif [[ "${1}" == "--help" ]] || [[ "${1}" == "-h" ]]; then
+        echo "${JV_APP_NAME} ${JV_VERSION}"
+        echo "By ${JV_CONTACT}"
+        echo ""
+        echo "Usage: createInit <Kernel Name> <ZFS Pool Name>"
+        echo "Example: createInit 3.3.2-MAIN rpool"
+        echo ""
+        echo "-h, --help  - This help screen"
+        echo "-v, --version  - Application Version"
+        echo "-a, --author  - Author of Application" && exit
+    fi
+elif [[ ${#} < 1 ]] || [[ ${#} > 2 ]]; then
     echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit 3.3.1-FS rpool" && exit
 fi
 
 # Check version
-if [[ "${1}" == "--version" ]] || [[ "${1}" == "-v" ]]; then
-    echo "${JV_VERSION}" && exit
-fi
 
 # Check to make sure kernel modules directory exists
 if [[ ! -d ${MOD_PATH} ]]; then
@@ -267,7 +278,7 @@ else
 fi
 
 # Clean up
-#cd ${HOME_DIR} && clean_up
+cd ${HOME_DIR} && clean_up
 
 echo "Complete :)"
 
