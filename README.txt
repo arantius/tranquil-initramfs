@@ -1,6 +1,6 @@
 ZFS InitramFS Creator
 Jonathan Vasquez
-Version 1.0.0
+Version 1.0.1-next
 Distributed under GPLv2
 
 This script generates an initramfs image with all the included files and dependencies.
@@ -10,12 +10,12 @@ the process of you actually going into your filesystem, and getting all those fi
 
 Please have the following installed:
 
-- Kernel
+- Linux Kernel with CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled.
 - SPL
-- ZFS with static-libs flag
+- ZFS 
 - Busybox with static flag
 - cpio
+- GRUB 2.00_beta3 or later, or a bootloader that supports ZFS.
 
-I can't remember any other apps atm. Also make sure you have a supporting bootloader. I'm using GRUB 2.00~beta3.
-
-This script and applications have been tested only on Gentoo Linux. It should work in other linuxes as well.
+This script and applications have been tested only on Gentoo Linux. It should
+work on other distros as well.

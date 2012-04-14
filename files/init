@@ -15,6 +15,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+ZFS_POOL_NAME=""
+JV_MOD_PATH=""
+
 # Function to start rescue shell
 rescue_shell() {
 	echo "Booting into rescue shell"
@@ -25,10 +28,9 @@ rescue_shell() {
 # Function to load ZFS modules 
 load_modules() {
 	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
-	MOD_PATH="/lib/modules/3.3.0-LAPTOP"
 	
-	for MODULE in ${MODULES} ; do
-		insmod ${MOD_PATH}/${MODULE}.ko
+	for MODULE in ${MODULES}; do
+		insmod ${JV_MOD_PATH}/${MODULE}.ko
 	done
 }
 
@@ -41,7 +43,7 @@ mount -t sysfs none /sys
 load_modules || rescue_shell
 
 # Mount ZFS Pool
-zpool import -f -d /dev -o cachefile= -R /mnt/root rpool || rescue_shell
+zpool import -f -d /dev -o cachefile= -R /mnt/root ${ZFS_POOL_NAME} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
