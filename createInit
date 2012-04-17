@@ -1,29 +1,30 @@
 #!/bin/bash
 
-# ZFS InitramFS Creator
-# This script will generate the entire ZFS initramfs with
-# all of it's dependencies.
-
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License v2 as published by
-# the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#  
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#  
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 JV_APP_NAME="ZFS InitramFS Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.2.8~next"
+JV_VERSION="1.2.5"
 
 # Used only for documentation purposes
 JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
@@ -40,25 +41,17 @@ JV_LOCAL_LIB="lib"
 JV_LOCAL_LIB64="lib64"
 JV_BIN="/bin"
 JV_SBIN="/sbin"
-JV_LIB="/lib"
+JV_LIB32="/lib/"
 JV_LIB64="/lib64/"
 JV_USR_BIN="/usr/bin"
 JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}"
 
-# Basically a boolean that is used to switch to the correct library path
-# Defaults to 64 bit
-JV_LIB_PATH=0
-
-# Hardcore architecture for now
-# If x86_64 then use lib64 libraries, else use 32 bit
-
+# Get CPU Architecture
 JV_CARCH="$(arch)"
 
-if [[ "${JV_CARCH}" == "x86_64" ]]; then 
-    ${JV_LIB_PATH}=0
-elif [[ "${JV_CARCH}" == "i686" ]]; then
-    // use lib (32 bit)
-fi
+# Basically a boolean that is used to switch to the correct library path
+# Defaults to 32 bit
+JV_LIB_PATH=32
 
 # Check to see if "tempinit" exists, if it does, delete it for a fresh start
 clean_up() {
@@ -110,6 +103,20 @@ check_zfs_modules() {
 	fi 
 }
 
+# If x86_64 then use lib64 libraries, else use 32 bit
+case ${JV_CARCH} in
+x86_64)
+    JV_LIB_PATH=64
+    echo "Detected ${JV_LIB_PATH} bit platform"
+    ;;
+i[[3-6]86])
+    JV_LIB_PATH=32
+    echo "Detected ${JV_LIB_PATH} bit platform"
+    ;;
+*)
+    echo "Your architecture isn't supported, exiting" && return_and_clean && exit
+esac
+
 # Check to make sure that there is only 1 parameter
 if [[ ${#} == 1 ]]; then
     if [[ "${1}" == "--version" ]] || [[ "${1}" == "-v" ]]; then
@@ -138,14 +145,22 @@ fi
 
 echo "Generating ZFS initramfs for ${KERNEL_NAME}"
 
+#######################################################################
 # Clean up old files
 return_and_clean
 
 # Begin
-mkdir ${TMPDIR} 
-cd ${TMPDIR}
+mkdir ${TMPDIR} && cd ${TMPDIR}
+mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD} 
 
-mkdir -p bin sbin proc sys dev etc lib lib64 mnt/root ${JV_LOCAL_MOD} 
+# If this computer is 64 bit, then make the lib64 dir as well
+if [[ "${JV_LIB_PATH}" == "64" ]]; then
+    mkdir lib64
+fi
+
+# For future versions, merge all corresponding binaries to one variable.
+# Basically there will be only 1 function to get all the bins, and place
+# them in their corresponding directories.
 
 # Copy Requires Files
 BINS="busybox zpool_layout hostid"
@@ -233,14 +248,27 @@ ALL_BINARIES="${SPL_BINARIES} ${ZFS_BINARIES} ${BINS}"
 # If i686, use that. Need to find implementation for different processors.
 for X in ${ALL_BINARIES}; do
 	if [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]] || [[ "${X}" == "hostid" ]] ; then
-		DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%/lib64/%%")"
+        if [[ "${JV_LIB_PATH}" == "32" ]]; then
+		    DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
+        else
+		    DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+        fi
 	else
-		DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed "s%/lib64/%%")"
+        if [[ "${JV_LIB_PATH}" == "32" ]]; then
+		    DEPS="$(ldd sbin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
+        else
+		    DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+        fi
 	fi 
 
 	for Y in ${DEPS}; do
-        echo "Copying ${Y} into ${JV_LOCAL_LIB64}" 
-		cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
+        if [[ "${JV_LIB_PATH}" == "32" ]]; then
+            echo "Copying ${Y} into ${JV_LOCAL_LIB}" 
+		    cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB}
+        else
+            echo "Copying ${Y} into ${JV_LOCAL_LIB64}" 
+		    cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
+        fi
 	done
 done
 
@@ -278,7 +306,7 @@ cd ${TMPDIR} && cp ${HOME_DIR}/files/init .
 
 # Substitute correct values in using % as delimeter
 # to avoid the slashes in the MOD_PATH [/lib/modules...]
-sed -i -e '18s%""%"'${ZFS_POOL_NAME}'"%' -e '19s%""%"'${MOD_PATH}'"%' init
+sed -i -e '23s%""%"'${ZFS_POOL_NAME}'"%' -e '24s%""%"'${MOD_PATH}'"%' init
 
 if [[ -f "init" ]]; then
     echo "init file created successfully"
