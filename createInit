@@ -24,7 +24,7 @@ JV_APP_NAME="ZFS InitramFS Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.2.5"
+JV_VERSION="1.2.6"
 
 # Used only for documentation purposes
 JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
@@ -109,7 +109,7 @@ x86_64)
     JV_LIB_PATH=64
     echo "Detected ${JV_LIB_PATH} bit platform"
     ;;
-i[[3-6]86])
+i[3-6]86)
     JV_LIB_PATH=32
     echo "Detected ${JV_LIB_PATH} bit platform"
     ;;
