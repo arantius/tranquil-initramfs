@@ -23,7 +23,10 @@ JV_APP_NAME="ZFS InitramFS Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.2"
+JV_VERSION="1.2.8~next"
+
+# Used only for documentation purposes
+JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
 
 KERNEL_NAME="${1}"
 ZFS_POOL_NAME="${2}"
@@ -33,12 +36,29 @@ TMPDIR="${HOME_DIR}/tempinit"
 
 JV_LOCAL_BIN="bin"
 JV_LOCAL_SBIN="sbin"
+JV_LOCAL_LIB="lib"
 JV_LOCAL_LIB64="lib64"
 JV_BIN="/bin"
 JV_SBIN="/sbin"
-JV_LIB64="/lib64"
+JV_LIB="/lib"
+JV_LIB64="/lib64/"
 JV_USR_BIN="/usr/bin"
 JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}"
+
+# Basically a boolean that is used to switch to the correct library path
+# Defaults to 64 bit
+JV_LIB_PATH=0
+
+# Hardcore architecture for now
+# If x86_64 then use lib64 libraries, else use 32 bit
+
+JV_CARCH="$(arch)"
+
+if [[ "${JV_CARCH}" == "x86_64" ]]; then 
+    ${JV_LIB_PATH}=0
+elif [[ "${JV_CARCH}" == "i686" ]]; then
+    // use lib (32 bit)
+fi
 
 # Check to see if "tempinit" exists, if it does, delete it for a fresh start
 clean_up() {
@@ -47,9 +67,9 @@ clean_up() {
         rm -rf ${TMPDIR}
         
         if [[ ! -d ${TMPDIR} ]]; then
-            echo "Deleted the directory successfully"
+            echo "Deleted the directory successfully."
         else
-            echo "Failed to delete directory. Quitting..." && exit
+            echo "Failed to delete the directory. Exiting..." && exit
         fi
     fi
 }
@@ -101,31 +121,27 @@ if [[ ${#} == 1 ]]; then
         echo "By ${JV_CONTACT}"
         echo ""
         echo "Usage: createInit <Kernel Name> <ZFS Pool Name>"
-        echo "Example: createInit 3.3.2-MAIN rpool"
+        echo "Example: createInit ${JV_EXAMPLE_KERNEL} rpool"
         echo ""
         echo "-h, --help  - This help screen"
         echo "-v, --version  - Application Version"
         echo "-a, --author  - Author of Application" && exit
     fi
 elif [[ ${#} < 1 ]] || [[ ${#} > 2 ]]; then
-    echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit 3.3.1-FS rpool" && exit
+    echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit ${JV_EXAMPLE_KERNEL} rpool" && exit
 fi
-
-# Check version
 
 # Check to make sure kernel modules directory exists
 if [[ ! -d ${MOD_PATH} ]]; then
     echo "Kernel modules directory doesn't exist for ${KERNEL_NAME}. Quitting" && exit
 fi
 
-
 echo "Generating ZFS initramfs for ${KERNEL_NAME}"
 
 # Clean up old files
-clean_up
+return_and_clean
 
 # Begin
-
 mkdir ${TMPDIR} 
 cd ${TMPDIR}
 
@@ -213,11 +229,13 @@ done
 # Get and copy all dependencies
 ALL_BINARIES="${SPL_BINARIES} ${ZFS_BINARIES} ${BINS}"
 
+# Check for CARCH, if x86_64, use that CARCH variable to find the libraries
+# If i686, use that. Need to find implementation for different processors.
 for X in ${ALL_BINARIES}; do
 	if [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]] || [[ "${X}" == "hostid" ]] ; then
-		DEPS="$(ldd bin/${X} | awk '/lib64/ {print $1}' | sed "s/\/lib64\///")"
+		DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%/lib64/%%")"
 	else
-		DEPS="$(ldd sbin/${X} | awk '/lib64/ {print $1}' | sed "s/\/lib64\///")"
+		DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed "s%/lib64/%%")"
 	fi 
 
 	for Y in ${DEPS}; do
