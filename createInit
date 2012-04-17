@@ -24,7 +24,7 @@ JV_APP_NAME="ZFS InitramFS Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.2.5"
+JV_VERSION="1.2.9_next"
 
 # Used only for documentation purposes
 JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
@@ -56,12 +56,9 @@ JV_LIB_PATH=32
 # Check to see if "tempinit" exists, if it does, delete it for a fresh start
 clean_up() {
     if [[ -d ${TMPDIR} ]]; then
-        echo "Temporary directory exists. Deleting..."
         rm -rf ${TMPDIR}
         
-        if [[ ! -d ${TMPDIR} ]]; then
-            echo "Deleted the directory successfully."
-        else
+        if [[ -d ${TMPDIR} ]]; then
             echo "Failed to delete the directory. Exiting..." && exit
         fi
     fi
@@ -72,29 +69,29 @@ return_and_clean() {
     cd ${HOME_DIR} && clean_up
 }
 
-# Checks to see if the zfs modules exist
-check_zfs_modules() {
+# Checks to see if the spl and zfs modules exist
+check_modules() {
     if [[ ! -z ${1} ]]; then
         for X in ${1}; do
-            if [[ "${X}" == "zavl" ]]; then
+            if [[ "${X}" == "spl" ]] || [[ "${X}" == "splat" ]]; then
+                if [[ ! -f "${MOD_PATH}/addon/spl/${X}/${X}.ko" ]]; then
+                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                fi
+            elif [[ "${X}" == "zavl" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/avl/${X}.ko" ]]; then 
                     echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
-                    exit
                 fi
             elif [[ "${X}" == "znvpair" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/nvpair/${X}.ko" ]]; then 
                     echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
-                    exit
                 fi
             elif [[ "${X}" == "zunicode" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/unicode/${X}.ko" ]]; then 
                     echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
-                    exit
                 fi
             else 	
                 if [[ ! -f "${MOD_PATH}/addon/zfs/${X}/${X}.ko" ]]; then 
                     echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
-                    exit
                 fi
             fi
         done
@@ -109,7 +106,7 @@ x86_64)
     JV_LIB_PATH=64
     echo "Detected ${JV_LIB_PATH} bit platform"
     ;;
-i[[3-6]86])
+i[3-6]86)
     JV_LIB_PATH=32
     echo "Detected ${JV_LIB_PATH} bit platform"
     ;;
@@ -143,9 +140,10 @@ if [[ ! -d ${MOD_PATH} ]]; then
     echo "Kernel modules directory doesn't exist for ${KERNEL_NAME}. Quitting" && exit
 fi
 
+#######################################################################
+
 echo "Generating ZFS initramfs for ${KERNEL_NAME}"
 
-#######################################################################
 # Clean up old files
 return_and_clean
 
@@ -184,70 +182,51 @@ for B in ${BINS}; do
 	fi
 done
 
-# Copy SPL Files
-SPL_BINARIES="spl splat"
+# Copy SPL and ZFS Files
+SPL_ZFS_BINARIES="spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
 
-for SPL in ${SPL_BINARIES}; do
-    if [[ -f "${JV_SBIN}/${SPL}" ]]; then
-        echo "Copying ${SPL} into ${JV_LOCAL_SBIN}" 
-	    cp ${JV_SBIN}/${SPL} ${JV_LOCAL_SBIN}
+for X in ${SPL_ZFS_BINARIES}; do
+    if [[ -f "${JV_SBIN}/${X}" ]]; then
+        echo "Copying ${X} into ${JV_LOCAL_SBIN}" 
+	    cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
     else
-        echo "${SPL} doesn't exist. Quitting!" && return_and_clean && exit
+        echo "${X} doesn't exist. Quitting!" && return_and_clean && exit
     fi
 done
 
-SPL_MODULES="spl splat"
-
-for SPL in ${SPL_MODULES}; do
-    if [[ -f "${MOD_PATH}/addon/spl/${SPL}/${SPL}.ko" ]]; then
-	    cp ${MOD_PATH}/addon/spl/${SPL}/${SPL}.ko ${JV_LOCAL_MOD}
-    else
-        echo "${SPL} doesn't exist. Quitting!" && return_and_clean && exit
-    fi
-done
-
-# Copy ZFS Files
-ZFS_BINARIES="mount.zfs zdb zfs zinject zpios zpool ztest"
-
-for ZFS in ${ZFS_BINARIES}; do
-    if [[ -f "${JV_SBIN}/${ZFS}" ]]; then
-        echo "Copying ${ZFS} into ${JV_LOCAL_SBIN}" 
-	    cp ${JV_SBIN}/${ZFS} ${JV_LOCAL_SBIN}
-    else
-        echo "${ZFS} doesn't exist. Quitting!" && return_and_clean && exit
-    fi
-done
-
-ZFS_MODULES="zavl znvpair zunicode zcommon zfs zpios"
+SPL_ZFS_MODULES="spl splat zavl znvpair zunicode zcommon zfs zpios"
 
 # Check to see if all ZFS modules exist beforehand to simplify for loop
 # For future versions, all my previous functions will check the
 # existence of files with functions.
-check_zfs_modules ${ZFS_MODULES} || exit
+check_modules ${SPL_ZFS_MODULES}
 
-for ZFS in ${ZFS_MODULES}; do
-	if [ "${ZFS}" == "zavl" ]; then
-        echo "Copying ${ZFS} into ${JV_LOCAL_MOD}" 
-		cp ${MOD_PATH}/addon/zfs/avl/${ZFS}.ko ${JV_LOCAL_MOD} 
-	elif [ "${ZFS}" == "znvpair" ]; then
-        echo "Copying ${ZFS} into ${JV_LOCAL_MOD}" 
-		cp ${MOD_PATH}/addon/zfs/nvpair/${ZFS}.ko ${JV_LOCAL_MOD}
-	elif [ "${ZFS}" == "zunicode" ]; then
-        echo "Copying ${ZFS} into ${JV_LOCAL_MOD}" 
-		cp ${MOD_PATH}/addon/zfs/unicode/${ZFS}.ko ${JV_LOCAL_MOD}
+for X in ${SPL_ZFS_MODULES}; do
+    if [[ "${X}" == "spl" ]] || [[ "${X}" == "splat" ]]; then
+        echo "Copying ${X} into ${JV_LOCAL_MOD}" 
+	    cp ${MOD_PATH}/addon/spl/${X}/${X}.ko ${JV_LOCAL_MOD}
+	elif [ "${X}" == "zavl" ]; then
+        echo "Copying ${X} into ${JV_LOCAL_MOD}" 
+		cp ${MOD_PATH}/addon/zfs/avl/${X}.ko ${JV_LOCAL_MOD} 
+	elif [ "${X}" == "znvpair" ]; then
+        echo "Copying ${X} into ${JV_LOCAL_MOD}" 
+		cp ${MOD_PATH}/addon/zfs/nvpair/${X}.ko ${JV_LOCAL_MOD}
+	elif [ "${X}" == "zunicode" ]; then
+        echo "Copying ${X} into ${JV_LOCAL_MOD}" 
+		cp ${MOD_PATH}/addon/zfs/unicode/${X}.ko ${JV_LOCAL_MOD}
 	else 	
-        echo "Copying ${ZFS} into ${JV_LOCAL_MOD}" 
-		cp ${MOD_PATH}/addon/zfs/${ZFS}/${ZFS}.ko ${JV_LOCAL_MOD}
+        echo "Copying ${X} into ${JV_LOCAL_MOD}" 
+		cp ${MOD_PATH}/addon/zfs/${X}/${X}.ko ${JV_LOCAL_MOD}
 	fi 
 done
 
 # Get and copy all dependencies
-ALL_BINARIES="${SPL_BINARIES} ${ZFS_BINARIES} ${BINS}"
+ALL_BINARIES="${SPL_ZFS_BINARIES} ${BINS}"
 
-# Check for CARCH, if x86_64, use that CARCH variable to find the libraries
-# If i686, use that. Need to find implementation for different processors.
+# Check for CARCH [JV_LIB_PATH, either 32 or 64], if x86_64, use the corresponding variable 
+# to find the libraries. If i686, use that. Need to find implementation for different processors.
 for X in ${ALL_BINARIES}; do
-	if [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]] || [[ "${X}" == "hostid" ]] ; then
+	if [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]] || [[ "${X}" == "hostid" ]]; then
         if [[ "${JV_LIB_PATH}" == "32" ]]; then
 		    DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
         else
@@ -275,7 +254,7 @@ done
 # Create Symlinks
 BUSYBOX_TARGETS="mount tty sh"
 
-cd ${TMPDIR}/bin 
+cd ${TMPDIR}/${JV_LOCAL_BIN} 
 
 for BB in ${BUSYBOX_TARGETS}; do
     if [[ -L "${BB}" ]]; then
@@ -295,9 +274,7 @@ cd ${TMPDIR}
 # Create Additional Files
 touch etc/mtab
 
-if [[ -f "etc/mtab" ]]; then
-    echo "mtab file created successfully"
-else
+if [[ ! -f "etc/mtab" ]]; then
     echo "Error created mtab file.. exiting" && return_and_clean && exit
 fi
 
@@ -308,18 +285,14 @@ cd ${TMPDIR} && cp ${HOME_DIR}/files/init .
 # to avoid the slashes in the MOD_PATH [/lib/modules...]
 sed -i -e '23s%""%"'${ZFS_POOL_NAME}'"%' -e '24s%""%"'${MOD_PATH}'"%' init
 
-if [[ -f "init" ]]; then
-    echo "init file created successfully"
-else
+if [[ ! -f "init" ]]; then
     echo "Error created init file.. exiting" && return_and_clean && exit
 fi
 
-# Pack & Compress the files into an initramfs.
+# Pack & Compress the files into an initramfs archive
 find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/ZFS-${KERNEL_NAME}.img
 
-if [[ -f ${HOME_DIR}/ZFS-${KERNEL_NAME}.img ]]; then
-    echo "initramfs file created successfully"
-else
+if [[ ! -f ${HOME_DIR}/ZFS-${KERNEL_NAME}.img ]]; then
     echo "Error creating initramfs file.. exiting" && return_and_clean && exit
 fi
 
