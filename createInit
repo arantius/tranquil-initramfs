@@ -31,20 +31,20 @@ JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
 
 KERNEL_NAME="${1}"
 ZFS_POOL_NAME="${2}"
-MOD_PATH="/lib/modules/${KERNEL_NAME}"
+MOD_PATH="/lib/modules/${KERNEL_NAME}/"
 HOME_DIR="$(pwd)"
-TMPDIR="${HOME_DIR}/tempinit"
+TMPDIR="${HOME_DIR}/tempinit/"
 
-JV_LOCAL_BIN="bin"
-JV_LOCAL_SBIN="sbin"
-JV_LOCAL_LIB="lib"
-JV_LOCAL_LIB64="lib64"
-JV_BIN="/bin"
-JV_SBIN="/sbin"
+JV_LOCAL_BIN="bin/"
+JV_LOCAL_SBIN="sbin/"
+JV_LOCAL_LIB="lib/"
+JV_LOCAL_LIB64="lib64/"
+JV_BIN="/bin/"
+JV_SBIN="/sbin/"
 JV_LIB32="/lib/"
 JV_LIB64="/lib64/"
-JV_USR_BIN="/usr/bin"
-JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}"
+JV_USR_BIN="/usr/bin/"
+JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
 
 # Get CPU Architecture
 JV_CARCH="$(arch)"
@@ -53,7 +53,15 @@ JV_CARCH="$(arch)"
 # Defaults to 32 bit
 JV_LIB_PATH=32
 
-# Check to see if "tempinit" exists, if it does, delete it for a fresh start
+err_binNoExist() {
+    echo "Binary: ${1} doesn't exist. Quitting!" && return_and_clean && exit
+}
+
+err_modNoExist() {
+    echo "Module: ${1} doesn't exist. Quitting!" && return_and_clean && exit
+}
+
+# Check to see if "${TMPDIR}" exists, if it does, delete it for a fresh start
 clean_up() {
     if [[ -d ${TMPDIR} ]]; then
         rm -rf ${TMPDIR}
@@ -69,29 +77,57 @@ return_and_clean() {
     cd ${HOME_DIR} && clean_up
 }
 
+# Checks to see if the binaries exist
+check_binaries() {
+    echo "Entering check_binaries() ${#}"..
+    if [[ ! -z ${#} ]]; then
+        echo "parameters not empty for check_bins"
+        for X in ${#}; do
+            if [[ "${X}" == "hostid" ]]; then
+                echo "Checking to see if ${X} exists"
+                if [[  -f "${JV_USR_BIN}/${X}" ]]; then
+                    err_binNoExist ${X}
+                fi
+            elif [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]]; then
+                echo "Checking to see if ${X} exists"
+                if [[ ! -f "${JV_BIN}/${X}" ]]; then
+                    err_binNoExist ${X}
+                fi
+            else
+                if [[ ! -f "${JV_SBIN}/${X}" ]]; then
+                echo "Checking to see if ${X} exists"
+                    err_binNoExist ${X}
+                fi
+            fi
+        done
+    else
+        echo "Parameter ${1} is zero, please pass a parameter to use this function!" && return_and_clean && exit
+	fi 
+}
 # Checks to see if the spl and zfs modules exist
 check_modules() {
+    echo "Entering check_modules with ${#} and ${1}"
     if [[ ! -z ${1} ]]; then
         for X in ${1}; do
             if [[ "${X}" == "spl" ]] || [[ "${X}" == "splat" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/spl/${X}/${X}.ko" ]]; then
-                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                    err_modNoExist ${X}
                 fi
             elif [[ "${X}" == "zavl" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/avl/${X}.ko" ]]; then 
-                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                    err_modNoExist ${X}
                 fi
             elif [[ "${X}" == "znvpair" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/nvpair/${X}.ko" ]]; then 
-                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                    err_modNoExist ${X}
                 fi
             elif [[ "${X}" == "zunicode" ]]; then
                 if [[ ! -f "${MOD_PATH}/addon/zfs/unicode/${X}.ko" ]]; then 
-                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                    err_modNoExist ${X}
                 fi
             else 	
                 if [[ ! -f "${MOD_PATH}/addon/zfs/${X}/${X}.ko" ]]; then 
-                    echo "Module: ${X}, doesn't exist. Quitting!" && return_and_clean && exit
+                    err_modNoExist ${X}
                 fi
             fi
         done
@@ -100,6 +136,9 @@ check_modules() {
 	fi 
 }
 
+print_copy() {
+    echo "Copying ${1} into ${JV_LOCAL_BIN}"
+}
 # If x86_64 then use lib64 libraries, else use 32 bit
 case ${JV_CARCH} in
 x86_64)
@@ -161,37 +200,23 @@ fi
 # them in their corresponding directories.
 
 # Copy Requires Files
-BINS="busybox zpool_layout hostid"
+JV_BINARIES="busybox zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
 
-for B in ${BINS}; do
-    # Check to see if files exist
-	if [[ "${B}" == "hostid" ]] ; then
-        if [[ -f "${JV_USR_BIN}/${B}" ]]; then
-            echo "Copying ${B} into ${JV_LOCAL_BIN}" 
-		    cp ${JV_USR_BIN}/${B} ${JV_LOCAL_BIN}
-        else
-            echo "${B} doesn't exist. Quitting!" && return_and_clean && exit
-        fi
-	else
-        if [[ -f "${JV_BIN}/${B}" ]]; then
-            echo "Copying ${B} into ${JV_LOCAL_BIN}" 
-		    cp ${JV_BIN}/${B} ${JV_LOCAL_BIN}
-        else
-            echo "${B} doesn't exist. Quitting!" && return_and_clean && exit
-        fi
-	fi
-done
+# Check to see if the binaries exist
+#check_binaries ${JV_BINARIES}
 
-# Copy SPL and ZFS Files
-SPL_ZFS_BINARIES="spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
-
-for X in ${SPL_ZFS_BINARIES}; do
-    if [[ -f "${JV_SBIN}/${X}" ]]; then
-        echo "Copying ${X} into ${JV_LOCAL_SBIN}" 
-	    cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
+# Copy binaries
+for X in ${JV_BINARIES}; do
+	if [[ "${X}" == "hostid" ]]; then
+            print_copy ${X} ${JV_LOCAL_BIN}
+		    cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
+	elif [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]]; then
+            echo "Copying ${X} into ${JV_LOCAL_BIN}"
+		    cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
     else
-        echo "${X} doesn't exist. Quitting!" && return_and_clean && exit
-    fi
+            echo "Copying ${X} into ${JV_LOCAL_SBIN}"
+	        cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
+	fi
 done
 
 SPL_ZFS_MODULES="spl splat zavl znvpair zunicode zcommon zfs zpios"
@@ -199,7 +224,7 @@ SPL_ZFS_MODULES="spl splat zavl znvpair zunicode zcommon zfs zpios"
 # Check to see if all ZFS modules exist beforehand to simplify for loop
 # For future versions, all my previous functions will check the
 # existence of files with functions.
-check_modules ${SPL_ZFS_MODULES}
+#check_modules ${SPL_ZFS_MODULES}
 
 for X in ${SPL_ZFS_MODULES}; do
     if [[ "${X}" == "spl" ]] || [[ "${X}" == "splat" ]]; then
@@ -220,12 +245,9 @@ for X in ${SPL_ZFS_MODULES}; do
 	fi 
 done
 
-# Get and copy all dependencies
-ALL_BINARIES="${SPL_ZFS_BINARIES} ${BINS}"
-
 # Check for CARCH [JV_LIB_PATH, either 32 or 64], if x86_64, use the corresponding variable 
-# to find the libraries. If i686, use that. Need to find implementation for different processors.
-for X in ${ALL_BINARIES}; do
+# to find the libraries. If i686, use that.
+for X in ${JV_BINARIES}; do
 	if [[ "${X}" == "busybox" ]] || [[ "${X}" == "zpool_layout" ]] || [[ "${X}" == "hostid" ]]; then
         if [[ "${JV_LIB_PATH}" == "32" ]]; then
 		    DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
