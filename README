@@ -1,6 +1,6 @@
-ZFS InitramFS Creator
-Jonathan Vasquez
-Version 1.2.5
+ZFS Initramfs Creator
+Jonathan Vasquez <jvasquez1011@gmail.com>
+Version 1.3.0 
 Distributed under the MIT License 
 
 This script generates an initramfs image with all the included files and dependencies.
@@ -15,10 +15,19 @@ Please have the following installed:
 - ZFS 
 - Busybox with static flag
 - cpio
-- GRUB 2.00_beta3 or later, or a bootloader that supports ZFS.
+- GRUB 2.00_beta3 or later (revision 4212 recommended), or a bootloader that supports ZFS.
 
 This script and applications have been tested only on Gentoo Linux. It should
 work on other distros as well.
+
+Chances since 1.2.5
+-------------------
+- The script is now POSIX compliant. Tested with dash and busybox-sh
+- The script is now completely modular. The main only has function calls
+- The script has added a few more functions for error messages, display messages, etc
+- Verbose debugging messages were removed
+- There are now two functions which check binaries and modules existing before continuing
+- There are now only two functions to copy all binaries, and all modules to the initramfs
 
 Changes since 1.2.0
 -------------------
