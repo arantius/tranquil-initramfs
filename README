@@ -20,7 +20,7 @@ Please have the following installed:
 This script and applications have been tested only on Gentoo Linux. It should
 work on other distros as well.
 
-Chances since 1.2.6
+Changes since 1.2.6
 -------------------
 - The script is now POSIX compliant. Tested with dash and busybox-sh
 - The script is now completely modular. The main only has function calls
@@ -28,6 +28,10 @@ Chances since 1.2.6
 - Verbose debugging messages were removed
 - There are now two functions which check binaries and modules existing before continuing
 - There are now only two functions to copy all binaries, and all modules to the initramfs
+
+Changes since 1.2.5
+-------------------
+- Fixed 32 bit regex matching
 
 Changes since 1.2.0
 -------------------
