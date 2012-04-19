@@ -20,7 +20,7 @@ Please have the following installed:
 This script and applications have been tested only on Gentoo Linux. It should
 work on other distros as well.
 
-Chances since 1.2.5
+Chances since 1.2.6
 -------------------
 - The script is now POSIX compliant. Tested with dash and busybox-sh
 - The script is now completely modular. The main only has function calls
