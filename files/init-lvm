@@ -1,0 +1,54 @@
+#!/bin/busybox sh
+
+# Copyright (C) 2012 Jonathan Vasquez
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as 
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+ZFS_POOL_NAME=""
+JV_MOD_PATH=""
+
+# Function to start rescue shell
+rescue_shell() {
+	echo "Booting into rescue shell"
+	busybox --install -s
+	exec /bin/sh
+}
+
+# Function to load ZFS modules 
+load_modules() {
+	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
+	
+	for MODULE in ${MODULES}; do
+		insmod ${JV_MOD_PATH}/${MODULE}.ko
+	done
+}
+
+# Mount Kernel Devices 
+mount -t proc none /proc
+mount -t devtmpfs none /dev
+mount -t sysfs none /sys
+
+# Load ZFS Modules
+load_modules || rescue_shell
+
+# Mount ZFS Pool
+zpool import -f -d /dev -o cachefile= -R /mnt/root ${ZFS_POOL_NAME} || rescue_shell
+
+# Unmount Kernel Devices
+umount /proc
+umount /dev
+umount /sys
+
+# Switch to the new root
+exec switch_root /mnt/root /sbin/init || rescue_shell

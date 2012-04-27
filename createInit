@@ -1,32 +1,27 @@
 #!/bin/sh
 
 # Copyright (C) 2012 Jonathan Vasquez
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#  
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#  
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 
+# as published by the Free Software Foundation.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # Application Info
-JV_APP_NAME="ZFS Initramfs Creator"
+JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.3.0"
-JV_LICENSE="MIT"
+JV_VERSION="1.3.1"
+JV_LICENSE="GPLv2"
 
 # Used only for documentation purposes
 JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
@@ -101,6 +96,10 @@ cleanUp() {
 # or that there is the required amount of parameters to trigger the build
 getParameters() {
     if [ ${#} -eq 1 ]; then
+        # for loop that checks all parameters matching something
+        # i would be the mode, and i+1 would be the mode type
+        for X in ${@}; do
+            
         if [ "${1}" = "--version" ]; then
             echo "${JV_VERSION}" && exit
         elif [ "${1}" = "--author" ] || [ "${1}" = "-a" ]; then
@@ -119,6 +118,9 @@ getParameters() {
     elif [ "${#}" -lt 1 ] || [ "${#}" -gt 2 ]; then
         echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit ${JV_EXAMPLE_KERNEL} rpool" && exit
     fi
+
+    # createInit -t zfs/btrfs/lvm/lvm-mdadm -p <zfs_pool_name> or <lvm_volume_group_name>
+    # createInit --help
 }
 
 # If x86_64 then use lib64 libraries, else use 32 bit
@@ -307,7 +309,7 @@ configureInit() {
 
     # Substitute correct values in using % as delimeter
     # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '23s%""%"'${ZFS_POOL_NAME}'"%' -e '24s%""%"'${MOD_PATH}'"%' init
+    sed -i -e '18s%""%"'${ZFS_POOL_NAME}'"%' -e '19s%""%"'${MOD_PATH}'"%' init
 
     if [ ! -f "init" ]; then
         echo "Error created init file.. exiting\n" && cleanUp && exit
@@ -367,4 +369,4 @@ configureInit
 
 createInitramfs
 
-cleanComplete
+#cleanComplete
