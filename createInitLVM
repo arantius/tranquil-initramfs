@@ -317,6 +317,9 @@ configureInit() {
     if [ ! -f "init" ]; then
         echo "Error created init file.. exiting\n" && cleanUp && exit
     fi
+
+    # Move LVM from .static to normal
+    mv sbin/lvm.static sbin/lvm
 }
 
 # Create and compress the initramfs
