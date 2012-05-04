@@ -114,7 +114,10 @@ getParameters() {
             echo "-h, --help    - This help screen"
             echo "-a, --author  - Author of Application" && exit
             echo "    --version - Application Version"
+        elif [ "${1}" = "--lvm" ]; then
+            LVM_RUN=1;
         fi
+        done
     elif [ "${#}" -lt 1 ] || [ "${#}" -gt 2 ]; then
         echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit ${JV_EXAMPLE_KERNEL} rpool" && exit
     fi
