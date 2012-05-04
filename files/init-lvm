@@ -44,7 +44,7 @@ mount -t sysfs none /sys
 #load_modules || rescue_shell
 
 # Mount LVM Pool
-lvm vgchange --mknodes || rescue_shell
+lvm vgscan --mknodes || rescue_shell
 lvm lvchange -aly funtoo/root || rescue_shell
 
 mount /dev/funtoo/root /mnt/root
