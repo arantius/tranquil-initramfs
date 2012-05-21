@@ -20,11 +20,11 @@ JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.3.1"
+JV_VERSION="1.3.1-r1"
 JV_LICENSE="GPLv2"
 
 # Used only for documentation purposes
-JV_EXAMPLE_KERNEL="3.3.2-DESKTOP"
+JV_EXAMPLE_KERNEL="3.4.0-DESKTOP"
 
 # Parameters and Locations
 KERNEL_NAME="${1}"
@@ -45,7 +45,7 @@ JV_USR_BIN="/usr/bin/"
 JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
 
 # Get CPU Architecture
-JV_CARCH="$(arch)"
+JV_CARCH="$(uname -m)"
 
 # Basically a boolean that is used to switch to the correct library path
 # Defaults to 32 bit
@@ -317,6 +317,9 @@ configureInit() {
     if [ ! -f "init" ]; then
         echo "Error created init file.. exiting\n" && cleanUp && exit
     fi
+
+    # Move LVM from .static to normal
+    mv sbin/lvm.static sbin/lvm
 }
 
 # Create and compress the initramfs
@@ -372,4 +375,4 @@ configureInit
 
 createInitramfs
 
-#cleanComplete
+cleanComplete

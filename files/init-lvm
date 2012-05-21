@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-LVM_POOL_NAME=""
-LVM_ROOT_NAME=""
+LVM_POOL_NAME="funtoo"
+LVM_ROOT_NAME="root"
 JV_MOD_PATH=""
 
 # Function to start rescue shell
@@ -43,11 +43,13 @@ mount -t sysfs none /sys
 # Load ZFS Modules
 #load_modules || rescue_shell
 
-# Mount LVM Pool
-lvm vgscan --mknodes || rescue_shell
-lvm lvchange -aly funtoo/root || rescue_shell
+sleep 2 
 
-mount /dev/funtoo/root /mnt/root
+# Mount LVM Pool
+lvm vgchange -a y ${LVM_POOL_NAME} || rescue_shell
+lvm vgscan --mknodes || rescue_shell
+
+mount /dev/${LVM_POOL_NAME}/${LVM_ROOT_NAME} /mnt/root || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc

@@ -1,6 +1,6 @@
 Bliss Initramfs Creator
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.3.1 
+Version 1.3.1-r1
 Distributed under the GPLv2 License 
 
 This script generates an initramfs image with all the included files and dependencies.

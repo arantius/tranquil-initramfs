@@ -15,8 +15,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-ZFS_POOL_NAME=""
+
+LVM_POOL_NAME="funtoo"
+LVM_ROOT_NAME="root"
 JV_MOD_PATH=""
+DEVICES="sda2 sdb2"
+TARGET_NODE="dm0"
 
 # Function to start rescue shell
 rescue_shell() {
@@ -40,10 +44,18 @@ mount -t devtmpfs none /dev
 mount -t sysfs none /sys
 
 # Load ZFS Modules
-load_modules || rescue_shell
+#load_modules || rescue_shell
 
-# Mount ZFS Pool
-zpool import -f -d /dev -o cachefile= -R /mnt/root ${ZFS_POOL_NAME} || rescue_shell
+sleep 2 
+
+# Assemble raid drives
+mdadm --assemble ${DEVICES} ${TARGET_NODE}
+
+# Mount LVM Pool
+lvm vgchange -a y ${LVM_POOL_NAME} || rescue_shell
+lvm vgscan --mknodes || rescue_shell
+
+mount /dev/${LVM_POOL_NAME}/${LVM_ROOT_NAME} /mnt/root || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
