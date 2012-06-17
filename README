@@ -1,7 +1,7 @@
 Bliss Initramfs Creator
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.3.1-r1
-Distributed under the GPLv2 License 
+Version 1.4.0
+Distributed under the MPL 2.0
 
 This script generates an initramfs image with all the included files and dependencies.
 
@@ -10,21 +10,24 @@ the process of you actually going into your filesystem, and getting all those fi
 
 Please have the following installed:
 
-- Linux Kernel with CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled.
-- SPL
-- ZFS 
-- Busybox with static flag
+- Linux Kernel (with the following for ZFS only - CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled)
 - cpio
-- GRUB 2.00_beta3 or later (revision 4212 recommended), or a bootloader that supports ZFS.
+- Busybox with static flag
+---
+- SPL/ZFS (Needed only for ZFS)
+- LVM2 with statically compiled (Needed only for LVM)
+- MDADM (Needed only for RAID configuration)
 
-This script and applications have been tested only on Gentoo Linux. It should
-work on other distros as well.
+This script and applications have been tested only on Gentoo Linux. It should/could work on other distros as well with minimal to no tweaking.
 
-Changes since 1.3.0
+1.4.0 Changes
 -------------------
-- Relicensed to GPLv2
-- Added support for creation of a btrfs initramfs
-- Added support for creation of a lvm and/or mdadm initramfs
+
+1.3.1 Changes
+-------------------
+- Relicensed to the Mozilla Public License 2.0 (MPL 2.0)
+- Program has been renamed to "Bliss Initramfs Creator" since I will be supporting a few
+  more configurations in future versions.
 
 Changes since 1.2.6
 -------------------
