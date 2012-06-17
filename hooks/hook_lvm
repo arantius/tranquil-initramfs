@@ -10,3 +10,20 @@ source resources/functions_lvm
 # Required Binaries, Modules, and other files
 JV_INIT_BINS="busybox hostid lvm"
 JV_INIT_MODS=""
+
+unset LVM_POOL_NAME
+unset LVM_ROOT_NAME
+
+echo "Please enter LVM pool name: "
+read lpooln
+
+LVM_POOL_NAME=$lpooln
+
+echo "LVM Pool: ${LVM_POOL_NAME}"
+
+echo "Please enter LVM root name: "
+read lrootn
+
+LVM_ROOT_NAME=$lrootn
+
+echo "LVM Root: ${LVM_ROOT_NAME}"

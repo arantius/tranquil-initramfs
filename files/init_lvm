@@ -6,8 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-LVM_POOL_NAME="funtoo"
-LVM_ROOT_NAME="root"
+LVM_POOL_NAME=""
+LVM_ROOT_NAME=""
 JV_MOD_PATH=""
 
 # Function to start rescue shell

@@ -15,13 +15,14 @@ Please have the following installed:
 - Busybox with static flag
 ---
 - SPL/ZFS (Needed only for ZFS)
-- LVM2 with statically compiled (Needed only for LVM)
-- MDADM (Needed only for RAID configuration)
+- LVM2 with static flag (Needed only for LVM)
+- MDADM with static flag (Needed only for RAID configuration)
 
 This script and applications have been tested only on Gentoo Linux. It should/could work on other distros as well with minimal to no tweaking.
 
 1.4.0 Changes
 -------------------
+- Modularized code so that it can be reused, and supports a plug-in architecture
 
 1.3.1 Changes
 -------------------

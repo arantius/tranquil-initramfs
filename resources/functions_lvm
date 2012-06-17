@@ -95,18 +95,17 @@ configureInit() {
     touch etc/mtab
 
     if [ ! -f "etc/mtab" ]; then
-        echo "Error created mtab file.. exiting\n" && cleanUp && exit
+        echo "Error created mtab file.. exiting\n" && exit
     fi
 
-	pwd
-	ls ${HOME_DIR}/files
-	
+    ls ${HOME_DIR}/files
+
     # Copy the init script
-    pwd && cd ${TMPDIR} && pwd && cp ${HOME_DIR}/files/init_lvm .
+    cd ${TMPDIR} && cp ${HOME_DIR}/files/init_lvm init
 
     # Substitute correct values in using % as delimeter
     # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '11s%""%"'${LVM_ROOT_NAME}'"%' -e '11s%""%"'${MOD_PATH}'"%' init
+    sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' -e '11s%""%"'${MOD_PATH}'"%' init
 
     if [ ! -f "init" ]; then
         echo "Error creating init file.. exiting\n" && cleanUp && exit
