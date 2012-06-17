@@ -16,9 +16,9 @@ JV_LICENSE="MPL 2.0"
 JV_EXAMPLE_KERNEL="3.4.2-DESKTOP"
 
 # Parameters and Locations
-KERNEL_NAME="${1}"
-ZFS_POOL_NAME="${2}"
-MOD_PATH="/lib/modules/${KERNEL_NAME}/"
+KERNEL_NAME=""
+ZFS_POOL_NAME=""
+MOD_PATH="" # will be set by the `getTargetKernel` function
 HOME_DIR="$(pwd)"
 TMPDIR="${HOME_DIR}/tempinit/"
 
@@ -31,7 +31,7 @@ JV_SBIN="/sbin/"
 JV_LIB32="/lib/"
 JV_LIB64="/lib64/"
 JV_USR_BIN="/usr/bin/"
-JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
+JV_LOCAL_MOD="" # will be set by the `getTargetKernel` function
 
 # Get CPU Architecture
 JV_CARCH="$(uname -m)"

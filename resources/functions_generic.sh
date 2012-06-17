@@ -15,25 +15,29 @@ headerMessage() {
 
 # Display the menu
 displayMenu() {
-	echo "Which initramfs would like to generate:"
+	echo "Which initramfs would you like to generate:"
 	echo "1. ZFS"
 	echo "2. LVM"
 	echo "3. RAID"
 	echo "4. LVM/RAID"
 	echo "5. Exit Program"
 	echo ""
-	echo "Current choice: "
-	
-	read choice
+	echo -n "Current choice: " && read choice
 	
 	case ${choice} in
 		1)
 			echo "ZFS will be generated"
-			source hooks/hook_zfs
+			
+			INIT_TYPE="ZFS"
+			
+			. hooks/hook_zfs.sh
 			;;
 		2)
 			echo "LVM will be generated"
-			source hooks/hook_lvm
+			
+			INIT_TYPE="LVM"			
+			
+			. hooks/hook_lvm.sh
 			;;
 		3) 
 			echo "RAID will be generated" && exit
@@ -48,6 +52,15 @@ displayMenu() {
 			echo "Error" && exit
 			;;
 	esac
+}
+
+# Ask the user for the name of the kernel they want to generate an initramfs for
+getTargetKernel() {
+	echo -n "Please enter kernel name: " && read KERNEL_NAME
+	
+	# Set modules path to correct location
+	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
+	JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
 }
 
 # Message for displaying the generating event
@@ -142,6 +155,7 @@ checkForModulesDir() {
 createDirectoryStructure() {
     echo "Creating directory structure for initramfs\n"
 
+	echo "Modules dir: ${JV_LOCAL_MOD}"
     mkdir ${TMPDIR} && cd ${TMPDIR}
     mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD} 
 
@@ -149,117 +163,6 @@ createDirectoryStructure() {
     if [ "${JV_LIB_PATH}" = "64" ]; then
         mkdir lib64
     fi
-}
-
-# Checks to see if the binaries exist
-checkBinaries() {
-    for X in ${JV_INIT_BINS}; do
-		echo "Checking for ${X}"
-		
-        if [ ${X} = hostid ]; then
-            if [ ! -f "${JV_USR_BIN}/${X}" ]; then
-                errorBinaryNoExist ${X}
-            fi
-        elif [ ${X} = busybox ] || [ ${X} = zpool_layout ]; then
-            if [ ! -f "${JV_BIN}/${X}" ]; then
-                errorBinaryNoExist ${X}
-            fi
-        else
-            if [ ! -f "${JV_SBIN}/${X}" ]; then
-                errorBinaryNoExist ${X}
-            fi
-        fi
-    done
-}
-
-# Checks to see if the spl and zfs modules exist
-checkModules() {
-    for X in ${JV_INIT_MODS}; do 
-        if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
-            if [ ! -f "${MOD_PATH}/addon/spl/${X}/${X}.ko" ]; then
-                errorModuleNoExist ${X}
-            fi
-        elif [ "${X}" = "zavl" ]; then
-            if [ ! -f "${MOD_PATH}/addon/zfs/avl/${X}.ko" ]; then 
-                errorModuleNoExist ${X}
-            fi
-        elif [ "${X}" = "znvpair" ]; then
-            if [ ! -f "${MOD_PATH}/addon/zfs/nvpair/${X}.ko" ]; then 
-                errorModuleNoExist ${X}
-            fi
-        elif [ "${X}" = "zunicode" ]; then
-            if [ ! -f "${MOD_PATH}/addon/zfs/unicode/${X}.ko" ]; then 
-                errorModuleNoExist ${X}
-            fi
-        else 	
-            if [ ! -f "${MOD_PATH}/addon/zfs/${X}/${X}.ko" ]; then 
-                errorModuleNoExist ${X}
-            fi
-        fi
-    done
-}
-
-# Copy the required binary files into the initramfs
-copyBinaries() {
-    echo "Copying binaries...\n"
-
-    for X in ${JV_INIT_BINS}; do
-	    if [ "${X}" = "hostid" ]; then
-		        cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
-	    elif [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ]; then
-		        cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
-        else
-	            cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
-	    fi
-    done
-}
-
-# Copy the required modules to the initramfs
-copyModules() {
-    echo "Copying modules...\n"
-
-    for X in ${JV_INIT_MODS}; do
-        if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
-	        cp ${MOD_PATH}/addon/spl/${X}/${X}.ko ${JV_LOCAL_MOD}
-	    elif [ "${X}" = "zavl" ]; then
-		    cp ${MOD_PATH}/addon/zfs/avl/${X}.ko ${JV_LOCAL_MOD} 
-	    elif [ "${X}" = "znvpair" ]; then
-		    cp ${MOD_PATH}/addon/zfs/nvpair/${X}.ko ${JV_LOCAL_MOD}
-	    elif [ "${X}" = "zunicode" ]; then
-		    cp ${MOD_PATH}/addon/zfs/unicode/${X}.ko ${JV_LOCAL_MOD}
-	    else 	
-		    cp ${MOD_PATH}/addon/zfs/${X}/${X}.ko ${JV_LOCAL_MOD}
-	    fi 
-    done
-}
-
-# Copy all the dependencies of the binary files into the initramfs
-copyDependencies() {
-    echo "Copying dependencies...\n"
-
-    for X in ${JV_INIT_BINS}; do
-	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then
-            if [ "${JV_LIB_PATH}" = "32" ]; then
-		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-            else
-		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-            fi
-	    else
-            if [ "${JV_LIB_PATH}" = "32" ]; then
-		        DEPS="$(ldd sbin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-            else
-		        DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-            fi
-	    fi 
-
-	    for Y in ${DEPS}; do
-            if [ "${JV_LIB_PATH}" = "32" ]; then
-		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB}
-            else
-		        cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
-            fi
-	    done
-    done
 }
 
 # Create the required symlinks to busybox
@@ -284,36 +187,13 @@ createSymlinks() {
     cd ${TMPDIR} 
 }
 
-# Create the empty mtab file in /etc and copy the init file into the initramfs
-# also sed will modify the initramfs to add the modules directory and zfs pool name
-configureInit() {
-    echo "Making mtab, and creating/configuring init...\n"
-
-    touch etc/mtab
-
-    if [ ! -f "etc/mtab" ]; then
-        echo "Error created mtab file.. exiting\n" && cleanUp && exit
-    fi
-
-    # Copy the init script
-    cd ${TMPDIR} && cp ${HOME_DIR}/files/init-zfs .
-
-    # Substitute correct values in using % as delimeter
-    # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '18s%""%"'${ZFS_POOL_NAME}'"%' -e '19s%""%"'${MOD_PATH}'"%' init
-
-    if [ ! -f "init" ]; then
-        echo "Error created init file.. exiting\n" && cleanUp && exit
-    fi
-}
-
 # Create and compress the initramfs
 createInitramfs() {
     echo "Creating initramfs...\n"
 
-    find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/ZFS-${KERNEL_NAME}.img
+    find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img
 
-    if [ ! -f ${HOME_DIR}/ZFS-${KERNEL_NAME}.img ]; then
+    if [ ! -f ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img ]; then
         echo "Error creating initramfs file.. exiting" && cleanUp && exit
     fi
     
@@ -326,7 +206,7 @@ cleanComplete() {
 
     echo "Complete :)\n"
 
-    echo "Please copy the ZFS-${KERNEL_NAME}.img to your /boot directory\n"
+    echo "Please copy the ${INIT_TYPE}-${KERNEL_NAME}.img to your /boot directory\n"
 
     exit 0
 }

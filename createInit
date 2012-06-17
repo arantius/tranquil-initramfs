@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (C) 2012 Jonathan Vasquez
 #
@@ -15,8 +15,8 @@
 # the appropriate hook in which the initramfs will be created.
 
 # Source functions
-. resources/variables
-. resources/functions_generic
+. resources/variables.sh
+. resources/functions_generic.sh
 
 #######################################################################
 # The main entry point starts here

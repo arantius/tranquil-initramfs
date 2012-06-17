@@ -5,25 +5,31 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Source LVM Specific Functions
-source resources/functions_lvm
+. resources/functions_lvm.sh
 
 # Required Binaries, Modules, and other files
 JV_INIT_BINS="busybox hostid lvm"
 JV_INIT_MODS=""
 
+# Init file in files/
+INIT_FILE="init_lvm"
+
 unset LVM_POOL_NAME
 unset LVM_ROOT_NAME
 
-echo "Please enter LVM pool name: "
-read lpooln
+# Ask for desired kernel
+getTargetKernel	
 
-LVM_POOL_NAME=$lpooln
+echo "1. ${KERNEL_NAME}"
+echo "2. ${MOD_PATH}"
+echo "3. ${JV_LOCAL_MOD}"
+
+
+# Ask for lvm pool and root name
+echo -n "Please enter LVM pool name: " && read LVM_POOL_NAME
 
 echo "LVM Pool: ${LVM_POOL_NAME}"
 
-echo "Please enter LVM root name: "
-read lrootn
-
-LVM_ROOT_NAME=$lrootn
+echo -n "Please enter LVM root name: " && read LVM_ROOT_NAME
 
 echo "LVM Root: ${LVM_ROOT_NAME}"

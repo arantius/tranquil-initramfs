@@ -25,7 +25,7 @@ checkBinaries() {
     done
 }
 
-# Checks to see if the spl and zfs modules exist
+# Function won't be used, but must be declared so script doesn't fail
 checkModules() {
     echo "No modules will be checked"
 }
@@ -46,7 +46,7 @@ copyBinaries() {
     done
 }
 
-# Copy the required modules to the initramfs
+# Function won't be used, but must be declared so script doesn't fail
 copyModules() {
     echo "No modules will be copied...\n"
 }
@@ -98,14 +98,12 @@ configureInit() {
         echo "Error created mtab file.. exiting\n" && exit
     fi
 
-    ls ${HOME_DIR}/files
-
     # Copy the init script
-    cd ${TMPDIR} && cp ${HOME_DIR}/files/init_lvm init
+    cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
 
     # Substitute correct values in using % as delimeter
     # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' -e '11s%""%"'${MOD_PATH}'"%' init
+    sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' init
 
     if [ ! -f "init" ]; then
         echo "Error creating init file.. exiting\n" && cleanUp && exit
