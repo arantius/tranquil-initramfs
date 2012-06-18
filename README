@@ -18,7 +18,8 @@ Please have the following installed:
 - LVM2 with static flag (Needed only for LVM)
 - MDADM with static flag (Needed only for RAID configuration)
 
-This script and applications have been tested only on Gentoo Linux. It should/could work on other distros as well with minimal to no tweaking.
+This script and applications have been tested only on Funtoo Linux. It could work on other distros if the distro modifies some of the hook functions so that it targets the correct location
+of where their binaries and libraries are installed. (Do a ldd <binary name> to get the general idea of where the libs are located)
 
 1.4.0 Changes
 -------------------
