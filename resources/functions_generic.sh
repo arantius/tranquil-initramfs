@@ -40,16 +40,26 @@ displayMenu() {
 			. hooks/hook_lvm.sh
 			;;
 		3) 
-			echo "RAID will be generated" && exit
+			# This option will be implemented in the future
+			echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
+			
+			INIT_TYPE="RAID"
+			
+			. hooks/hook_raid.sh
 			;;
 		4)
-			echo "LVM + RAID will be generated" && exit
+			# This option will be implemented in the future
+			echo "LVM + RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
+			
+			INIT_TYPE="LVM_RAID"
+			
+			. hooks/hook_lvm_raid.sh
 			;;
 		5)
 			exit
 			;;
 		*)
-			echo "Error" && exit
+			echo "Invalid choice. Exiting." && exit
 			;;
 	esac
 }
@@ -155,7 +165,6 @@ checkForModulesDir() {
 createDirectoryStructure() {
     echo "Creating directory structure for initramfs\n"
 
-	echo "Modules dir: ${JV_LOCAL_MOD}"
     mkdir ${TMPDIR} && cd ${TMPDIR}
     mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD} 
 

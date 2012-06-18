@@ -6,22 +6,24 @@
 
 # Checks to see if the binaries exist
 checkBinaries() {
-    for X in ${JV_INIT_BINS}; do
-		echo "Checking for ${X}"
-		
-        if [ ${X} = hostid ]; then
+    for X in ${JV_INIT_BINS}; do		
+        if [ ${X} = hostid ] || [ ${X} = zpool_layout ]; then
             if [ ! -f "${JV_USR_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
             fi
-        elif [ ${X} = busybox ] || [ ${X} = zpool_layout ]; then
+        elif [ ${X} = busybox ]; then
             if [ ! -f "${JV_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
             fi
-        else
+        elif [ ${X} = mount.zfs ]; then
             if [ ! -f "${JV_SBIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
             fi
-        fi
+        else
+			if [ ! -f "${JV_USR_SBIN}/${X}" ]; then
+				errorBinaryNoExist ${X}
+			fi
+		fi
     done
 }
 
@@ -57,12 +59,14 @@ copyBinaries() {
     echo "Copying binaries...\n"
 
     for X in ${JV_INIT_BINS}; do
-	    if [ "${X}" = "hostid" ]; then
-		        cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
-	    elif [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ]; then
-		        cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
-        else
-	            cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
+	    if [ "${X}" = "hostid" ] || [ "${X}" = "zpool_layout" ]; then
+			cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
+	    elif [ "${X}" = "busybox" ]; then
+			cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
+        elif [ "${X}" = "mount.zfs" ]; then
+			cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
+	    else
+			cp ${JV_USR_SBIN}/${X} ${JV_LOCAL_SBIN}
 	    fi
     done
 }
@@ -92,25 +96,29 @@ copyDependencies() {
 
     for X in ${JV_INIT_BINS}; do
 	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then
-            if [ "${JV_LIB_PATH}" = "32" ]; then
+            #if [ "${JV_LIB_PATH}" = "32" ]; then
 		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-            else
-		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-            fi
+            #else
+		       # DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+            #fi
 	    else
-            if [ "${JV_LIB_PATH}" = "32" ]; then
+            #if [ "${JV_LIB_PATH}" = "32" ]; then
 		        DEPS="$(ldd sbin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-            else
-		        DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-            fi
+            #else
+		     #   DEPS="$(ldd sbin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+            #fi
 	    fi 
 
+		# Copy dependencies for each bin specifically, while redirecting error messages
+		# (for libraries in locations that don't exist)
 	    for Y in ${DEPS}; do
-            if [ "${JV_LIB_PATH}" = "32" ]; then
-		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB}
-            else
-		        cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
-            fi
+           # if [ "${JV_LIB_PATH}" = "32" ]; then
+		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB} 2> /dev/null
+		        cp -Lf ${JV_USR_LIB}/${Y} ${JV_LOCAL_LIB} 2> /dev/null
+            #else
+		     #   cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
+		      #  cp -Lf ${JV_USR_LIB}/${Y} ${JV_LOCAL_LIB64}
+            #fi
 	    done
     done
 }
@@ -127,11 +135,11 @@ configureInit() {
     fi
 
     # Copy the init script
-    cd ${TMPDIR} && cp ${HOME_DIR}/files/init-zfs .
+    cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
 
     # Substitute correct values in using % as delimeter
     # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '18s%""%"'${ZFS_POOL_NAME}'"%' -e '19s%""%"'${MOD_PATH}'"%' init
+    sed -i -e '9s%""%"'${ZFS_POOL_NAME}'"%' -e '10s%""%"'${MOD_PATH}'"%' init
 
     if [ ! -f "init" ]; then
         echo "Error created init file.. exiting\n" && cleanUp && exit

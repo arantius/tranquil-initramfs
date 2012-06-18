@@ -20,10 +20,9 @@ unset LVM_ROOT_NAME
 # Ask for desired kernel
 getTargetKernel	
 
-echo "1. ${KERNEL_NAME}"
-echo "2. ${MOD_PATH}"
-echo "3. ${JV_LOCAL_MOD}"
-
+#echo "1. ${KERNEL_NAME}"
+#echo "2. ${MOD_PATH}"
+#echo "3. ${JV_LOCAL_MOD}"
 
 # Ask for lvm pool and root name
 echo -n "Please enter LVM pool name: " && read LVM_POOL_NAME
