@@ -104,7 +104,7 @@ configureInit() {
 
     # Substitute correct values in using % as delimeter
     # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' init
+    #sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' init
 
     if [ ! -f "init" ]; then
         echo "Error creating init file.. exiting\n" && cleanUp && exit
