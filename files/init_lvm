@@ -7,8 +7,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Variables
-export NEW_ROOT="/mnt/root"
-export NEW_INIT="/sbin/init"
+NEW_ROOT="/mnt/root"
+NEW_INIT="/sbin/init"
 
 # Function to start rescue shell
 rescue_shell() {
@@ -29,7 +29,7 @@ sleep 2
 lvm vgchange -a y ${pool} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${options} ${rootfstype} ${root} ${NEW_ROOT} || rescue_shell
+mount -t ${options} ${rootfstype} ${root} /mnt/root || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
@@ -37,4 +37,4 @@ umount /dev
 umount /sys
 
 # Switch to the new root
-exec switch_root ${NEW_ROOT} ${NEW_INIT} || rescue_shell
+exec switch_root /mnt/root /sbin/init || rescue_shell
