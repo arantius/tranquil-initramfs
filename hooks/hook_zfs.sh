@@ -8,7 +8,7 @@
 . resources/functions_zfs.sh
 
 # Required Binaries, Modules, and other files
-JV_INIT_BINS="zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
+JV_INIT_BINS="busybox zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
 JV_INIT_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
 
 # Init file in files/

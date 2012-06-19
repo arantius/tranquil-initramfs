@@ -21,7 +21,6 @@ load_modules() {
 	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
 	
 	for MODULE in ${MODULES}; do
-		echo "Loading module: ${MODULE}"
 		insmod ${JV_MOD_PATH}/${MODULE}.ko
 	done
 }
