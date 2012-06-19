@@ -27,14 +27,14 @@ displayMenu() {
 	
 	case ${choice} in
 		1)
-			echo "ZFS will be generated"
+			echo "An initramfs for ZFS will be generated!"
 			
 			INIT_TYPE="ZFS" && eline
 			
 			. hooks/hook_zfs.sh
 			;;
 		2)
-			echo "LVM will be generated"
+			echo "An initramfs for LVM will be generated!"
 			
 			INIT_TYPE="LVM" && eline	
 			
@@ -88,7 +88,7 @@ getTargetKernel() {
 
 # Message for displaying the generating event
 startMessage() {
-    echo "Generating initramfs for ${KERNEL_NAME}" && eline
+    echo "Generating initramfs for ${KERNEL_NAME}..." && eline
 }
 
 # Prints empty line
@@ -138,7 +138,7 @@ getArchitecture() {
 
 # Check to make sure kernel modules directory exists
 checkForModulesDir() {
-    echo "Checking to see if modules directory exists for ${KERNEL_NAME}" && eline
+    echo "Checking to see if modules directory exists for ${KERNEL_NAME}..." && eline
 
     if [ ! -d ${MOD_PATH} ]; then
         echo "Kernel modules directory doesn't exist for ${KERNEL_NAME}. Quitting" && eline && exit
@@ -147,7 +147,7 @@ checkForModulesDir() {
 
 # Create the base directory structure for the initramfs
 createDirectoryStructure() {
-    echo "Creating directory structure for initramfs" && eline
+    echo "Creating directory structure for initramfs..." && eline
 
     mkdir ${TMPDIR} && cd ${TMPDIR}
     mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD} 
@@ -182,7 +182,7 @@ createSymlinks() {
 
 # Create and compress the initramfs
 createInitramfs() {
-    echo "Creating initramfs..." && eline
+    echo "Creating and Packing initramfs..." && eline
 
     find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img
 
