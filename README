@@ -1,6 +1,6 @@
-Bliss Initramfs Creator - Funtoo
+Bliss Initramfs Creator - Funtoo Linux
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.4.0
+Version 1.4.1
 Distributed under the MPL 2.0
 
 This script generates an initramfs image with all the included files and dependencies.
@@ -17,6 +17,18 @@ Please have the following installed:
 - SPL/ZFS (Needed only for ZFS)
 - LVM2 with static flag (Needed only for LVM)
 - MDADM with static flag (Needed only for RAID configuration)
+
+For more information/instructions check the USAGE file.
+
+1.4.1 Changes
+-------------------
+- ZFS and LVM are both working 
+- ZFS modules are now compressed with gzip to save space in the initramfs
+- Modules are now loaded with modprobe instead of insmod
+- Kernel parameters are now supported (This means you don't have to keep rebuilding your initramfs when changing pool names)
+- Initramfs boot message should be faster and much cleaner now
+- Astethic changes were made to the UI
+- User I/O has been streamlined
 
 1.4.0 Changes
 -------------------

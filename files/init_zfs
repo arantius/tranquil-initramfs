@@ -22,7 +22,12 @@ load_modules() {
 	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
 	
 	for MODULE in ${MODULES}; do
-		modprobe ${MODULE}
+		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it
+		if [ "${MODULE}" = "zfs" ] && [ ! -z "${cachesize}" ]; then
+			modprobe set_arc_max=${cachesize} ${MODULE}
+		else
+			modprobe ${MODULE}
+		fi
 	done
 }
 
