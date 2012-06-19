@@ -8,8 +8,8 @@
 . resources/functions_zfs.sh
 
 # Required Binaries, Modules, and other files
-JV_INIT_BINS="busybox zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
-JV_INIT_MODS="zlib_deflate zlib spl splat zavl znvpair zunicode zcommon zfs zpios"
+JV_INIT_BINS="zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
+JV_INIT_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
 
 # Init file in files/
 INIT_FILE="init_zfs"
@@ -17,13 +17,5 @@ INIT_FILE="init_zfs"
 # Ask for desired kernel
 getTargetKernel	
 
-#echo "1. ${KERNEL_NAME}"
-#echo "2. ${MOD_PATH}"
-#echo "3. ${JV_LOCAL_MOD}"
-
 # Ask for zfs pool name
-echo -n "Please enter ZFS pool name: " && read ZFS_POOL_NAME
-
-echo "ZFS Pool: ${ZFS_POOL_NAME}"
-
-clear
+echo -n "Please enter ZFS pool name: " && read ZFS_POOL_NAME && echo ""

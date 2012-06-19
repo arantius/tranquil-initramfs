@@ -9,10 +9,6 @@
 ZFS_POOL_NAME=""
 JV_MOD_PATH=""
 
-echo "Welcome to the Bliss Init Script (BIS)"
-
-#busybox --install -s #Test if this would work
-
 # Function to start rescue shell
 rescue_shell() {
 	echo "Booting into rescue shell"
@@ -22,16 +18,11 @@ rescue_shell() {
 
 # Function to load ZFS modules 
 load_modules() {
-	MODULES="zlib_deflate zlib spl splat zavl znvpair zcommon zunicode zfs zpios"
+	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
 	
 	for MODULE in ${MODULES}; do
-		echo "Attempting to load module: ${MODULE}"
-		
-		if [ "${MODULE}" = "zlib_deflate" ] || [ "${MODULE}" = "zlib" ]; then
-			insmod ${JV_MOD_PATH}/${MODULE}.ko.gz
-		else
-			insmod ${JV_MOD_PATH}/${MODULE}.ko
-		fi
+		echo "Loading module: ${MODULE}"
+		insmod ${JV_MOD_PATH}/${MODULE}.ko
 	done
 }
 

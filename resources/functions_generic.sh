@@ -18,44 +18,45 @@ displayMenu() {
 	echo "Which initramfs would you like to generate:"
 	echo "1. ZFS"
 	echo "2. LVM"
-	echo "3. RAID"
-	echo "4. LVM/RAID"
-	echo "5. Exit Program"
+	#echo "3. RAID"
+	#echo "4. LVM/RAID"
+	echo "3. Exit Program"
 	echo ""
 	echo -n "Current choice: " && read choice
+	echo ""
 	
 	case ${choice} in
 		1)
 			echo "ZFS will be generated"
 			
-			INIT_TYPE="ZFS"
+			INIT_TYPE="ZFS" && echo ""
 			
 			. hooks/hook_zfs.sh
 			;;
+		#2)
+		#	echo "LVM will be generated"
+			
+		#	INIT_TYPE="LVM"			
+		#	
+		#	. hooks/hook_lvm.sh
+		#	;;
+		#3) 
+			# This option will be implemented in the future
+			#echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
+			
+			#INIT_TYPE="RAID"
+			#
+			#. hooks/hook_raid.sh
+			#;;
+		#4)
+			# This option will be implemented in the future
+			#echo "LVM + RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
+			
+			#INIT_TYPE="LVM_RAID"
+			
+			#. hooks/hook_lvm_raid.sh
+			#;;
 		2)
-			echo "LVM will be generated"
-			
-			INIT_TYPE="LVM"			
-			
-			. hooks/hook_lvm.sh
-			;;
-		3) 
-			# This option will be implemented in the future
-			echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-			
-			INIT_TYPE="RAID"
-			
-			. hooks/hook_raid.sh
-			;;
-		4)
-			# This option will be implemented in the future
-			echo "LVM + RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-			
-			INIT_TYPE="LVM_RAID"
-			
-			. hooks/hook_lvm_raid.sh
-			;;
-		5)
 			exit
 			;;
 		*)
@@ -66,7 +67,7 @@ displayMenu() {
 
 # Ask the user for the name of the kernel they want to generate an initramfs for
 getTargetKernel() {
-	echo -n "Please enter kernel name: " && read KERNEL_NAME
+	echo -n "Please enter kernel name: " && read KERNEL_NAME && echo ""
 	
 	# Set modules path to correct location
 	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
@@ -99,40 +100,6 @@ cleanUp() {
             echo "Failed to delete the directory. Exiting..." && exit
         fi
     fi
-}
-
-# Check to make sure that there is only 1 parameter for displaying help messages
-# or that there is the required amount of parameters to trigger the build
-getParameters() {
-    if [ ${#} -eq 1 ]; then
-        # for loop that checks all parameters matching something
-        # i would be the mode, and i+1 would be the mode type
-        for X in ${@}; do
-            
-        if [ "${1}" = "--version" ]; then
-            echo "${JV_VERSION}" && exit
-        elif [ "${1}" = "--author" ] || [ "${1}" = "-a" ]; then
-            echo "${JV_CONTACT}" && exit
-        elif [ "${1}" = "--help" ] || [ "${1}" = "-h" ]; then
-            echo "${JV_APP_NAME} ${JV_VERSION}"
-            echo "By ${JV_CONTACT}"
-            echo ""
-            echo "Usage: createInit <Kernel Name> <ZFS Pool Name>"
-            echo "Example: createInit ${JV_EXAMPLE_KERNEL} rpool"
-            echo ""
-            echo "-h, --help    - This help screen"
-            echo "-a, --author  - Author of Application" && exit
-            echo "    --version - Application Version"
-        elif [ "${1}" = "--lvm" ]; then
-            LVM_RUN=1;
-        fi
-        done
-    elif [ "${#}" -lt 1 ] || [ "${#}" -gt 2 ]; then
-        echo "Usage: createInit <Kernel Name> <ZFS Pool Name>. Example: createInit ${JV_EXAMPLE_KERNEL} rpool" && exit
-    fi
-
-    # createInit -t zfs/btrfs/lvm/lvm-mdadm -p <zfs_pool_name> or <lvm_volume_group_name>
-    # createInit --help
 }
 
 # If x86_64 then use lib64 libraries, else use 32 bit
@@ -174,11 +141,14 @@ createDirectoryStructure() {
     fi
 }
 
-# Create the required symlinks to busybox
+# Copy busybox into the initrd and create the required symlinks to it
 createSymlinks() {
-    echo "Creating symlinks to busybox...\n"
+    echo "Copying busybox and creating symlinks to it..\n"
 
     cd ${TMPDIR}/${JV_LOCAL_BIN} 
+    
+    # Copy busybox
+    cp ${HOME_DIR}/binaries/busybox .
 
     for BB in ${BUSYBOX_TARGETS}; do
         if [ -L "${BB}" ]; then
