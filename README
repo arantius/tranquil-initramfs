@@ -1,4 +1,4 @@
-Bliss Initramfs Creator
+Bliss Initramfs Creator - Funtoo
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Version 1.4.0
 Distributed under the MPL 2.0
@@ -12,16 +12,11 @@ Please have the following installed:
 
 - Linux Kernel (with the following for ZFS only - CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled)
 - cpio
-- Busybox with static flag (included for now)
+- Busybox with static flag
 ---
 - SPL/ZFS (Needed only for ZFS)
 - LVM2 with static flag (Needed only for LVM)
 - MDADM with static flag (Needed only for RAID configuration)
-
-This script has been tested only on Arch Linux. It could work on other distros if the distro modifies some of the hook functions so that it targets the correct location
-of where their binaries and libraries are installed. (Do a ldd <binary name> to get the general idea of where the libs are located)
-
-This script used to work on Funtoo/Gentoo but since Funtoo and Arch use different file system layouts, the algorithm to gather libraries won't work in Funtoo atm. I will see what I can do for this.
 
 1.4.0 Changes
 -------------------
