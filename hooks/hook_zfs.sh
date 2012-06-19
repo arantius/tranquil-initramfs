@@ -15,7 +15,4 @@ JV_INIT_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
 INIT_FILE="init_zfs"
 
 # Ask for desired kernel
-getTargetKernel	
-
-# Ask for zfs pool name
-echo -n "Please enter ZFS pool name: " && read ZFS_POOL_NAME && echo ""
+getTargetKernel

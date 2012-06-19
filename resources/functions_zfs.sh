@@ -6,9 +6,9 @@
 
 # Checks to see if the binaries exist
 checkBinaries() {
+	echo "Checking binaries..." && eline
+	
     for X in ${JV_INIT_BINS}; do		
-		echo "Checking for ${X}"
-		
         if [ ${X} = hostid ] ; then
             if [ ! -f "${JV_USR_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
@@ -27,6 +27,8 @@ checkBinaries() {
 
 # Checks to see if the spl and zfs modules exist
 checkModules() {
+	echo "Copying modules..." && eline
+	
     for X in ${JV_INIT_MODS}; do 
         if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
             if [ ! -f "${MOD_PATH}/addon/spl/${X}/${X}.ko" ]; then
@@ -54,7 +56,7 @@ checkModules() {
 
 # Copy the required binary files into the initramfs
 copyBinaries() {
-    echo "Copying binaries...\n"
+    echo "Copying binaries..." && eline
 
     for X in ${JV_INIT_BINS}; do
 	    if [ "${X}" = "hostid" ]; then
@@ -69,7 +71,7 @@ copyBinaries() {
 
 # Copy the required modules to the initramfs
 copyModules() {
-    echo "Copying modules...\n"
+    echo "Copying modules..." && eline
 
     for X in ${JV_INIT_MODS}; do
         if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
@@ -86,11 +88,12 @@ copyModules() {
     done
     
     # Compress the copied modules here
+    compressModules && generateModprobe
 }
 
 # Copy all the dependencies of the binary files into the initramfs
 copyDependencies() {
-    echo "Copying dependencies...\n"
+    echo "Copying dependencies..." && eline
 
     for X in ${JV_INIT_BINS}; do
 	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then			
@@ -119,27 +122,4 @@ copyDependencies() {
             fi
 	    done
     done
-}
-
-# Create the empty mtab file in /etc and copy the init file into the initramfs
-# also sed will modify the initramfs to add the modules directory and zfs pool name
-configureInit() {
-    echo "Making mtab, and creating/configuring init...\n"
-
-    touch etc/mtab
-
-    if [ ! -f "etc/mtab" ]; then
-        echo "Error created mtab file.. exiting\n" && cleanUp && exit
-    fi
-
-    # Copy the init script
-    cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
-
-    # Substitute correct values in using % as delimeter
-    # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    sed -i -e '9s%""%"'${ZFS_POOL_NAME}'"%' -e '10s%""%"'${MOD_PATH}'"%' init
-
-    if [ ! -f "init" ]; then
-        echo "Error created init file.. exiting\n" && cleanUp && exit
-    fi
 }

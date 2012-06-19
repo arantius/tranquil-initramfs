@@ -180,6 +180,46 @@ createSymlinks() {
     cd ${TMPDIR} 
 }
 
+# Create the empty mtab file in /etc and copy the init file into the initramfs
+# also sed will modify the initramfs to add additional information
+configureInit() {
+    echo "Making mtab, and creating/configuring init..." && eline
+
+    touch etc/mtab
+
+    if [ ! -f "etc/mtab" ]; then
+        echo "Error created mtab file.. exiting" && eline && exit
+    fi
+
+    # Copy the init script
+    cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
+    
+    if [ "${INIT_TYPE}" = "ZFS" ]; then
+		sed -i -e '12s%""%"'${MOD_PATH}'"%' init
+	fi
+
+    if [ ! -f "init" ]; then
+        echo "Error creating init file.. exiting" && eline && cleanUp && exit
+    fi
+}
+
+# Compresses the kernel modules
+compressModules() {
+	echo "Compressing kernel modules..." && eline
+	
+	cd ${JV_LOCAL_MOD}
+	
+	for module in ./*.ko; do
+		gzip ${module}
+	done
+}
+
+generateModprobe() {
+	echo "Generating modprobe information..." && eline
+	
+	depmod -b ${TMPDIR}
+}
+
 # Create and compress the initramfs
 createInitramfs() {
     echo "Creating and Packing initramfs..." && eline

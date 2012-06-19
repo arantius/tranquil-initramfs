@@ -9,9 +9,9 @@ JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.4.0"
+JV_VERSION="1.4.1"
 JV_LICENSE="MPL 2.0"
-JV_DISTRO="Funtoo"
+JV_DISTRO="Funtoo Linux"
 
 # Used only for documentation purposes
 JV_EXAMPLE_KERNEL="3.4.3-DESKTOP"
@@ -35,7 +35,6 @@ JV_USR_BIN="/usr/bin/"
 JV_USR_SBIN="/usr/sbin/"
 
 # Variables listed here will be defined in another place
-ZFS_POOL_NAME="" # will be set by the hook_zfs.sh
 MOD_PATH="" # will be set by the `getTargetKernel` function
 JV_LOCAL_MOD="" # will be set by the `getTargetKernel` function
 

@@ -81,26 +81,3 @@ copyDependencies() {
 	    done
     done
 }
-
-# Create the empty mtab file in /etc and copy the init file into the initramfs
-# also sed will modify the initramfs to add additional information
-configureInit() {
-    echo "Making mtab, and creating/configuring init..." && eline
-
-    touch etc/mtab
-
-    if [ ! -f "etc/mtab" ]; then
-        echo "Error created mtab file.. exiting" && eline && exit
-    fi
-
-    # Copy the init script
-    cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
-
-    # Substitute correct values in using % as delimeter
-    # to avoid the slashes in the MOD_PATH [/lib/modules...]
-    #sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' init
-
-    if [ ! -f "init" ]; then
-        echo "Error creating init file.. exiting" && eline && cleanUp && exit
-    fi
-}

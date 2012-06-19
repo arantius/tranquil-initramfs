@@ -6,23 +6,26 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-ZFS_POOL_NAME=""
+# Variables
+NEW_ROOT="/mnt/root"
+NEW_INIT="/sbin/init"
 JV_MOD_PATH=""
 
 # Function to start rescue shell
 rescue_shell() {
-	echo "Booting into rescue shell"
+	echo "Booting into rescue shell..."
 	busybox --install -s
 	exec /bin/sh
 }
 
 # Function to load ZFS modules 
 load_modules() {
-	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
+	#MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
 	
-	for MODULE in ${MODULES}; do
-		insmod ${JV_MOD_PATH}/${MODULE}.ko
-	done
+	#for MODULE in ${MODULES}; do
+		#insmod ${JV_MOD_PATH}/${MODULE}.ko
+	#done
+	modprobe zfs
 }
 
 # Mount Kernel Devices 
@@ -30,14 +33,14 @@ mount -t proc none /proc
 mount -t devtmpfs none /dev
 mount -t sysfs none /sys
 
-# Wait a little for trailing kernel messages
-sleep 2 
+# Prevent kernel from printing on screen
+echo 0 > /proc/sys/kernel/printk
 
 # Load ZFS Modules
 load_modules || rescue_shell
 
 # Mount ZFS Pool
-zpool import -f -d /dev -o cachefile= -R /mnt/root ${ZFS_POOL_NAME} || rescue_shell
+zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${poolname} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
@@ -45,4 +48,4 @@ umount /dev
 umount /sys
 
 # Switch to the new root
-exec switch_root /mnt/root /sbin/init || rescue_shell
+exec switch_root ${NEW_ROOT} ${NEW_INIT} || rescue_shell

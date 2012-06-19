@@ -25,9 +25,6 @@ mount -t sysfs none /sys
 # Prevent kernel from printing on screen
 echo 0 > /proc/sys/kernel/printk
 
-# Clear screen
-clear
-
 # Mount LVM Pool
 lvm vgchange -a y ${poolname} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
