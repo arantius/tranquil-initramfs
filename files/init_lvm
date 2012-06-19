@@ -11,6 +11,7 @@ LVM_ROOT_NAME=""
 
 # Variables
 INIT_ROOT="/mnt/root"
+NEW_INIT="/sbin/init"
 
 # Function to start rescue shell
 rescue_shell() {
@@ -39,4 +40,4 @@ umount /dev
 umount /sys
 
 # Switch to the new root
-exec switch_root /mnt/root /sbin/init || rescue_shell
+exec switch_root ${INIT_ROOT} ${NEW_INIT} || rescue_shell
