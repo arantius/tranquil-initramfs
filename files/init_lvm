@@ -28,7 +28,7 @@ sleep 2
 lvm vgchange -a y ${LVM_POOL_NAME} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount /dev/${LVM_POOL_NAME}/${LVM_ROOT_NAME} /mnt/root || rescue_shell
+mount -t ${options} ${rootfstype} ${root} /mnt/root || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc

@@ -17,5 +17,5 @@ INIT_FILE="init_lvm"
 getTargetKernel	
 
 # Ask for lvm pool and root name
-echo -n "Please enter LVM pool name: " && read LVM_POOL_NAME
-echo -n "Please enter LVM root name: " && read LVM_ROOT_NAME
+echo -n "Please enter LVM pool name: " && read LVM_POOL_NAME && echo ""
+echo -n "Please enter LVM root name: " && read LVM_ROOT_NAME && echo ""

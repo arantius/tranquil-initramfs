@@ -36,7 +36,7 @@ displayMenu() {
 		2)
 			echo "LVM will be generated"
 			
-			INIT_TYPE="LVM"			
+			INIT_TYPE="LVM" && echo ""	
 			
 			. hooks/hook_lvm.sh
 			;;
