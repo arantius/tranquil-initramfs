@@ -40,8 +40,11 @@ copyBinaries() {
 		        cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
 	    elif [ "${X}" = "busybox" ]; then
 		        cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
+		elif [ "${X}" = "lvm" ]; then
+			# Copy the static lvm binary and rename it to lvm
+			cp ${JV_SBIN}/${X}.static ${JV_LOCAL_BIN}/${X}
         else
-	            cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
+	            cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN} 
 	    fi
     done
 }
@@ -73,8 +76,6 @@ copyDependencies() {
             fi
 	    fi 
 
-		echo "Dependencies gathered for ${X}: ${DEPS}"
-		
 	    for Y in ${DEPS}; do
 			echo "Copying ${Y}"
 			

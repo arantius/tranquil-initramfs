@@ -11,9 +11,10 @@ JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
 JV_VERSION="1.4.0"
 JV_LICENSE="MPL 2.0"
+JV_DISTRO="Funtoo"
 
 # Used only for documentation purposes
-JV_EXAMPLE_KERNEL="3.4.2-DESKTOP"
+JV_EXAMPLE_KERNEL="3.4.3-DESKTOP"
 
 # Parameters and Locations
 KERNEL_NAME=""

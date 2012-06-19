@@ -7,7 +7,7 @@
 # Message that will be displayed at the top of the screen
 headerMessage() {
     echo "##################################"
-    echo "${JV_APP_NAME} ${JV_VERSION}"
+    echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
     echo "Author: ${JV_CONTACT}"
     echo "Released under the ${JV_LICENSE}"
     echo "##################################\n"
@@ -33,13 +33,13 @@ displayMenu() {
 			
 			. hooks/hook_zfs.sh
 			;;
-		#2)
-		#	echo "LVM will be generated"
+		2)
+			echo "LVM will be generated"
 			
-		#	INIT_TYPE="LVM"			
-		#	
-		#	. hooks/hook_lvm.sh
-		#	;;
+			INIT_TYPE="LVM"			
+			
+			. hooks/hook_lvm.sh
+			;;
 		#3) 
 			# This option will be implemented in the future
 			#echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
@@ -56,7 +56,7 @@ displayMenu() {
 			
 			#. hooks/hook_lvm_raid.sh
 			#;;
-		2)
+		3)
 			exit
 			;;
 		*)
@@ -147,9 +147,6 @@ createSymlinks() {
 
     cd ${TMPDIR}/${JV_LOCAL_BIN} 
     
-    # Copy busybox
-    cp ${HOME_DIR}/binaries/busybox .
-
     for BB in ${BUSYBOX_TARGETS}; do
         if [ -L "${BB}" ]; then
             echo "${BB} link exists.. removing it\n"
