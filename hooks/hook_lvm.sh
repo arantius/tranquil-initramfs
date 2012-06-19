@@ -14,8 +14,4 @@ JV_INIT_BINS="busybox hostid lvm"
 INIT_FILE="init_lvm"
 
 # Ask for desired kernel
-getTargetKernel	
-
-# Ask for lvm pool and root name
-#echo -n "Please enter LVM pool name: " && read LVM_POOL_NAME && echo ""
-#echo -n "Please enter LVM root name: " && read LVM_ROOT_NAME && echo ""
+getTargetKernel

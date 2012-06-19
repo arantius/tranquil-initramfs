@@ -25,7 +25,7 @@ mount -t sysfs none /sys
 echo "Variables:"
 echo "Pool Name: ${pool_name}"
 echo "Pool Root: ${pool_root}"
-echo "Root FS Type: ${fstype}"
+echo "Root FS Type: ${rootfstype}"
 
 # Wait a little for trailing kernel messages
 sleep 2 
@@ -34,7 +34,7 @@ sleep 2
 lvm vgchange -a y ${pool_name} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${fstype} -o ${options} /dev/${pool_name}/${pool_root} ${NEW_ROOT} || rescue_shell
+mount -t ${rootfstype} -o ${options} /dev/${pool_name}/${pool_root} ${NEW_ROOT} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc

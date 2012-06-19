@@ -21,22 +21,22 @@ displayMenu() {
 	#echo "3. RAID"
 	#echo "4. LVM/RAID"
 	echo "3. Exit Program"
-	echo ""
+	eline
 	echo -n "Current choice: " && read choice
-	echo ""
+	eline
 	
 	case ${choice} in
 		1)
 			echo "ZFS will be generated"
 			
-			INIT_TYPE="ZFS" && echo ""
+			INIT_TYPE="ZFS" && eline
 			
 			. hooks/hook_zfs.sh
 			;;
 		2)
 			echo "LVM will be generated"
 			
-			INIT_TYPE="LVM" && echo ""	
+			INIT_TYPE="LVM" && eline	
 			
 			. hooks/hook_lvm.sh
 			;;
@@ -65,9 +65,21 @@ displayMenu() {
 	esac
 }
 
-# Ask the user for the name of the kernel they want to generate an initramfs for
+# Ask the user if they want to use their current kernel, or another one to generate an initramfs for it
 getTargetKernel() {
-	echo -n "Please enter kernel name: " && read KERNEL_NAME && echo ""
+	echo -n "Do you want to use current kernel: $(uname -r)? [Y/n]: " && read choice && eline
+	
+	case ${choice} in
+		y|Y|"")
+			KERNEL_NAME=$(uname -r)
+			;;
+		n|N)
+			echo -n "Please enter kernel name: " && read KERNEL_NAME && eline
+			;;
+		*)
+			echo "Invalid option, re-open the application" && exit
+			;;
+	esac
 	
 	# Set modules path to correct location
 	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
@@ -76,7 +88,12 @@ getTargetKernel() {
 
 # Message for displaying the generating event
 startMessage() {
-    echo "Generating initramfs for ${KERNEL_NAME}\n"
+    echo "Generating initramfs for ${KERNEL_NAME}" && eline
+}
+
+# Prints empty line
+eline() {
+	echo ""
 }
 
 # Some error functions
@@ -107,30 +124,30 @@ getArchitecture() {
     case ${JV_CARCH} in
     x86_64)
         JV_LIB_PATH=64
-        echo "Detected ${JV_LIB_PATH} bit platform\n"
+        echo "Detected ${JV_LIB_PATH} bit platform" && eline
         ;;
     i[3-6]86)
         JV_LIB_PATH=32
-        echo "Detected ${JV_LIB_PATH} bit platform\n"
+        echo "Detected ${JV_LIB_PATH} bit platform" && eline
         ;;
     *)
-        echo "Your architecture isn't supported, exiting\n" && cleanUp && exit
+        echo "Your architecture isn't supported, exiting" && eline && cleanUp && exit
         ;;
     esac
 }
 
 # Check to make sure kernel modules directory exists
 checkForModulesDir() {
-    echo "Checking to see if modules directory exists for ${KERNEL_NAME}\n"
+    echo "Checking to see if modules directory exists for ${KERNEL_NAME}" && eline
 
     if [ ! -d ${MOD_PATH} ]; then
-        echo "Kernel modules directory doesn't exist for ${KERNEL_NAME}. Quitting\n" && exit
+        echo "Kernel modules directory doesn't exist for ${KERNEL_NAME}. Quitting" && eline && exit
     fi
 }
 
 # Create the base directory structure for the initramfs
 createDirectoryStructure() {
-    echo "Creating directory structure for initramfs\n"
+    echo "Creating directory structure for initramfs" && eline
 
     mkdir ${TMPDIR} && cd ${TMPDIR}
     mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD} 
@@ -141,22 +158,22 @@ createDirectoryStructure() {
     fi
 }
 
-# Copy busybox into the initrd and create the required symlinks to it
+# Create the required symlinks to it
 createSymlinks() {
-    echo "Copying busybox and creating symlinks to it..\n"
+    echo "Creating symlinks to Busybox..." && eline
 
     cd ${TMPDIR}/${JV_LOCAL_BIN} 
     
     for BB in ${BUSYBOX_TARGETS}; do
         if [ -L "${BB}" ]; then
-            echo "${BB} link exists.. removing it\n"
+            echo "${BB} link exists.. removing it" && eline
             rm ${BB}
         fi
 
 	    ln -s busybox ${BB}
 
         if [ ! -L "${BB}" ]; then
-            echo "error creating link from ${BB} to busybox\n"
+            echo "error creating link from ${BB} to busybox" && eline
         fi
     done
 
@@ -165,7 +182,7 @@ createSymlinks() {
 
 # Create and compress the initramfs
 createInitramfs() {
-    echo "Creating initramfs...\n"
+    echo "Creating initramfs..." && eline
 
     find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img
 
@@ -180,9 +197,9 @@ createInitramfs() {
 cleanComplete() {
     cleanUp
 
-    echo "Complete :)\n"
+    echo "Complete :)" && eline
 
-    echo "Please copy the ${INIT_TYPE}-${KERNEL_NAME}.img to your /boot directory\n"
+    echo "Please copy the ${INIT_TYPE}-${KERNEL_NAME}.img to your /boot directory" && eline
 
     exit 0
 }

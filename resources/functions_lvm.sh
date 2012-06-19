@@ -6,9 +6,9 @@
 
 # Checks to see if the binaries exist
 checkBinaries() {
-    for X in ${JV_INIT_BINS}; do
-		echo "Checking for ${X}"
-		
+	echo "Checking binaries..." && eline
+	
+    for X in ${JV_INIT_BINS}; do		
         if [ ${X} = hostid ]; then
             if [ ! -f "${JV_USR_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
@@ -27,15 +27,14 @@ checkBinaries() {
 
 # Function won't be used, but must be declared so script doesn't fail
 checkModules() {
-    echo "No modules will be checked"
+    echo "No modules will be checked..." && eline
 }
 
 # Copy the required binary files into the initramfs
 copyBinaries() {
-    echo "Copying binaries...\n"
+    echo "Copying binaries..." && eline
 
     for X in ${JV_INIT_BINS}; do
-	echo "Copying ${X}"
 	    if [ "${X}" = "hostid" ]; then
 		        cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
 	    elif [ "${X}" = "busybox" ]; then
@@ -51,19 +50,16 @@ copyBinaries() {
 
 # Function won't be used, but must be declared so script doesn't fail
 copyModules() {
-    echo "No modules will be copied...\n"
+    echo "No modules will be copied..." && eline
 }
 
 # Copy all the dependencies of the binary files into the initramfs
 copyDependencies() {
-    echo "Copying dependencies...\n"
+    echo "Copying dependencies..." && eline
 	
-    for X in ${JV_INIT_BINS}; do
-		echo "Gathering dependencies for ${X}"
-		
+    for X in ${JV_INIT_BINS}; do		
 	    if [ "${X}" = "busybox" ] || [ "${X}" = "hostid" ]; then
-            if [ "${JV_LIB_PATH}" = "32" ]; then
-			echo "32 bit for ${X}"
+            if [ "${JV_LIB_PATH}" = "32" ]; then		
 		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
             else
 		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"	
@@ -76,9 +72,7 @@ copyDependencies() {
             fi
 	    fi 
 
-	    for Y in ${DEPS}; do
-			echo "Copying ${Y}"
-			
+	    for Y in ${DEPS}; do			
             if [ "${JV_LIB_PATH}" = "32" ]; then
 		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB}
             else
@@ -91,12 +85,12 @@ copyDependencies() {
 # Create the empty mtab file in /etc and copy the init file into the initramfs
 # also sed will modify the initramfs to add additional information
 configureInit() {
-    echo "Making mtab, and creating/configuring init...\n"
+    echo "Making mtab, and creating/configuring init..." && eline
 
     touch etc/mtab
 
     if [ ! -f "etc/mtab" ]; then
-        echo "Error created mtab file.. exiting\n" && exit
+        echo "Error created mtab file.. exiting" && eline && exit
     fi
 
     # Copy the init script
@@ -107,6 +101,6 @@ configureInit() {
     #sed -i -e '9s%""%"'${LVM_POOL_NAME}'"%' -e '10s%""%"'${LVM_ROOT_NAME}'"%' init
 
     if [ ! -f "init" ]; then
-        echo "Error creating init file.. exiting\n" && cleanUp && exit
+        echo "Error creating init file.. exiting" && eline && cleanUp && exit
     fi
 }
