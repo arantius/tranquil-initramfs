@@ -9,7 +9,7 @@
 
 # Required Binaries, Modules, and other files
 JV_INIT_BINS="busybox zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
-JV_INIT_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
+JV_INIT_MODS="zlib_deflate zlib spl splat zavl znvpair zunicode zcommon zfs zpios"
 
 # Init file in files/
 INIT_FILE="init_zfs"

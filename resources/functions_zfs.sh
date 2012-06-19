@@ -12,8 +12,12 @@ checkBinaries() {
                 errorBinaryNoExist ${X}
             fi
         elif [ ${X} = busybox ]; then
-            if [ ! -f "${JV_BIN}/${X}" ]; then
-                errorBinaryNoExist ${X}
+            #if [ ! -f "${JV_BIN}/${X}" ]; then
+            if [ ! -f "${HOME_DIR}/binaries/${X}" ]; then
+                #errorBinaryNoExist ${X}
+                echo "error"
+            else
+              echo "Busybox exists"  
             fi
         elif [ ${X} = mount.zfs ]; then
             if [ ! -f "${JV_SBIN}/${X}" ]; then
@@ -46,6 +50,14 @@ checkModules() {
             if [ ! -f "${MOD_PATH}/addon/zfs/unicode/${X}.ko" ]; then 
                 errorModuleNoExist ${X}
             fi
+        elif [ "${X}" = "zlib" ]; then
+			if [ ! -f "${MOD_PATH}/kernel/crypto/${X}.ko.gz" ]; then
+				errorModuleNoExist ${X}
+			fi
+		 elif [ "${X}" = "zlib_deflate" ]; then
+			if [ ! -f "${MOD_PATH}/kernel/lib/zlib_deflate/${X}.ko.gz" ]; then
+				errorModuleNoExist ${X}
+			fi
         else 	
             if [ ! -f "${MOD_PATH}/addon/zfs/${X}/${X}.ko" ]; then 
                 errorModuleNoExist ${X}
@@ -62,7 +74,8 @@ copyBinaries() {
 	    if [ "${X}" = "hostid" ] || [ "${X}" = "zpool_layout" ]; then
 			cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
 	    elif [ "${X}" = "busybox" ]; then
-			cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
+			#cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
+			cp ${HOME_DIR}/binaries/busybox ${JV_LOCAL_BIN}
         elif [ "${X}" = "mount.zfs" ]; then
 			cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
 	    else
@@ -84,6 +97,10 @@ copyModules() {
 		    cp ${MOD_PATH}/addon/zfs/nvpair/${X}.ko ${JV_LOCAL_MOD}
 	    elif [ "${X}" = "zunicode" ]; then
 		    cp ${MOD_PATH}/addon/zfs/unicode/${X}.ko ${JV_LOCAL_MOD}
+		elif [ "${X}" = "zlib" ]; then 
+			cp ${MOD_PATH}/kernel/crypto/${X}.ko.gz ${JV_LOCAL_MOD}/${X}.ko
+		elif [ "${X}" = "zlib_deflate" ]; then 
+			cp ${MOD_PATH}/kernel/lib/zlib_deflate/${X}.ko.gz ${JV_LOCAL_MOD}/${X}.ko
 	    else 	
 		    cp ${MOD_PATH}/addon/zfs/${X}/${X}.ko ${JV_LOCAL_MOD}
 	    fi 
@@ -95,12 +112,19 @@ copyDependencies() {
     echo "Copying dependencies...\n"
 
     for X in ${JV_INIT_BINS}; do
+    
+    
 	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then
-            #if [ "${JV_LIB_PATH}" = "32" ]; then
-		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-            #else
-		       # DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-            #fi
+			if [ "${X}" = "busybox" ]; then
+				echo "Copying busybox libraries - j/k they are static"
+				#cp ${HOME_DIR}/libraries/* ${JV_LOCAL_LIB}
+			else
+				#if [ "${JV_LIB_PATH}" = "32" ]; then
+					DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
+				#else
+				   # DEPS="$(ldd bin/${X} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+				#fi
+			fi
 	    else
             #if [ "${JV_LIB_PATH}" = "32" ]; then
 		        DEPS="$(ldd sbin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
@@ -113,6 +137,7 @@ copyDependencies() {
 		# (for libraries in locations that don't exist)
 	    for Y in ${DEPS}; do
            # if [ "${JV_LIB_PATH}" = "32" ]; then
+           echo "Copying ${Y} to ${JV_LOCAL_LIB}"
 		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB} 2> /dev/null
 		        cp -Lf ${JV_USR_LIB}/${Y} ${JV_LOCAL_LIB} 2> /dev/null
             #else

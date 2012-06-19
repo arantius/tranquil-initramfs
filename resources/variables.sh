@@ -43,6 +43,4 @@ JV_CARCH="$(uname -m)"
 JV_LIB_PATH=32
 
 # Required Binaries, Modules, and other files
-# JV_INIT_BINS="busybox zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool ztest"
-# JV_INIT_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
 BUSYBOX_TARGETS="mount tty sh"
