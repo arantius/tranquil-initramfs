@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 
 # Copyright (C) 2012 Jonathan Vasquez
 #
@@ -26,8 +26,6 @@
 headerMessage
 
 displayMenu
-
-# getParameters ${@}
 
 getArchitecture
 
