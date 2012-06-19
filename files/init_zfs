@@ -9,7 +9,6 @@
 # Variables
 NEW_ROOT="/mnt/root"
 NEW_INIT="/sbin/init"
-JV_MOD_PATH=""
 
 # Function to start rescue shell
 rescue_shell() {
@@ -20,12 +19,11 @@ rescue_shell() {
 
 # Function to load ZFS modules 
 load_modules() {
-	#MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
+	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
 	
-	#for MODULE in ${MODULES}; do
-		#insmod ${JV_MOD_PATH}/${MODULE}.ko
-	#done
-	modprobe zfs
+	for MODULE in ${MODULES}; do
+		modprobe ${MODULE}
+	done
 }
 
 # Mount Kernel Devices 

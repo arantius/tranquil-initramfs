@@ -193,10 +193,6 @@ configureInit() {
 
     # Copy the init script
     cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
-    
-    if [ "${INIT_TYPE}" = "ZFS" ]; then
-		sed -i -e '12s%""%"'${MOD_PATH}'"%' init
-	fi
 
     if [ ! -f "init" ]; then
         echo "Error creating init file.. exiting" && eline && cleanUp && exit
