@@ -9,6 +9,9 @@
 LVM_POOL_NAME=""
 LVM_ROOT_NAME=""
 
+# Variables
+INIT_ROOT="/mnt/root"
+
 # Function to start rescue shell
 rescue_shell() {
 	echo "Booting into rescue shell"
@@ -25,10 +28,10 @@ mount -t sysfs none /sys
 sleep 2 
 
 # Mount LVM Pool
-lvm vgchange -a y ${LVM_POOL_NAME} || rescue_shell
+lvm vgchange -a y ${pool} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${options} ${rootfstype} ${root} /mnt/root || rescue_shell
+mount -t ${options} ${rootfstype} ${root} ${INIT_ROOT} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
