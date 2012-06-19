@@ -17,6 +17,31 @@ rescue_shell() {
 	exec /bin/sh
 }
 
+# Function to extract data out of kernel parameters
+get_value() {
+	echo ${@} | cut -d "=" -f 2
+}
+
+# Parse kernel parameters
+for param in $(cat /proc/cmdline); do
+	case ${param} in
+		pool\=*)
+			pool=$(get_value ${param})
+			;;
+		rootfstype\=*)
+			rootfstype=$(get_value ${param})
+			;;
+		root\=*)
+			root=$(get_value ${param})
+			;;
+		options\=*)
+			options=$(get_value ${param})
+		*)
+			echo "Good luck, throwing you into shell" && rescue_shell
+			;;
+	esac
+done
+
 # Mount Kernel Devices 
 mount -t proc none /proc
 mount -t devtmpfs none /dev
@@ -29,7 +54,7 @@ sleep 2
 lvm vgchange -a y ${pool} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${options} ${rootfstype} ${root} /mnt/root || rescue_shell
+mount -t ${options} ${rootfstype} ${root} ${NEW_ROOT} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
@@ -37,4 +62,4 @@ umount /dev
 umount /sys
 
 # Switch to the new root
-exec switch_root /mnt/root /sbin/init || rescue_shell
+exec switch_root ${NEW_ROOT} ${NEW_INIT} || rescue_shell
