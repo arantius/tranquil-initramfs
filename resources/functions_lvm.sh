@@ -74,9 +74,9 @@ copyDependencies() {
 
 	    for Y in ${DEPS}; do			
             if [ "${JV_LIB_PATH}" = "32" ]; then
-		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB}
+		        cp -Lf ${JV_LIB32}/${Y} ${JV_LOCAL_LIB} 2> /dev/null
             else
-		        cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64}
+		        cp -Lf ${JV_LIB64}/${Y} ${JV_LOCAL_LIB64} 2> /dev/null
             fi
 	    done
     done
