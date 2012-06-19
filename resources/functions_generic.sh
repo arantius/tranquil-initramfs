@@ -218,7 +218,7 @@ generateModprobe() {
 	
 	echo "Generating modprobe information..." && eline
 	
-	depmod -b .
+	depmod -b . ${KERNEL_NAME}
 }
 
 # Create and compress the initramfs
