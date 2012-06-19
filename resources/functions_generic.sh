@@ -212,12 +212,17 @@ compressModules() {
 	for module in ./*.ko; do
 		gzip ${module}
 	done
+	
+	# Return to original location
+	cd ${TMPDIR}
 }
 
 generateModprobe() {
+	cd ${TMPDIR}
+	
 	echo "Generating modprobe information..." && eline
 	
-	depmod -b ${TMPDIR}
+	depmod -b .
 }
 
 # Create and compress the initramfs

@@ -95,7 +95,8 @@ copyModules() {
 copyDependencies() {
     echo "Copying dependencies..." && eline
 	
-    for X in ${JV_INIT_BINS}; do		
+    for X in ${JV_INIT_BINS}; do	
+    	
 	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then
             if [ "${JV_LIB_PATH}" = "32" ]; then		
 		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
