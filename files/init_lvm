@@ -25,22 +25,28 @@ get_value() {
 # Parse kernel parameters
 for param in $(cat /proc/cmdline); do
 	case ${param} in
-		pool\=*)
+		pool_name\=*)
 			pool=$(get_value ${param})
+			;;
+		pool_root\=*)
+			root=$(get_value ${param})
 			;;
 		rootfstype\=*)
 			rootfstype=$(get_value ${param})
 			;;
-		root\=*)
-			root=$(get_value ${param})
-			;;
 		options\=*)
 			options=$(get_value ${param})
+			;;
 		*)
 			echo "Good luck, throwing you into shell" && rescue_shell
 			;;
 	esac
 done
+
+echo "Variables:"
+echo "Pool Name: ${pool_name}"
+echo "Pool Root: ${pool_root}"
+echo "Root FS Type: ${rootfstype}"
 
 # Mount Kernel Devices 
 mount -t proc none /proc
@@ -51,10 +57,10 @@ mount -t sysfs none /sys
 sleep 2 
 
 # Mount LVM Pool
-lvm vgchange -a y ${pool} || rescue_shell
+lvm vgchange -a y ${pool_name} || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${options} ${rootfstype} ${root} ${NEW_ROOT} || rescue_shell
+mount -t ${options} ${rootfstype} /dev/${pool_name}/${pool_root} ${NEW_ROOT} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc
