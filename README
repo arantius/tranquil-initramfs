@@ -26,6 +26,7 @@ For more information/instructions check the USAGE file.
 - ZFS modules are now compressed with gzip to save space in the initramfs
 - Modules are now loaded with modprobe instead of insmod
 - Kernel parameters are now supported (This means you don't have to keep rebuilding your initramfs when changing pool names)
+-- you can set zfs_arc_max at boot time by passing the `cachesize=(number_in_bytes)` parameter
 - Initramfs boot message should be faster and much cleaner now
 - Astethic changes were made to the UI
 - User I/O has been streamlined
