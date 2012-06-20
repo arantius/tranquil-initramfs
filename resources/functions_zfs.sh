@@ -13,7 +13,7 @@ checkBinaries() {
             if [ ! -f "${JV_USR_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
             fi
-        elif [ ${X} = busybox ] || [ ${X} = zpool_layout ]; then
+        elif [ ${X} = busybox -o ${X} = zpool_layout ]; then
             if [ ! -f "${JV_BIN}/${X}" ]; then
                 errorBinaryNoExist ${X}
             fi
@@ -30,7 +30,7 @@ checkModules() {
 	echo "Copying modules..." && eline
 	
     for X in ${JV_INIT_MODS}; do 
-        if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
+        if [ "${X}" = "spl" -o "${X}" = "splat" ]; then
             if [ ! -f "${MOD_PATH}/addon/spl/${X}/${X}.ko" ]; then
                 errorModuleNoExist ${X}
             fi
@@ -61,7 +61,7 @@ copyBinaries() {
     for X in ${JV_INIT_BINS}; do
 	    if [ "${X}" = "hostid" ]; then
 			cp ${JV_USR_BIN}/${X} ${JV_LOCAL_BIN}
-	    elif [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ]; then
+	    elif [ "${X}" = "busybox" -o "${X}" = "zpool_layout" ]; then
 			cp ${JV_BIN}/${X} ${JV_LOCAL_BIN}
 	    else
 			cp ${JV_SBIN}/${X} ${JV_LOCAL_SBIN}
@@ -74,7 +74,7 @@ copyModules() {
     echo "Copying modules..." && eline
 
     for X in ${JV_INIT_MODS}; do
-        if [ "${X}" = "spl" ] || [ "${X}" = "splat" ]; then
+        if [ "${X}" = "spl" -o "${X}" = "splat" ]; then
 	        cp ${MOD_PATH}/addon/spl/${X}/${X}.ko ${JV_LOCAL_MOD}
 	    elif [ "${X}" = "zavl" ]; then
 		    cp ${MOD_PATH}/addon/zfs/avl/${X}.ko ${JV_LOCAL_MOD} 
@@ -97,7 +97,7 @@ copyDependencies() {
 	
     for X in ${JV_INIT_BINS}; do	
     	
-	    if [ "${X}" = "busybox" ] || [ "${X}" = "zpool_layout" ] || [ "${X}" = "hostid" ]; then
+	    if [ "${X}" = "busybox" -o "${X}" = "zpool_layout" -o "${X}" = "hostid" ]; then
             if [ "${JV_LIB_PATH}" = "32" ]; then		
 		        DEPS="$(ldd bin/${X} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
             else
