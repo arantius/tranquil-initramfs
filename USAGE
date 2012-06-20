@@ -1,0 +1,77 @@
+=======================================
+Usage
+=======================================
+The initramfs script is very easy to use.
+
+1. Creating the initramfs
+
+Just clone it or extract it into a directory and cd into it.
+
+Run the script by running: ./createInit
+
+If the script doesn't run and gives you a permission denied message,
+give it execution permission: `chmod +x createInit` and then try again.
+
+Select the option that you want, and tell it which kernel you want to use.
+
+After that the required files will be gathered and packed into an initramfs.
+
+You will find the initramfs in the directory that you are currently in.
+Copy the file to your boot directory and name it whatever you want.
+
+2. Setting it up in the bootloader
+
+If my initramfs is called: initramfs-zfs.img and my bootloader is extlinux,
+I would do the following
+
+(open up the bootloader config (for extlinux it's extlinux.conf)
+
+`vim /boot/extlinux/extlinux.conf`
+
+and add a new entry:
+
+ LABEL funtoo
+	MENU LABEL Funtoo [3.4.3-ZFS]
+	LINUX /kernel-3.4.3-ZFS
+	INITRD /initramfs-zfs.img
+	APPEND poolname=rpool
+	
+This would boot my `rpool` zpool. `poolname` is the kernel parameter to declare
+the zpool that you want to boot into.
+
+=======================================
+Kernel Options:
+=======================================
+LVM:
+
+fstype - filesystem type (root)
+	example: APPEND fstype=ext4
+
+options - options to use for mounting this partition
+	example: APPEND options=ro
+	
+poolname - LVM pool name
+	example: APPEND poolname=funtoo
+	
+poolroot - root logical volume in the LVM
+	example: APPEND poolroot=root
+	
+So a complete line could look like this:
+ APPEND fstype=ext4 options=ro poolname=funtoo poolroot=root
+ 
+ Which would mount the /dev/funtoo/root partition read-only (and take into account
+ that the filesystem type for this partition is ext4).
+ 
+ZFS:
+
+poolname - ZFS pool name
+	example: APPEND poolname=rpool
+
+cachesize - Sets the ARC cache size (in bytes)
+	example: APPEND cachesize=536870912
+		this sets the cachesize to 512MB
+
+So a complete line could look like this:
+ APPEND cachesize=536870912 poolname=rpool
+ 
+ Which would mount the `rpool` ZFS pool with the arc_max being 512 MB

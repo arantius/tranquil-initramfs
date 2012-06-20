@@ -1,0 +1,40 @@
+#!/bin/busybox sh
+
+# Copyright (C) 2012 Jonathan Vasquez
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Variables
+NEW_ROOT="/mnt/root"
+NEW_INIT="/sbin/init"
+
+# Function to start rescue shell
+rescue_shell() {
+	echo "Booting into rescue shell..."
+	busybox --install -s
+	exec /bin/sh
+}
+
+# Mount Kernel Devices 
+mount -t proc none /proc
+mount -t devtmpfs none /dev
+mount -t sysfs none /sys
+
+# Prevent kernel from printing on screen
+echo 0 > /proc/sys/kernel/printk
+
+# Mount LVM Pool
+lvm vgchange -a y ${poolname} || rescue_shell
+lvm vgscan --mknodes || rescue_shell
+
+mount -t ${fstype} -o ${options} /dev/${poolname}/${poolroot} ${NEW_ROOT} || rescue_shell
+
+# Unmount Kernel Devices
+umount /proc
+umount /dev
+umount /sys
+
+# Switch to the new root
+exec switch_root ${NEW_ROOT} ${NEW_INIT} || rescue_shell
