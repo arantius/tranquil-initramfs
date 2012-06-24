@@ -37,9 +37,9 @@ message_start
 
 crt_dir_struct
 
-chk_bin && cp_bin
+chk_bins && cp_bins
 
-chk_mod && cp_mod
+chk_mods && cp_mods
 
 # If it's a ZFS initrd, compress the copied modules and generate modules.dep
 if [ ${INIT_TYPE} = "ZFS" ]; then
