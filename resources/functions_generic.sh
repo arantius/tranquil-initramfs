@@ -34,25 +34,16 @@ display_menu()
 		;;
 	2)
 		echo "An initramfs for LVM will be generated!"
-		
-		INIT_TYPE="LVM" && eline	
-		
 		. hooks/hook_lvm.sh
 		;;
 	#3) 
 		# This option will be implemented in the future
 		#echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-		
-		#INIT_TYPE="RAID"
-		
 		#. hooks/hook_raid.sh
 		#;;
 	#4)
 		# This option will be implemented in the future
 		#echo "LVM + RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-		
-		#INIT_TYPE="LVM_RAID"
-		
 		#. hooks/hook_lvm_raid.sh
 		#;;
 	3)
