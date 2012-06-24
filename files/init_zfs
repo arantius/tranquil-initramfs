@@ -1,4 +1,4 @@
-#!/bin/busybox sh
+﻿#!/bin/busybox sh
 
 # Copyright (C) 2012 Jonathan Vasquez
 #
@@ -11,27 +11,29 @@ NEW_ROOT="/mnt/root"
 NEW_INIT="/sbin/init"
 
 # Function to start rescue shell
-rescue_shell() {
+rescue_shell()
+{
 	echo "Booting into rescue shell..."
 	busybox --install -s
 	exec /bin/sh
 }
 
-# Function to load ZFS modules 
-load_modules() {
-	MODULES="spl splat zavl znvpair zcommon zunicode zfs zpios"
-	
-	for MODULE in ${MODULES}; do
+# Function to load ZFS modules
+load_modules()
+{
+	modules="spl splat zavl znvpair zcommon zunicode zfs zpios"
+
+	for x in ${modules}; do
 		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it
-		if [ "${MODULE}" = "zfs" -a ! -z "${cachesize}" ]; then
-			modprobe ${MODULE} zfs_arc_max=${cachesize}
+		if [ "${x}" = "zfs" -a ! -z "${cache_size}" ]; then
+			modprobe ${x} zfs_arc_max=${cache_size}
 		else
-			modprobe ${MODULE}
+			modprobe ${x}
 		fi
 	done
 }
 
-# Mount Kernel Devices 
+# Mount Kernel Devices
 mount -t proc none /proc
 mount -t devtmpfs none /dev
 mount -t sysfs none /sys
@@ -43,7 +45,7 @@ echo 0 > /proc/sys/kernel/printk
 load_modules || rescue_shell
 
 # Mount ZFS Pool
-zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${poolname} || rescue_shell
+zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || rescue_shell
 
 # Unmount Kernel Devices
 umount /proc

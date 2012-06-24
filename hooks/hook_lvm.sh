@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Jonathan Vasquez
+﻿# Copyright (C) 2012 Jonathan Vasquez
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,11 @@
 # Required Binaries, Modules, and other files
 JV_INIT_BINS="busybox hostid lvm"
 
+# Set init type
+INIT_TYPE="LVM"
+
 # Init file in files/
 INIT_FILE="init_lvm"
 
 # Ask for desired kernel
-getTargetKernel
+eline && get_target_kernel

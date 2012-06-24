@@ -1,4 +1,4 @@
-=======================================
+﻿=======================================
 Usage
 =======================================
 The initramfs script is very easy to use.
@@ -34,7 +34,7 @@ and add a new entry:
 	MENU LABEL Funtoo [3.4.3-ZFS]
 	LINUX /kernel-3.4.3-ZFS
 	INITRD /initramfs-zfs.img
-	APPEND poolname=rpool
+	APPEND pool_name=rpool
 	
 This would boot my `rpool` zpool. `poolname` is the kernel parameter to declare
 the zpool that you want to boot into.
@@ -50,28 +50,28 @@ fstype - filesystem type (root)
 options - options to use for mounting this partition
 	example: APPEND options=ro
 	
-poolname - LVM pool name
-	example: APPEND poolname=funtoo
+pool_name - LVM pool name
+	example: APPEND pool_name=funtoo
 	
-poolroot - root logical volume in the LVM
-	example: APPEND poolroot=root
+pool_root - root logical volume in the LVM
+	example: APPEND pool_root=root
 	
 So a complete line could look like this:
- APPEND fstype=ext4 options=ro poolname=funtoo poolroot=root
+ APPEND fstype=ext4 options=ro pool_name=funtoo pool_root=root
  
  Which would mount the /dev/funtoo/root partition read-only (and take into account
  that the filesystem type for this partition is ext4).
  
 ZFS:
 
-poolname - ZFS pool name
-	example: APPEND poolname=rpool
+pool_name - ZFS pool name
+	example: APPEND pool_name=rpool
 
-cachesize - Sets the ARC cache size (in bytes)
-	example: APPEND cachesize=536870912
-		this sets the cachesize to 512MB
+cache_size - Sets the ARC cache size (in bytes)
+	example: APPEND cache_size=536870912
+		this sets the cache_size to 512MB
 
 So a complete line could look like this:
- APPEND cachesize=536870912 poolname=rpool
+ APPEND cache_size=536870912 pool_name=rpool
  
  Which would mount the `rpool` ZFS pool with the arc_max being 512 MB
