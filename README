@@ -1,8 +1,8 @@
 Bliss Initramfs Creator - Funtoo Linux
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.4.2
+Version 1.4.3
 
-Distributed under the MPL 2.0
+Distributed under the MIT license. You can find the license in the LICENSE file.
 
 This script generates an initramfs image with all the included files and dependencies.
 
@@ -20,6 +20,10 @@ Please have the following installed:
 - MDADM with static flag (Needed only for RAID configuration)
 
 For more information/instructions check the USAGE file.
+
+1.4.3 Changes
+-------------------
+- Relicensed to MIT
 
 1.4.2 Changes
 -------------------

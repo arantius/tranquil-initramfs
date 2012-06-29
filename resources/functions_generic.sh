@@ -1,8 +1,7 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# This source code is released under the MIT license which can be found
+# in the LICENSE file.
 
 # Message that will be displayed at the top of the screen
 message_header()
@@ -10,7 +9,7 @@ message_header()
 	echo "##################################"
 	echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
 	echo "Author: ${JV_CONTACT}"
-	echo "Released under the ${JV_LICENSE}"
+	echo "Released under the ${JV_LICENSE} license"
 	echo "##################################\n"
 }
 
