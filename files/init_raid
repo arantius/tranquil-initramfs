@@ -25,9 +25,13 @@ mount -t sysfs none /sys
 # Prevent kernel from printing on screen
 echo 0 > /proc/sys/kernel/printk
 
+# Scan for raid arrays and save them in mdadm.conf
+mdadm --examine --scan > /etc/mdadm.conf
+
 # Assemble all raid devices
 mdadm --assemble --scan
 
+# Mount the root node
 mount -t ${fstype} -o ${options} /dev/${root_node} ${NEW_ROOT} || rescue_shell
 
 # Unmount Kernel Devices
