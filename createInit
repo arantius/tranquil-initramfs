@@ -48,8 +48,6 @@ if [ ${INIT_TYPE} = "ZFS" ]; then
 	pack_modules && modules_dep
 fi
 
-get_deps
-
 copy_deps
 
 create_symlinks
