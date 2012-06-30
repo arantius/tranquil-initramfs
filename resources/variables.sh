@@ -8,7 +8,7 @@ JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.4.2"
+JV_VERSION="1.4.3"
 JV_LICENSE="MIT"
 JV_DISTRO="Funtoo Linux"
 

@@ -4,7 +4,7 @@
 # in the LICENSE file.
 
 # Message that will be displayed at the top of the screen
-message_header()
+print_header()
 {
 	echo "##################################"
 	echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
@@ -14,14 +14,14 @@ message_header()
 }
 
 # Display the menu
-display_menu()
+print_menu()
 {
 	echo "Which initramfs would you like to generate:"
 	echo "1. ZFS"
 	echo "2. LVM"
-	#echo "3. RAID"
-	#echo "4. LVM/RAID"
-	echo "3. Exit Program"
+	echo "3. RAID"
+	echo "4. LVM/RAID"
+	echo "5. Exit Program"
 	eline
 	echo -n "Current choice: " && read choice
 	eline
@@ -35,17 +35,15 @@ display_menu()
 		echo "An initramfs for LVM will be generated!"
 		. hooks/hook_lvm.sh
 		;;
-	#3) 
-		# This option will be implemented in the future
-		#echo "RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-		#. hooks/hook_raid.sh
-		#;;
-	#4)
-		# This option will be implemented in the future
-		#echo "LVM + RAID creation isn't supported at the moment. Sorry for the inconvenience." && exit
-		#. hooks/hook_lvm_raid.sh
-		#;;
-	3)
+	3) 
+		echo "An initramfs for RAID will be generated!"
+		. hooks/hook_raid.sh
+		;;
+	4)
+		echo "An initramfs for LVM/RAID will be generated!"
+		. hooks/hook_lvm_raid.sh
+		;;
+	5)
 		exit
 		;;
 	*)
@@ -77,7 +75,7 @@ get_target_kernel()
 }
 
 # Message for displaying the generating event
-message_start()
+print_start()
 {
 	echo "Generating initramfs for ${KERNEL_NAME}..." && eline
 }
@@ -133,7 +131,7 @@ get_arch()
 }
 
 # Check to make sure kernel modules directory exists
-chk_mod_dir()
+check_mods_dir()
 {
 	echo "Checking to see if modules directory exists for ${KERNEL_NAME}..." && eline
 
@@ -143,7 +141,7 @@ chk_mod_dir()
 }
 
 # Create the base directory structure for the initramfs
-crt_dir_struct()
+create_dirs()
 {
 	echo "Creating directory structure for initramfs..." && eline
 
@@ -157,7 +155,7 @@ crt_dir_struct()
 }
 
 # Create the required symlinks to it
-crt_sym()
+create_symlinks()
 {
 	echo "Creating symlinks to Busybox..." && eline
 
@@ -181,7 +179,7 @@ crt_sym()
 
 # Create the empty mtab file in /etc and copy the init file into the initramfs
 # also sed will modify the initramfs to add additional information
-conf_init()
+config_init()
 {
 	echo "Making mtab, and creating/configuring init..." && eline
 
@@ -200,7 +198,7 @@ conf_init()
 }
 
 # Compresses the kernel modules
-gz_mods()
+pack_modules()
 {
 	echo "Compressing kernel modules..." && eline
 
@@ -215,7 +213,7 @@ gz_mods()
 }
 
 # Generate depmod info
-gen_depm()
+modules_dep()
 {
 	cd ${TMPDIR}
 
@@ -225,7 +223,7 @@ gen_depm()
 }
 
 # Create the initramfs
-crt_initrd()
+create_initrd()
 {
 	echo "Creating and Packing initramfs..." && eline
 

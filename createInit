@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (C) 2012 Jonathan Vasquez
 #
@@ -22,35 +22,37 @@
 #######################################################################
 clear
 
-message_header
+print_header
 
-display_menu
+print_menu
 
 get_arch
 
-chk_mod_dir
+check_mods_dir
 
 clean
 
-message_start
+print_start
 
-crt_dir_struct
+create_dirs
 
-chk_bins && cp_bins
+check_binaries && copy_binaries
 
-chk_mods && cp_mods
+check_modules && copy_modules
 
 # If it's a ZFS initrd, compress the copied modules and generate modules.dep
 if [ ${INIT_TYPE} = "ZFS" ]; then
-	gz_mods && gen_depm 
+	pack_modules && modules_dep
 fi
 
-cp_deps
+get_deps
 
-crt_sym
+copy_deps
 
-conf_init
+create_symlinks
 
-crt_initrd
+config_init
 
-clean_all
+create_initrd
+
+#clean_all

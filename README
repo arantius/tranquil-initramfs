@@ -12,18 +12,21 @@ the process of you actually going into your filesystem, and getting all those fi
 Please have the following installed:
 
 - Linux Kernel (with the following for ZFS only - CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled)
-- cpio
-- Busybox with static flag
+- cpio (already included in Funtoo's stage3)
+- sys-apps/busybox with static flag
 ---
-- SPL/ZFS (Needed only for ZFS)
-- LVM2 with static flag (Needed only for LVM)
-- MDADM with static flag (Needed only for RAID configuration)
+- sys-kernel/spl & spl-fs/zfs (Needed only for ZFS)
+- sys-fs/lvm2 with static flag (Needed only for LVM)
+- sys-fs/mdadm with static flag (Needed only for RAID configuration)
 
 For more information/instructions check the USAGE file.
 
 1.4.3 Changes
 -------------------
 - Relicensed to MIT
+- Added support for LVM, RAID, and LVM/RAID
+- Renamed functions to be more clear
+- Separated the copy_deps function into get_deps() and copy_deps()
 
 1.4.2 Changes
 -------------------
