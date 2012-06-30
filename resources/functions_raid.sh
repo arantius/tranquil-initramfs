@@ -3,6 +3,9 @@
 # This source code is released under the MIT license which can be found
 # in the LICENSE file.
 
+# Variables
+DEPS=""
+
 # Checks to see if the binaries exist
 check_binaries()
 {
@@ -54,31 +57,65 @@ copy_modules()
 }
 
 # Copy all the dependencies of the binary files into the initramfs
-copy_deps()
+get_deps()
 {
-	echo "Getting and Copying Dependencies..." && eline
-	
+	echo "Getting dependencies..." && eline
+
 	for x in ${JV_INIT_BINS}; do
 		if [ ${x} = "busybox" -o ${x} = "hostid" ]; then
 			if [ ${JV_LIB_PATH} = "32" ]; then
-				deps="$(ldd bin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
+				DEPS=${DEPS}" ""$(ldd bin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
 			else
-				deps="$(ldd bin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"	
+				DEPS=${DEPS}" ""$(ldd bin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"	
 			fi
 		else
 			if [ ${JV_LIB_PATH} = "32" ]; then
-				deps="$(ldd sbin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
+				DEPS=${DEPS}" ""$(ldd sbin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
 			else
-				deps="$(ldd sbin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
+				DEPS=${DEPS}" ""$(ldd sbin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
 			fi
 		fi
-		
-		for y in ${deps}; do		
-			if [ ${JV_LIB_PATH} = "32" ]; then
-				cp -Lf ${JV_LIB32}/${y} ${JV_LOCAL_LIB} 2> /dev/null
-			else
-				cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64} 2> /dev/null
-			fi
-		done
+	
+
+	done
+
+	echo ${DEPS}
+
+	if [ -z "${holder}" ]; then
+		echo "holder variable is empty, will use for dependencies"
+		holder=${DEPS}
+	
+		if [ -z "${holder}" ]; then
+			echo "failed to set the value"
+		else
+			echo "holder set successfully to: ${holder}"
+		fi
+	else
+		echo "Holder isn't empty.. need to unset some time"
+	fi
+	
+	echo "Inside get_deps: ${test}"
+}
+
+copy_deps()
+{
+	echo "Copying dependencies..." && eline
+
+	if [ "${#}" -gt 0 ]; then
+		echo "${@}" && eline
+	else
+		echo "No dependencies detected..."
+	fi
+
+	echo "holder = ${holder}"
+	echo "deps = ${DEPS}"
+	echo "Inside copy_deps: ${test}"
+
+	for y in ${DEPS}; do		
+		if [ ${JV_LIB_PATH} = "32" ]; then
+			cp -Lf ${JV_LIB32}/${y} ${JV_LOCAL_LIB} 2> /dev/null
+		else
+			cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64} 2> /dev/null
+		fi
 	done
 }
