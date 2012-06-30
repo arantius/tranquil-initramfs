@@ -32,7 +32,20 @@ mdadm --examine --scan > /etc/mdadm.conf
 mdadm --assemble --scan
 
 # Mount the root node
-mount -t ${fstype} -o ${options} /dev/${root_node} ${NEW_ROOT} || rescue_shell
+
+if [ -z "${root_node}" ]; then
+	echo "root_node wasn't defined in the root parameters. Throwing you into rescue shell!" && rescue_shell
+else
+	if [ -z "${fstype}" -a -z "${options}" ]; then
+		mount /dev/${root_node} ${NEW_ROOT} || rescue_shell
+	elif [ -z "${fstype}" ]; then
+		mount -o ${options} /dev/${root_node} ${NEW_ROOT} || rescue_shell
+	elif [ -z "${options}" ]; then
+		mount -t ${fstype} /dev/${root_node} ${NEW_ROOT} || rescue_shell	
+	else
+		mount -t ${fstype} -o ${options} /dev/${root_node} ${NEW_ROOT} || rescue_shell
+	fi
+fi
 
 # Unmount Kernel Devices
 umount /proc
