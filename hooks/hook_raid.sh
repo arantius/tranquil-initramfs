@@ -16,4 +16,5 @@ INIT_TYPE="RAID"
 INIT_FILE="init_raid"
 
 # Ask for desired kernel
-eline && get_target_kernel
+#eline && get_target_kernel
+eline

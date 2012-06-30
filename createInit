@@ -28,7 +28,10 @@ print_menu
 
 get_arch
 
-check_mods_dir
+# Check to see if modules directory exists.. only needed for ZFS
+if [ ${INIT_TYPE} = "ZFS" ]; then
+	check_mods_dir
+fi
 
 clean
 

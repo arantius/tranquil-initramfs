@@ -146,7 +146,11 @@ create_dirs()
 	echo "Creating directory structure for initramfs..." && eline
 
 	mkdir ${TMPDIR} && cd ${TMPDIR}
-	mkdir -p bin sbin proc sys dev etc lib mnt/root ${JV_LOCAL_MOD}
+	mkdir -p bin sbin proc sys dev etc lib mnt/root 
+	
+	if [ ! -z ${JV_LOCAL_MOD} ]; then
+		mkdir ${JV_LOCAL_MOD}
+	fi
 
 	# If this computer is 64 bit, then make the lib64 dir as well
 	if [ "${JV_LIB_PATH}" = "64" ]; then
@@ -191,7 +195,10 @@ config_init()
 
 	# Copy the init script
 	cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
-
+	
+	# Give execute permission to the script
+	chmod +x init
+	
 	if [ ! -f "init" ]; then
 		echo "Error creating init file.. exiting" && eline && clean && exit
 	fi
