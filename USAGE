@@ -50,7 +50,7 @@ fstype - filesystem type (root)
 options - options to use for mounting this partition
 	example: APPEND options=ro
 
-LVM:
+LVM & LVM/RAID:
 	
 pool_root - root logical volume in the LVM
 	example: APPEND pool_root=/dev/funtoo/root
