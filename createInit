@@ -39,16 +39,18 @@ print_start
 
 create_dirs
 
-check_binaries && copy_binaries
+check_binaries && check_modules
 
-check_modules && copy_modules
+copy_binaries && copy_modules
 
 # If it's a ZFS initrd, compress the copied modules and generate modules.dep
 if [ ${INIT_TYPE} = "ZFS" ]; then
 	pack_modules && modules_dep
 fi
 
-copy_deps $(get_deps)
+get_deps
+
+copy_deps
 
 create_symlinks
 
@@ -56,4 +58,4 @@ config_init
 
 create_initrd
 
-#clean_all
+clean_all

@@ -10,7 +10,8 @@ print_header()
 	echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
 	echo "Author: ${JV_CONTACT}"
 	echo "Released under the ${JV_LICENSE} license"
-	echo "##################################\n"
+	echo "##################################"
+	eline
 }
 
 # Display the menu
@@ -68,12 +69,15 @@ get_target_kernel()
 		echo "Invalid option, re-open the application" && exit
 		;;
 	esac
-	
-	# Set modules path to correct location
-	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
-	JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
 }
 
+# set modules path to correct location
+set_target_kernel()
+{
+	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
+	JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
+
+}
 # Message for displaying the generating event
 print_start()
 {
@@ -149,7 +153,7 @@ create_dirs()
 	mkdir -p bin sbin proc sys dev etc lib mnt/root 
 	
 	if [ ! -z ${JV_LOCAL_MOD} ]; then
-		mkdir ${JV_LOCAL_MOD}
+		mkdir -p ${JV_LOCAL_MOD}
 	fi
 
 	# If this computer is 64 bit, then make the lib64 dir as well
@@ -197,7 +201,7 @@ config_init()
 	cd ${TMPDIR} && cp ${HOME_DIR}/files/${INIT_FILE} init
 	
 	# Give execute permission to the script
-	chmod +x init
+	chmod u+x init
 	
 	if [ ! -f "init" ]; then
 		echo "Error creating init file.. exiting" && eline && clean && exit
@@ -253,4 +257,18 @@ clean_all()
 	echo "Please copy the ${INIT_TYPE}-${KERNEL_NAME}.img to your /boot directory" && eline
 
 	exit 0
+}
+
+# Copy all the dependencies of the binary files into the initramfs
+copy_deps()
+{
+	echo "Copying dependencies..." && eline
+
+	for y in ${deps}; do		
+		if [ ${JV_LIB_PATH} = "32" ]; then
+			cp -Lf ${JV_LIB32}/${y} ${JV_LOCAL_LIB} 2> /dev/null
+		else
+			cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64} 2> /dev/null
+		fi
+	done
 }

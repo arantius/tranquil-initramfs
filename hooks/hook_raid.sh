@@ -3,7 +3,7 @@
 # This source code is released under the MIT license which can be found
 # in the LICENSE file.
 
-# Source LVM Specific Functions
+# Source RAID specific functions
 . resources/functions_raid.sh
 
 # Required Binaries, Modules, and other files
@@ -16,5 +16,4 @@ INIT_TYPE="RAID"
 INIT_FILE="init_raid"
 
 # Ask for desired kernel
-#eline && get_target_kernel
-eline
+eline && get_target_kernel

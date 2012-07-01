@@ -25,11 +25,24 @@ mount -t sysfs none /sys
 # Prevent kernel from printing on screen
 echo 0 > /proc/sys/kernel/printk
 
-# Mount LVM Pool
-lvm vgchange -a y ${pool_name} || rescue_shell
+# Make LVM Volume Group/Pools available 
+lvm vgchange -a y || rescue_shell
 lvm vgscan --mknodes || rescue_shell
 
-mount -t ${fstype} -o ${options} /dev/${pool_name}/${pool_root} ${NEW_ROOT} || rescue_shell
+# Mount the root pool 
+if [ -z "${pool_root}" ]; then
+	echo "pool_root wasn't defined in the kernel parameters. Throwing you into rescue shell!" && rescue_shell
+else
+	if [ -z "${fstype}" ] && [ -z "${options}" ]; then
+		mount ${pool_root} ${NEW_ROOT} || rescue_shell
+	elif [ -z "${fstype}" ]; then
+		mount -o ${options} ${pool_root} ${NEW_ROOT} || rescue_shell
+	elif [ -z "${options}" ]; then
+		mount -t ${fstype} ${pool_root} ${NEW_ROOT} || rescue_shell	
+	else
+		mount -t ${fstype} -o ${options} ${pool_root} ${NEW_ROOT} || rescue_shell
+	fi
+fi
 
 # Unmount Kernel Devices
 umount /proc

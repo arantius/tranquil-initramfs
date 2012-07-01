@@ -31,8 +31,8 @@ I would do the following
 and add a new entry:
 
  LABEL funtoo
-	MENU LABEL Funtoo [3.4.3-ZFS]
-	LINUX /kernel-3.4.3-ZFS
+	MENU LABEL Funtoo [3.4.4-ZFS]
+	LINUX /kernel-3.4.4-ZFS
 	INITRD /initramfs-zfs.img
 	APPEND pool_name=rpool
 	
@@ -42,26 +42,30 @@ the zpool that you want to boot into.
 =======================================
 Kernel Options:
 =======================================
-LVM:
+General: (All except ZFS have these options)
 
 fstype - filesystem type (root)
 	example: APPEND fstype=ext4
 
 options - options to use for mounting this partition
 	example: APPEND options=ro
-	
-pool_name - LVM pool name
-	example: APPEND pool_name=funtoo
+
+LVM:
 	
 pool_root - root logical volume in the LVM
-	example: APPEND pool_root=root
+	example: APPEND pool_root=/dev/funtoo/root
 	
 So a complete line could look like this:
- APPEND fstype=ext4 options=ro pool_name=funtoo pool_root=root
+ APPEND fstype=ext4 options=ro pool_root=/dev/funtoo/root
  
  Which would mount the /dev/funtoo/root partition read-only (and take into account
  that the filesystem type for this partition is ext4).
- 
+
+RAID:
+
+root_node - Name of the node that houses the / volume
+	example: APPEND root_node=md0
+
 ZFS:
 
 pool_name - ZFS pool name

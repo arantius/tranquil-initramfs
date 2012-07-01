@@ -26,6 +26,7 @@ For more information/instructions check the USAGE file.
 - Relicensed to MIT
 - Added support for LVM, RAID, and LVM/RAID
 - Renamed functions to be more clear
+- Separated cp_deps() into get_deps() and copy_deps()
 
 1.4.2 Changes
 -------------------

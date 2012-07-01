@@ -18,3 +18,6 @@ INIT_FILE="init_zfs"
 
 # Ask for desired kernel
 eline && get_target_kernel
+
+# Set the modules path for this kernel
+set_target_kernel

@@ -32,11 +32,10 @@ mdadm --examine --scan > /etc/mdadm.conf
 mdadm --assemble --scan
 
 # Mount the root node
-
 if [ -z "${root_node}" ]; then
 	echo "root_node wasn't defined in the root parameters. Throwing you into rescue shell!" && rescue_shell
 else
-	if [ -z "${fstype}" -a -z "${options}" ]; then
+	if [ -z "${fstype}" ] && [ -z "${options}" ]; then
 		mount /dev/${root_node} ${NEW_ROOT} || rescue_shell
 	elif [ -z "${fstype}" ]; then
 		mount -o ${options} /dev/${root_node} ${NEW_ROOT} || rescue_shell

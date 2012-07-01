@@ -7,7 +7,7 @@
 . resources/functions_lvm.sh
 
 # Required Binaries, Modules, and other files
-JV_INIT_BINS="busybox hostid lvm"
+JV_INIT_BINS="busybox hostid lvm.static"
 
 # Set init type
 INIT_TYPE="LVM"
