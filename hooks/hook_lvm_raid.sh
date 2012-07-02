@@ -1,7 +1,6 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# This source code is released under the MIT license which can be found
-# in the LICENSE file.
+# Distributed under the GPLv2 which can be found in the LICENSE file.
 
 # Source LVM/RAID Specific Functions
 . resources/functions_lvm_raid.sh
