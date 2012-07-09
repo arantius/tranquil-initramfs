@@ -1,6 +1,6 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the MIT license which can be found in the LICENSE file.
 
 # Checks to see if the binaries exist
 check_binaries()

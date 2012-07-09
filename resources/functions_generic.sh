@@ -1,6 +1,6 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the MIT license which can be found in the LICENSE file.
 
 # Message that will be displayed at the top of the screen
 print_header()
@@ -8,7 +8,7 @@ print_header()
 	echo "##################################"
 	echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
 	echo "Author: ${JV_CONTACT}"
-	echo "Distributed under the ${JV_LICENSE}"
+	echo "Released under the ${JV_LICENSE} license"
 	echo "##################################"
 	eline
 }

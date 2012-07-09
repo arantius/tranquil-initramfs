@@ -1,14 +1,14 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the MIT license which can be found in the LICENSE file.
 
 # Application Info
 JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.4.4"
-JV_LICENSE="GPLv2"
+JV_VERSION="1.4.5"
+JV_LICENSE="MIT"
 JV_DISTRO="Funtoo Linux"
 
 # Used only for documentation purposes
