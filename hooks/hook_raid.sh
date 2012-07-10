@@ -1,6 +1,6 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# Distributed under the MIT license which can be found in the LICENSE file.
+# Distributed under the GPLv2 which can be found in the LICENSE file.
 
 # Source RAID specific functions
 . resources/functions_raid.sh

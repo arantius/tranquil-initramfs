@@ -1,6 +1,6 @@
 # Copyright (C) 2012 Jonathan Vasquez
 #
-# Distributed under the MIT license which can be found in the LICENSE file.
+# Distributed under the GPLv2 which can be found in the LICENSE file.
 
 # Message that will be displayed at the top of the screen
 print_header()
