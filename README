@@ -1,8 +1,8 @@
 Bliss Initramfs Creator - Funtoo Linux
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.4.6
+Version 1.4.7
 
-Distributed under the GPLv2 which can be found in the LICENSE file.
+Distributed under the MIT license. You can find the license in the LICENSE file.
 
 This script generates an initramfs image with all the included files and dependencies.
 
