@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - Funtoo Linux
+Bliss Initramfs Creator - Gentoo/Funtoo Linux
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.4.7
+Version 1.4.3
 
-Distributed under the MIT license. You can find the license in the LICENSE file.
+Distributed under the GPLv2 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and dependencies.
 
@@ -12,7 +12,7 @@ the process of you actually going into your filesystem, and getting all those fi
 Please have the following installed:
 
 - Linux Kernel (with the following for ZFS only - CONFIG_PREEMPT, CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled)
-- cpio (already included in Funtoo's stage3)
+- cpio (included in Funtoo's stage3)
 - sys-apps/busybox with static flag
 ---
 - sys-kernel/spl & spl-fs/zfs (Needed only for ZFS)
