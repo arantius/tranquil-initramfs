@@ -1,14 +1,14 @@
-# Copyright (C) 2012 Jonathan Vasquez
+# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the ISC license which can be found in the LICENSE file.
 
 # Message that will be displayed at the top of the screen
 print_header()
 {
 	echo "##################################"
-	echo "${JV_APP_NAME} ${JV_VERSION} - ${JV_DISTRO}"
+	echo "${JV_APP_NAME} - v${JV_VERSION}"
 	echo "Author: ${JV_CONTACT}"
-	echo "Released under the ${JV_LICENSE} license"
+	echo "Distributed under the ${JV_LICENSE} license"
 	echo "##################################"
 	eline
 }
@@ -16,16 +16,19 @@ print_header()
 # Display the menu
 print_menu()
 {
-	echo "Which initramfs would you like to generate:"
-	echo "1. ZFS"
-	echo "2. LVM"
-	echo "3. RAID"
-	echo "4. LVM/RAID"
-	echo "5. Exit Program"
-	eline
-	echo -n "Current choice: " && read choice
-	eline
-	
+	# Check to see if a menu option wasn't passed
+	if [ -z ${choice} ]; then
+		echo "Which initramfs would you like to generate:"
+		echo "1. ZFS"
+		echo "2. LVM"
+		echo "3. RAID"
+		echo "4. LVM/RAID"
+		echo "5. Exit Program"
+		eline
+		echo -n "Current choice: " && read choice
+		eline
+	fi
+
 	case ${choice} in
 	1)
 		echo "An initramfs for ZFS will be generated!"
@@ -52,22 +55,31 @@ print_menu()
 	esac
 }
 
+# Prints the available options if the user passes an invalid number
+print_options()
+{
+	echo "1. ZFS, 2. LVM, 3. RAID, 4. LVM/RAID"
+}
+
 # Ask the user if they want to use their current kernel, or another one to generate an initramfs for it
 get_target_kernel()
 {
-	echo -n "Do you want to use current kernel: $(uname -r)? [Y/n]: " && read choice && eline
+	# Check to see if a kernel wasn't passed
+	if [ -z "${KERNEL_NAME}" ]; then
+		echo -n "Do you want to use current kernel: $(uname -r)? [Y/n]: " && read choice && eline
 	
-	case ${choice} in
-	y|Y|"")
-		KERNEL_NAME=$(uname -r)
-		;;
-	n|N)
-		echo -n "Please enter kernel name: " && read KERNEL_NAME && eline
-		;;
-	*)
-		echo "Invalid option, re-open the application" && exit
-		;;
-	esac
+		case ${choice} in
+		y|Y|"")
+			KERNEL_NAME=$(uname -r)
+			;;
+		n|N)
+			echo -n "Please enter kernel name: " && read KERNEL_NAME && eline
+			;;
+		*)
+			echo "Invalid option, re-open the application" && exit
+			;;
+		esac
+	fi
 }
 
 # set modules path to correct location
@@ -237,9 +249,9 @@ create_initrd()
 {
 	echo "Creating and Packing initramfs..." && eline
 
-	find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img
+	find . -print0 | cpio -o --null --format=newc | gzip -9 > ${HOME_DIR}/${INITRD_NAME}
 
-	if [ ! -f ${HOME_DIR}/${INIT_TYPE}-${KERNEL_NAME}.img ]; then
+	if [ ! -f "${HOME_DIR}/${INITRD_NAME}" ]; then
 		echo "Error creating initramfs file.. exiting" && clean && exit
 	fi
 
@@ -253,7 +265,7 @@ clean_all()
 
 	echo "Complete :)" && eline
 
-	echo "Please copy the ${INIT_TYPE}-${KERNEL_NAME}.img to your /boot directory" && eline
+	echo "Please copy the ${INITRD_NAME} to your /boot directory" && eline
 
 	exit 0
 }
@@ -268,6 +280,20 @@ copy_deps()
 			cp -Lf ${JV_LIB32}/${y} ${JV_LOCAL_LIB} 2> /dev/null
 		else
 			cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64} 2> /dev/null
+		fi
+	done
+}
+
+# Checks to see if the preliminary binaries exist
+check_prelim_binaries()
+{
+	echo "Checking preliminary binaries..." && eline
+
+	for x in ${JV_PREL_BINS}; do	
+		if [ "${x}" = "cpio" ]; then
+			if [ ! -f "${JV_BIN}/${x}" ]; then
+				err_bin_dexi ${x}
+			fi
 		fi
 	done
 }

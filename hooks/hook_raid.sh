@@ -1,6 +1,6 @@
-# Copyright (C) 2012 Jonathan Vasquez
+# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the ISC license which can be found in the LICENSE file.
 
 # Source RAID specific functions
 . resources/functions_raid.sh

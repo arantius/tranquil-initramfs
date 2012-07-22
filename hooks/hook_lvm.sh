@@ -1,6 +1,6 @@
-# Copyright (C) 2012 Jonathan Vasquez
+# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the ISC license which can be found in the LICENSE file.
 
 # Source LVM Specific Functions
 . resources/functions_lvm.sh
@@ -14,5 +14,5 @@ INIT_TYPE="LVM"
 # Init file in files/
 INIT_FILE="init_lvm"
 
-# Ask for desired kernel
+# Ask for desired kernel if one wasn't passed
 eline && get_target_kernel
