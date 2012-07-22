@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Copyright (C) 2012 Jonathan Vasquez
+# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the ISC license which can be found in the LICENSE file.
 
 # Description
 # ------------
@@ -15,6 +15,24 @@
 # Source functions
 . resources/variables.sh
 . resources/functions_generic.sh
+
+# If a initrd option was passed, set the 'choice' variable
+if [ ! -z ${1} ]; then
+	if [ "${1}" -lt 1 ] || [ "${1}" -gt 4 ]; then
+		echo "It must be an option between 1-4" && print_options
+		exit
+	else
+		choice=${1}
+	fi
+
+	if [ ! -z ${2} ]; then
+		# If a kernel was passed, set the KERNEL_NAME variable
+		KERNEL_NAME=${2}
+	else
+		echo "You must also pass a kernel name" && print_usage
+		exit
+	fi
+fi
 
 #######################################################################
 # The main entry point starts here
@@ -37,6 +55,10 @@ clean
 print_start
 
 create_dirs
+
+# Check preliminary binaries that are needed but won't be placed inside
+# the initrd (like cpio)
+check_prelim_binaries
 
 check_binaries && check_modules
 

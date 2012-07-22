@@ -1,0 +1,11 @@
+1.4.4
+----------
+- Added checks for 'cpio'. 
+- Added ability to pass the option and kernel version you want directly
+  on the command line. This will help you if you want to make a script.
+- The creator now outputs the initramfs with a generic name of "initrd.img".
+  This will also help you if you want to quickly copy/paste the initrd file
+  into the /boot directory.
+- Relicensed the application from GPLv2 to the more permissive ISC license.
+- Added a few helper functions
+- Removed the JV_DISTRO variable

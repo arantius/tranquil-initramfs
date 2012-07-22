@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - Gentoo/Funtoo Linux
+Bliss Initramfs Creator - v1.4.4
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Version 1.4.3
+For Gentoo & Funtoo Linux
 
-Distributed under the GPLv2 which can be found in the LICENSE file.
+Distributed under the ISC license which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and dependencies.
 

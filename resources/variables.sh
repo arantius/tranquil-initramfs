@@ -1,18 +1,17 @@
-# Copyright (C) 2012 Jonathan Vasquez
+# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the LICENSE file.
+# Distributed under the ISC license which can be found in the LICENSE file.
 
 # Application Info
 JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.4.3"
-JV_LICENSE="GPLv2"
-JV_DISTRO="Funtoo Linux"
+JV_VERSION="1.4.4"
+JV_LICENSE="ISC"
 
 # Used only for documentation purposes
-JV_EXAMPLE_KERNEL="3.4.4-DESKTOP"
+JV_EXAMPLE_KERNEL="3.5.0-DESKTOP"
 
 # Parameters and Locations
 KERNEL_NAME=""
@@ -45,3 +44,11 @@ JV_LIB_PATH=32
 
 # Required Binaries, Modules, and other files
 BUSYBOX_TARGETS="mount tty sh"
+
+# Preliminary binaries needed for the success of creating the initrd
+# but that are not needed to be placed inside the initrd
+JV_PREL_BINS="cpio"
+
+# Generic name for the outputted initrd file (This helps scripts copy the file
+# to the boot directory easier
+INITRD_NAME="initrd.img"
