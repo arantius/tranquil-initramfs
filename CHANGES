@@ -1,3 +1,8 @@
+1.5.0-r1
+----------
+- Same as last release, but I forgot to uncomment the "clean all" action at the
+  end of the createInit script.
+
 1.5.0
 ----------
 - Removed all support for LVM and RAID. The creator will now only focus on ZFS.

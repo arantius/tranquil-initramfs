@@ -9,7 +9,7 @@ JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.5.0"
+JV_VERSION="1.5.0-r1"
 JV_LICENSE="MPLv2"
 
 # Used only for documentation purposes

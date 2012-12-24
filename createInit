@@ -86,4 +86,4 @@ config_init
 
 create_initrd
 
-#clean_all
+clean_all
