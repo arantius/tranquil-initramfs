@@ -1,6 +1,8 @@
 # Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the ISC license which can be found in the LICENSE file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Checks to see if the binaries exist
 check_binaries()
@@ -46,6 +48,10 @@ check_modules()
 			if [ ! -f "${MOD_PATH}/addon/zfs/unicode/${x}.ko" ]; then
 				err_mod_dexi ${x}
 			fi
+		elif [ "${x}" = "zlib_deflate" ]; then
+			if [ ! -f "${MOD_PATH}/kernel/lib/${x}/${x}.ko" ]; then
+				err_mod_dexi ${x}
+			fi
 		else
 			if [ ! -f "${MOD_PATH}/addon/zfs/${x}/${x}.ko" ]; then
 				err_mod_dexi ${x}
@@ -84,6 +90,8 @@ copy_modules()
 			cp ${MOD_PATH}/addon/zfs/nvpair/${x}.ko ${JV_LOCAL_MOD}
 		elif [ "${x}" = "zunicode" ]; then
 			cp ${MOD_PATH}/addon/zfs/unicode/${x}.ko ${JV_LOCAL_MOD}
+		elif [ "${x}" = "zlib_deflate" ]; then
+			cp ${MOD_PATH}/kernel/lib/${x}/${x}.ko ${JV_LOCAL_MOD}
 		else 	
 			cp ${MOD_PATH}/addon/zfs/${x}/${x}.ko ${JV_LOCAL_MOD}
 		fi 
@@ -91,24 +99,22 @@ copy_modules()
 }
 
 # Gather all the dependencies (shared libraries) needed for all binaries
+# Checks bin/ and sbin/ (in the tempinit after it copied the binaries
 get_deps()
 {
-	echo "Getting dependencies..." && eline
+        echo "Getting dependencies..." && eline
 
-	for x in ${JV_INIT_BINS}; do
-		if [ "${x}" = "busybox" ] || [ "${x}" = "zpool_layout" ] || [ "${x}" = "hostid" ]; then
-			if [ "${JV_LIB_PATH}" = "32" ]; then
-				deps=${deps}" ""$(ldd bin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"				
-			else
-				deps=${deps}" ""$(ldd bin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"	
-			fi
-		else
-			if [ "${JV_LIB_PATH}" = "32" ]; then
-				deps=${deps}" ""$(ldd sbin/${x} | awk ''${JV_LIB32}' {print $1}' | sed -e "s%${JV_LIB32}%%")"
-			else
-				deps=${deps}" ""$(ldd sbin/${x} | awk ''${JV_LIB64}' {print $1}' | sed -e "s%${JV_LIB64}%%")"
-			fi
-		fi
-	done
+        for x in ${JV_INIT_BINS}; do
+                if [ "${x}" = "busybox" ] || [ "${x}" = "zpool_layout" ] || [ "${x}" = "hostid" ]; then
+
+                        deps=${deps}" ""$(ldd bin/${x} | awk -F '=>' '{print $1}' | 
+                        sed '1d' | sed "s%${JV_LIB64}%%" | awk -F '(' '{print $1}')"
+            
+                else
+                        deps=${deps}" ""$(ldd sbin/${x} | awk -F '=>' '{print $1}' | 
+                        sed '1d' | sed "s%${JV_LIB64}%%" | awk -F '(' '{print $1}')"
+            
+                fi
+        done
 }
 

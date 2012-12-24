@@ -2,7 +2,9 @@
 
 # Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the ISC license which can be found in the LICENSE file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Variables
 NEW_ROOT="/mnt/root"
@@ -19,7 +21,7 @@ rescue_shell()
 # Function to load ZFS modules
 load_modules()
 {
-	modules="spl splat zavl znvpair zcommon zunicode zfs zpios"
+	modules="zlib_deflate spl splat zavl znvpair zcommon zunicode zfs zpios"
 
 	for x in ${modules}; do
 		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it

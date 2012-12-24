@@ -8,9 +8,10 @@ The initramfs script is very easy to use.
 Just clone it or extract it into a directory and cd into it.
 
 Run the script by running: ./createInit
+* It must be run as root since root is the only user that can run `depmod`.
 
-If the script doesn't run and gives you a permission denied message,
-give it execution permission: `chmod +x createInit` and then try again.
+* If the script doesn't run and gives you a permission denied message,
+  give it execution permission: `chmod +x createInit` and then try again.
 
 Select the option that you want, and tell it which kernel you want to use.
 
@@ -21,7 +22,7 @@ Copy the file to your boot directory and name it whatever you want.
 
 2. Setting it up in the bootloader
 
-If my initramfs is called: initramfs-zfs.img and my bootloader is extlinux,
+If my initramfs is called: initrd-zfs.img and my bootloader is extlinux,
 I would do the following
 
 (open up the bootloader config (for extlinux it's extlinux.conf)
@@ -30,11 +31,11 @@ I would do the following
 
 and add a new entry:
 
- LABEL funtoo
-	MENU LABEL Funtoo [3.4.4-ZFS]
-	LINUX /kernel-3.4.4-ZFS
-	INITRD /initramfs-zfs.img
-	APPEND pool_name=rpool
+LABEL gentoo
+    MENU LABEL Gentoo [3.7.1-ZFS]
+    LINUX /vmlinuz-3.7.1-ZFS
+    INITRD /initrd-zfs.img
+    APPEND pool_name=rpool
 	
 This would boot my `rpool` zpool. `poolname` is the kernel parameter to declare
 the zpool that you want to boot into.
@@ -42,38 +43,13 @@ the zpool that you want to boot into.
 =======================================
 Kernel Options:
 =======================================
-General: (All except ZFS have these options)
-
-fstype - filesystem type (root)
-	example: APPEND fstype=ext4
-
-options - options to use for mounting this partition
-	example: APPEND options=ro
-
-LVM & LVM/RAID:
-	
-pool_root - root logical volume in the LVM
-	example: APPEND pool_root=/dev/funtoo/root
-	
-So a complete line could look like this:
- APPEND fstype=ext4 options=ro pool_root=/dev/funtoo/root
- 
- Which would mount the /dev/funtoo/root partition read-only (and take into account
- that the filesystem type for this partition is ext4).
-
-RAID:
-
-root_node - Name of the node that houses the / volume
-	example: APPEND root_node=md0
-
 ZFS:
-
 pool_name - ZFS pool name
-	example: APPEND pool_name=rpool
+    example: APPEND pool_name=rpool
 
 cache_size - Sets the ARC cache size (in bytes)
-	example: APPEND cache_size=536870912
-		this sets the cache_size to 512MB
+    example: APPEND cache_size=536870912
+        this sets the cache_size to 512MB
 
 So a complete line could look like this:
  APPEND cache_size=536870912 pool_name=rpool

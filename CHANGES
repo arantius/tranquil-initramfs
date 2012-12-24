@@ -1,3 +1,17 @@
+1.5.0
+----------
+- Removed all support for LVM and RAID. The creator will now only focus on ZFS.
+- Relicensed to MPLv2.
+- Rewrote the parsing used to find the dynamic libraries required for the apps.
+- Creator now properly gets and loads "zlib_deflate" module. This was causing
+  problems at boot up because without the zlib_deflate module, an user would
+  get a "unknown symbol in module or invalid parameter" error for all the other
+  zfs modules.
+- Added more comments, cleaned up a few comments
+- The script must be ran as root in order to use depmod. The script now
+  checks to see if root is the user running it.
+- If depmod cannot be ran, the script will halt.
+
 1.4.4
 ----------
 - Added checks for 'cpio'. 

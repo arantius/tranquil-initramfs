@@ -1,17 +1,19 @@
 # Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the ISC license which can be found in the LICENSE file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Application Info
 JV_APP_NAME="Bliss Initramfs Creator"
 JV_AUTHOR="Jonathan Vasquez"
 JV_EMAIL="jvasquez1011@gmail.com"
 JV_CONTACT="${JV_AUTHOR} <${JV_EMAIL}>"
-JV_VERSION="1.4.4"
-JV_LICENSE="ISC"
+JV_VERSION="1.5.0"
+JV_LICENSE="MPLv2"
 
 # Used only for documentation purposes
-JV_EXAMPLE_KERNEL="3.5.0-DESKTOP"
+JV_EXAMPLE_KERNEL="3.7.1-ALL"
 
 # Parameters and Locations
 KERNEL_NAME=""
@@ -51,4 +53,4 @@ JV_PREL_BINS="cpio"
 
 # Generic name for the outputted initrd file (This helps scripts copy the file
 # to the boot directory easier
-INITRD_NAME="initrd.img"
+INITRD_NAME="initrd-zfs.img"

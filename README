@@ -1,11 +1,11 @@
-Bliss Initramfs Creator - v1.4.4
+Bliss Initramfs Creator - v1.5.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
-For Gentoo & Funtoo Linux
+For Gentoo Linux
 
-Distributed under the ISC license which can be found in the LICENSE file.
+Distributed under the MPLv2 license which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
-dependencies.
+dependencies needed to mount your zpool.
 
 You will need a few programs already installed on your computer since this 
 script just automates the process of you actually going into your filesystem,
@@ -13,13 +13,12 @@ and getting all those files.
 
 Please have the following installed:
 
-- Linux Kernel (with the following for ZFS only - CONFIG_PREEMPT, 
-  CONFIG_PREEMPT_VOLUNTARY disabled, and ZLIB_INFLATE, ZLIB_DEFLATE enabled)
-- cpio (included in Funtoo's stage3)
+- Linux Kernel
+  > ZLIB_INFLATE [=y], ZLIB_DEFLATE [=m]
+  > Generic Driver Options -> [*] Maintain a devtmpfs filesystem to mount at /dev
+  > Drivers needed to see your SATA/PATA drives should be compiled in
+- cpio
 - sys-apps/busybox with static flag
----
-- sys-kernel/spl & spl-fs/zfs (Needed only for ZFS)
-- sys-fs/lvm2 with static flag (Needed only for LVM)
-- sys-fs/mdadm with static flag (Needed only for RAID configuration)
+- sys-kernel/spl & spl-fs/zfs & sys-fs/zfs-kmod
 
 For more information/instructions check the USAGE file.

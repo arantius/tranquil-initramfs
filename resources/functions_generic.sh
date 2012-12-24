@@ -1,6 +1,8 @@
 # Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the ISC license which can be found in the LICENSE file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Message that will be displayed at the top of the screen
 print_header()
@@ -8,7 +10,7 @@ print_header()
 	echo "##################################"
 	echo "${JV_APP_NAME} - v${JV_VERSION}"
 	echo "Author: ${JV_CONTACT}"
-	echo "Distributed under the ${JV_LICENSE} license"
+	echo "Distributed under the ${JV_LICENSE}"
 	echo "##################################"
 	eline
 }
@@ -20,37 +22,19 @@ print_menu()
 	if [ -z ${choice} ]; then
 		echo "Which initramfs would you like to generate:"
 		echo "1. ZFS"
-		echo "2. LVM"
-		echo "3. RAID"
-		echo "4. LVM/RAID"
-		echo "5. Exit Program"
+		echo "2. Exit Program"
 		eline
-		echo -n "Current choice: " && read choice
+		echo -n "Current choice: [1]" && read choice
 		eline
 	fi
 
 	case ${choice} in
-	1)
+	1|"")
 		echo "An initramfs for ZFS will be generated!"
 		. hooks/hook_zfs.sh
 		;;
-	2)
-		echo "An initramfs for LVM will be generated!"
-		. hooks/hook_lvm.sh
-		;;
-	3) 
-		echo "An initramfs for RAID will be generated!"
-		. hooks/hook_raid.sh
-		;;
-	4)
-		echo "An initramfs for LVM/RAID will be generated!"
-		. hooks/hook_lvm_raid.sh
-		;;
-	5)
-		exit
-		;;
 	*)
-		echo "Invalid choice. Exiting." && exit
+		echo "Exiting." && exit
 		;;
 	esac
 }
@@ -58,7 +42,7 @@ print_menu()
 # Prints the available options if the user passes an invalid number
 print_options()
 {
-	echo "1. ZFS, 2. LVM, 3. RAID, 4. LVM/RAID"
+	echo "1. ZFS"
 }
 
 # Ask the user if they want to use their current kernel, or another one to generate an initramfs for it
@@ -82,13 +66,14 @@ get_target_kernel()
 	fi
 }
 
-# set modules path to correct location
+# Set modules path to correct location
 set_target_kernel()
 {
 	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
 	JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
 
 }
+
 # Message for displaying the generating event
 print_start()
 {
@@ -110,6 +95,21 @@ err_bin_dexi()
 err_mod_dexi()
 {
 	echo "Module: ${1} doesn't exist. Quitting!" && clean && exit
+}
+
+# Prints an error message with parameter value
+err()
+{
+        eline
+        echo "Error: ${1}" && clean && exit
+}
+
+werr()
+{
+	eline
+        echo "##### ${1} #####"
+	eline
+	exit
 }
 
 # Check to see if "${TMPDIR}" exists, if it does, delete it for a fresh start
@@ -161,15 +161,10 @@ create_dirs()
 	echo "Creating directory structure for initramfs..." && eline
 
 	mkdir ${TMPDIR} && cd ${TMPDIR}
-	mkdir -p bin sbin proc sys dev etc lib mnt/root 
+	mkdir -p bin sbin proc sys dev etc lib lib64 mnt/root
 	
 	if [ ! -z ${JV_LOCAL_MOD} ]; then
 		mkdir -p ${JV_LOCAL_MOD}
-	fi
-
-	# If this computer is 64 bit, then make the lib64 dir as well
-	if [ "${JV_LIB_PATH}" = "64" ]; then
-		mkdir lib64
 	fi
 }
 
@@ -241,7 +236,7 @@ modules_dep()
 
 	echo "Generating modprobe information..." && eline
 
-	depmod -b . ${KERNEL_NAME}
+	depmod -b . ${KERNEL_NAME} || werr "You don't have depmod? Something is seriously wrong!"
 }
 
 # Create the initramfs
@@ -276,12 +271,8 @@ copy_deps()
 	echo "Copying dependencies..." && eline
 
 	for y in ${deps}; do		
-		if [ ${JV_LIB_PATH} = "32" ]; then
-			cp -Lf ${JV_LIB32}/${y} ${JV_LOCAL_LIB} 2> /dev/null
-		else
-			cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64} 2> /dev/null
-		fi
-	done
+                cp -Lf ${JV_LIB64}/${y} ${JV_LOCAL_LIB64}
+        done
 }
 
 # Checks to see if the preliminary binaries exist
