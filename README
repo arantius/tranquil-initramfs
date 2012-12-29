@@ -1,6 +1,6 @@
-Bliss Initramfs Creator - v1.5.0-r1
+Bliss Initramfs Creator - v1.5.1
 Jonathan Vasquez <jvasquez1011@gmail.com>
-For Gentoo Linux
+For Gentoo, Funtoo Linux
 
 Distributed under the MPLv2 license which can be found in the LICENSE file.
 
@@ -14,11 +14,24 @@ and getting all those files.
 Please have the following installed:
 
 - Linux Kernel
-  > ZLIB_INFLATE [=y], ZLIB_DEFLATE [=m]
-  > Generic Driver Options -> [*] Maintain a devtmpfs filesystem to mount at /dev
-  > Drivers needed to see your SATA/PATA drives should be compiled in
-- cpio
+  ZLIB_INFLATE/DEFLATE must be compiled into the kernel (not as a module).
+  > ZLIB_INFLATE [=y], ZLIB_DEFLATE [=y]
+  
+  General setup --->
+  > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
+  > () Initramfs source file(s)
+
+  Device Drivers --->
+  > Generic Driver Options --->
+  >> [*] Maintain a devtmpfs filesystem to mount at /dev
+  >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
+
+  * All other drivers required to see your PATA/SATA drives must be compiled in.
+
+- app-arch/cpio
 - sys-apps/busybox with static flag
-- sys-kernel/spl & spl-fs/zfs & sys-fs/zfs-kmod
+- sys-kernel/spl
+- spl-fs/zfs
+- sys-fs/zfs-kmod
 
 For more information/instructions check the USAGE file.

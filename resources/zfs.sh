@@ -48,10 +48,6 @@ check_modules()
 			if [ ! -f "${MOD_PATH}/addon/zfs/unicode/${x}.ko" ]; then
 				err_mod_dexi ${x}
 			fi
-		elif [ "${x}" = "zlib_deflate" ]; then
-			if [ ! -f "${MOD_PATH}/kernel/lib/${x}/${x}.ko" ]; then
-				err_mod_dexi ${x}
-			fi
 		else
 			if [ ! -f "${MOD_PATH}/addon/zfs/${x}/${x}.ko" ]; then
 				err_mod_dexi ${x}
@@ -90,8 +86,6 @@ copy_modules()
 			cp ${MOD_PATH}/addon/zfs/nvpair/${x}.ko ${JV_LOCAL_MOD}
 		elif [ "${x}" = "zunicode" ]; then
 			cp ${MOD_PATH}/addon/zfs/unicode/${x}.ko ${JV_LOCAL_MOD}
-		elif [ "${x}" = "zlib_deflate" ]; then
-			cp ${MOD_PATH}/kernel/lib/${x}/${x}.ko ${JV_LOCAL_MOD}
 		else 	
 			cp ${MOD_PATH}/addon/zfs/${x}/${x}.ko ${JV_LOCAL_MOD}
 		fi 
@@ -116,5 +110,7 @@ get_deps()
             
                 fi
         done
-}
 
+	# Clean up the unholy mess
+	deps=$(echo ${deps} | tr " " "\n" | sort -d | uniq)
+}

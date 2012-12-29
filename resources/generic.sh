@@ -31,7 +31,7 @@ print_menu()
 	case ${choice} in
 	1|"")
 		echo "An initramfs for ZFS will be generated!"
-		. hooks/hook_zfs.sh
+		. hooks/zfs.sh
 		;;
 	*)
 		echo "Exiting." && exit
@@ -66,12 +66,12 @@ get_target_kernel()
 	fi
 }
 
-# Set modules path to correct location
+# Set modules path to correct location and sets kernel name for initramfs
 set_target_kernel()
 {
 	MOD_PATH="/lib/modules/${KERNEL_NAME}/"
 	JV_LOCAL_MOD="lib/modules/${KERNEL_NAME}/"
-
+	INITRD_NAME="initrd-${KERNEL_NAME}.img"
 }
 
 # Message for displaying the generating event
@@ -163,6 +163,8 @@ create_dirs()
 	mkdir ${TMPDIR} && cd ${TMPDIR}
 	mkdir -p bin sbin proc sys dev etc lib lib64 mnt/root
 	
+	# If the specific kernel directory doesn't exist in the initramfs 
+	# tempdir, then create it
 	if [ ! -z ${JV_LOCAL_MOD} ]; then
 		mkdir -p ${JV_LOCAL_MOD}
 	fi

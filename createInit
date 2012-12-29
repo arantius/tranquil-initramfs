@@ -16,12 +16,17 @@
 
 # Source functions
 . resources/variables.sh
-. resources/functions_generic.sh
+. resources/generic.sh
+
+# This script must be ran as root
+if [ $(whoami) != "root" ]; then
+        werr "This script must be ran as root"
+fi
 
 # If a initrd option was passed, set the 'choice' variable
 if [ ! -z ${1} ]; then
 	if [ "${1}" -lt 1 ] || [ "${1}" -gt 4 ]; then
-		echo "It must be an option between 1-4" && print_options
+		echo "Please pass one of the below options:" && print_options
 		exit
 	else
 		choice=${1}
@@ -36,10 +41,6 @@ if [ ! -z ${1} ]; then
 	fi
 fi
 
-# This script must be ran as root
-if [ $(whoami) != "root" ]; then
-        werr "This script must be ran as root"
-fi
 
 #######################################################################
 # The main entry point starts here

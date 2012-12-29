@@ -21,7 +21,7 @@ rescue_shell()
 # Function to load ZFS modules
 load_modules()
 {
-	modules="zlib_deflate spl splat zavl znvpair zcommon zunicode zfs zpios"
+	modules="spl splat zavl znvpair zcommon zunicode zfs zpios"
 
 	for x in ${modules}; do
 		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it

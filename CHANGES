@@ -1,3 +1,11 @@
+1.5.1
+----------
+- Requirement for zlib_deflate has changed. You now have to compile
+  zlib_deflate into the kernel rather than as a module.
+- Dependency list is now sanitized before application copies them over to
+  the initramfs. This makes IO much less since it doesn't have to copy duplicates.
+- File structured renamed/simplified
+
 1.5.0-r1
 ----------
 - Same as last release, but I forgot to uncomment the "clean all" action at the
