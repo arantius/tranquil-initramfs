@@ -10,6 +10,9 @@
 NEW_ROOT="/mnt/root"
 NEW_INIT="/sbin/init"
 
+USE_ZFS="0"
+USE_LUKS="0"
+
 # Function to start rescue shell
 rescue_shell()
 {
@@ -21,8 +24,12 @@ rescue_shell()
 # Function to load ZFS modules
 load_modules()
 {
-	modules="spl splat zavl znvpair zcommon zunicode zfs zpios"
+	modules=""
 
+	if [ "${USE_ZFS}" = "1" ]; then
+		modules="${modules} spl splat zavl znvpair zcommon zunicode zfs zpios"
+	fi
+		
 	for x in ${modules}; do
 		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it
 		if [ "${x}" = "zfs" -a ! -z "${cache_size}" ]; then
@@ -41,11 +48,22 @@ mount -t sysfs none /sys
 # Prevent kernel from printing on screen
 echo 0 > /proc/sys/kernel/printk
 
-# Load ZFS Modules
+# Load Modules
 load_modules || rescue_shell
 
+# Open encrypted root
+if [ "${USE_LUKS}" = "1"]; then
+	if [ ! -z "${enc_root}" ]; then
+		cryptsetup luksOpen ${enc_root} dmcrypt_root || rescue_shell
+	else
+		echo "You didn't pass the 'enc_root' variable to the kernel" || rescue_shell
+	fi
+fi
+
 # Mount ZFS Pool
-zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || rescue_shell
+if [ "${USE_ZFS}" = "1"]; then
+	zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || rescue_shell
+fi
 
 # Unmount Kernel Devices
 umount /proc

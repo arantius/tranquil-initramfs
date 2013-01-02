@@ -32,10 +32,10 @@ I would do the following
 and add a new entry:
 
 LABEL gentoo
-    MENU LABEL Gentoo [3.7.1-ZFS]
-    LINUX /vmlinuz-3.7.1-ZFS
-    INITRD /initrd-zfs.img
-    APPEND pool_name=rpool
+	MENU LABEL Gentoo [3.7.1-ZFS]
+	LINUX /vmlinuz-3.7.1-ZFS
+	INITRD /initrd-zfs.img
+	APPEND pool_name=rpool
 	
 This would boot my `rpool` zpool. `poolname` is the kernel parameter to declare
 the zpool that you want to boot into.
@@ -45,13 +45,20 @@ Kernel Options:
 =======================================
 ZFS:
 pool_name - ZFS pool name
-    example: APPEND pool_name=rpool
+	example: APPEND pool_name=rpool
 
 cache_size - Sets the ARC cache size (in bytes)
-    example: APPEND cache_size=536870912
-        this sets the cache_size to 512MB
+	example: APPEND cache_size=536870912
+	 this sets the cache_size to 512MB
 
 So a complete line could look like this:
  APPEND cache_size=536870912 pool_name=rpool
  
  Which would mount the `rpool` ZFS pool with the arc_max being 512 MB
+
+LUKS + ZFS:
+Follow the same instructions as above, but also add "enc_root=" to your
+kernel line.
+
+enc_root - Encrypted root drive
+	example: APPEND enc_root=/dev/sda2

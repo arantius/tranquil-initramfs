@@ -1,6 +1,6 @@
-Bliss Initramfs Creator - v1.5.1
+Bliss Initramfs Creator - v1.6.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
-For Gentoo, Funtoo Linux
+For Funtoo Linux
 
 Distributed under the MPLv2 license which can be found in the LICENSE file.
 
@@ -33,5 +33,8 @@ Please have the following installed:
 - sys-kernel/spl
 - spl-fs/zfs
 - sys-fs/zfs-kmod
+
+For LUKS support:
+- sys-fs/cryptsetup with static flag
 
 For more information/instructions check the USAGE file.
