@@ -37,4 +37,14 @@ Please have the following installed:
 For LUKS support:
 - sys-fs/cryptsetup with static flag
 
+- Linux Kernel
+  Device Drivers --->
+  [*] Multiple devices driver support (RAID and LVM) --->
+  <*> Device mapper support
+  <*> Crypt target support
+
+  Cryptographic API --->
+  <*> XTS support
+  -*- AES cipher algorithms
+
 For more information/instructions check the USAGE file.
