@@ -52,7 +52,7 @@ echo 0 > /proc/sys/kernel/printk
 load_modules || rescue_shell
 
 # Open encrypted root
-if [ "${USE_LUKS}" = "1"]; then
+if [ "${USE_LUKS}" = "1" ]; then
 	if [ ! -z "${enc_root}" ]; then
 		cryptsetup luksOpen ${enc_root} dmcrypt_root || rescue_shell
 	else
@@ -61,7 +61,7 @@ if [ "${USE_LUKS}" = "1"]; then
 fi
 
 # Mount ZFS Pool
-if [ "${USE_ZFS}" = "1"]; then
+if [ "${USE_ZFS}" = "1" ]; then
 	zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || rescue_shell
 fi
 
