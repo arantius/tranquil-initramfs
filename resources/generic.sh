@@ -198,19 +198,22 @@ config_init()
 		die "Error created mtab file.. exiting"
 	fi
 
-	# Copy the init script
+        # Copy init functions
+        cp -r ${_HOME}/files/resources/* resources/
+	
+        # Copy the init script
 	cp ${_HOME}/files/init . 
 	
 	# Substitute any changes to the init file
 	
 	# Enable ZFS in the init if ZFS is being used.
 	if [ "${_USE_ZFS}" = "1" ]; then
-		sed -i -e '13s/0/1/' init
+		sed -i -e '16s/0/1/' init
 	fi
 
 	# Enable LUKS in the init if LUKS is being used.
 	if [ "${_USE_LUKS}" = "1" ]; then
-		sed -i -e '14s/0/1/' init
+		sed -i -e '17s/0/1/' init
 	fi
 
 	# Give execute permission to the script
@@ -288,28 +291,32 @@ check_prelim_binaries()
 # Utility Functions
 
 # Used for displaying information
-einfo() {
+einfo()
+{
         eline && echo -e "\033[1;32m>>>\033[0;m ${@}"
 }
 
 # Used for warnings
-ewarn() {
+ewarn()
+{
         eline && echo -e "\033[1;33m>>>\033[0;m ${@}"
 }
 
 # Used for flags
-eflag() {
-
+eflag()
+{
         eline && echo -e "\033[1;35m>>>\033[0;m ${@}"
 }
 
 # Used for options
-eopt() {
+eopt()
+{
         echo -e "\033[1;36m>>\033[0;m ${@}"
 }
 
 # Used for errors
-die() {
+die()
+{
         eline && echo -e "\033[1;31m>>> ${@} <<<\033[0;m" && clean && eline && exit
 }
 

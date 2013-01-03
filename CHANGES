@@ -7,6 +7,8 @@
   what features were enabled. The check/copy functions are now streamlined. 
   There is also only 1 init script now and the init script also uses flags in order
   to determine what to do and what kernel modules to load.
+- Init has now been modularized. Functions that init uses have moved to another
+  file in the initramfs.
 
 1.5.1
 ----------

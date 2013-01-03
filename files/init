@@ -6,6 +6,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# Import Functions
+. $(pwd)/resources/generic.sh
+
 # Variables
 NEW_ROOT="/mnt/root"
 NEW_INIT="/sbin/init"
@@ -13,62 +16,23 @@ NEW_INIT="/sbin/init"
 USE_ZFS="0"
 USE_LUKS="0"
 
-# Function to start rescue shell
-rescue_shell()
-{
-	echo "Booting into rescue shell..."
-	busybox --install -s
-	exec /bin/sh
-}
+#################### Let the games begin ####################
 
-# Function to load ZFS modules
-load_modules()
-{
-	modules=""
+welcome
 
-	if [ "${USE_ZFS}" = "1" ]; then
-		modules="${modules} spl splat zavl znvpair zcommon zunicode zfs zpios"
-	fi
-		
-	for x in ${modules}; do
-		# If it's the ZFS module, and there is a cachesize set, then set the arc max to it
-		if [ "${x}" = "zfs" -a ! -z "${cache_size}" ]; then
-			modprobe ${x} zfs_arc_max=${cache_size}
-		else
-			modprobe ${x}
-		fi
-	done
-}
+einfo "Mounting kernel devices..."
+mnt_kernel_devs || die "Failed to mount kernel devices"
 
-# Mount Kernel Devices
-mount -t proc none /proc
-mount -t devtmpfs none /dev
-mount -t sysfs none /sys
+prevent_printk
 
-# Prevent kernel from printing on screen
-echo 0 > /proc/sys/kernel/printk
+einfo "Loading modules..."
+load_modules || die "Failed to load kernel modules"
 
-# Load Modules
-load_modules || rescue_shell
+luks_trigger
+zfs_trigger
 
-# Open encrypted root
-if [ "${USE_LUKS}" = "1" ]; then
-	if [ ! -z "${enc_root}" ]; then
-		cryptsetup luksOpen ${enc_root} dmcrypt_root || rescue_shell
-	else
-		echo "You didn't pass the 'enc_root' variable to the kernel" || rescue_shell
-	fi
-fi
+einfo "Unmounting kernel devices..."
+umnt_kernel_devs || die "Failed to umount kernel devices"
 
-# Mount ZFS Pool
-if [ "${USE_ZFS}" = "1" ]; then
-	zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || rescue_shell
-fi
-
-# Unmount Kernel Devices
-umount /proc
-umount /dev
-umount /sys
-
-# Switch to the new root
-exec switch_root ${NEW_ROOT} ${NEW_INIT} || rescue_shell
+einfo "Switching to your rootfs..." && eline
+switch_to_new_root

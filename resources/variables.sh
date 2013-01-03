@@ -54,4 +54,4 @@ _BUSYBOX_LN="mount tty sh"
 _PREL_BIN="cpio"
 
 # Directories to create when generating the initramfs structure
-_CDIRS="bin sbin proc sys dev etc lib lib64 mnt/root"
+_CDIRS="bin sbin proc sys dev etc lib lib64 mnt/root resources"
