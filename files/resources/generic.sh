@@ -52,12 +52,12 @@ umnt_kernel_devs()
 # If USE_LUKS is enabled, run this function
 luks_trigger()
 {
-        if [ ! -z "${enc_root}" ]; then
-                eflag "Opening up your encrypted drive..."
-                cryptsetup luksOpen ${enc_root} dmcrypt_root || die "luksOpen failed to open: ${enc_root}"
-        else
-                die "You didn't pass the 'enc_root' variable to the kernel"
+        if [ -z "${enc_root}" ]; then
+                die "You didn't pass the 'enc_root' variable to the kernel. Example: enc_root=/dev/sda2"
         fi
+	
+	eflag "Opening up your encrypted drive..."
+        cryptsetup luksOpen ${enc_root} dmcrypt_root || die "luksOpen failed to open: ${enc_root}"
 }
 
 # If USE_ZFS is enabled, run this function
@@ -65,7 +65,19 @@ zfs_trigger()
 {
         eflag "Mounting your zpool..."
 
-        zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || die "Failed to import your zpool"
+	local CACHE="/etc/zfs/zpool.cache"
+
+        if [ -z "${pool_root}" ]; then
+		die "You must pass the pool_root= variable. Example: pool_root=rpool/ROOT/funtoo"
+	fi
+
+        pool_name="${pool_root%%/*}"
+
+	if [ ! -f "${CACHE}" ]; then
+		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
+	fi
+
+        mount -t zfs -o zfsutil ${pool_root} ${NEW_ROOT} || die "Failed to import your zfs root dataset"
 }
 
 switch_to_new_root()

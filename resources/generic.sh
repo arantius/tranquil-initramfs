@@ -184,18 +184,17 @@ create_symlinks()
 	cd ${_TMP}
 }
 
-# Create the empty mtab file in /etc and copy the init file into the initramfs
-# also sed will modify the initramfs to add additional information
-config_init()
+# This function copies and sets up any files needed. mtab, init, zpool.cache
+config_files()
 {
-	einfo "Making mtab, and creating/configuring init..."
+	einfo "Configuring files..."
 
 	cd ${_TMP}
 
 	touch etc/mtab
 
 	if [ ! -f "etc/mtab" ]; then
-		die "Error created mtab file.. exiting"
+		die "Error created mtab file... Exiting"
 	fi
 
         # Copy init functions
@@ -216,11 +215,18 @@ config_init()
 		sed -i -e '17s/0/1/' init
 	fi
 
+	# Copies zpool.cache if it exists
+	if [ -f "${_ZCACHE}" ]; then
+		cp ${_ZCACHE} etc/zfs
+	else
+		ewarn "Creating initramfs without zpool.cache"
+	fi
+
 	# Give execute permission to the script
 	chmod u+x init
 	
 	if [ ! -f "init" ]; then
-		die "Error creating init file.. exiting"
+		die "Error creating init file... Exiting"
 	fi
 }
 
