@@ -59,7 +59,7 @@ get_target_kernel
 set_target_kernel
 
 # Check to see if modules directory exists..
-if [ "${_INIT_TYPE}" = "ZFS" ]; then
+if [ "${_USE_ZFS}" = "1" ]; then
 	check_mods_dir
 fi
 

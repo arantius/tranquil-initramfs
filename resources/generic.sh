@@ -138,7 +138,7 @@ check_mods_dir()
 	einfo "Checking to see if modules directory exists for ${_KERNEL}..."
 
 	if [ ! -d "${_MODULES}" ]; then
-		die "Kernel modules directory doesn't exist for ${_KERNEL}. Quitting"
+		die "Kernel modules directory doesn't exist for ${_KERNEL}. Exiting..."
 	fi
 }
 
