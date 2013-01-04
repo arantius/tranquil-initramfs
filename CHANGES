@@ -1,3 +1,8 @@
+1.6.0.1
+---------
+- Bug fix update, the modules directory wasn't being checked because it
+  was still using the old INIT_TYPE variable. This has been fixed.
+
 1.6.0
 ---------
 - Colored output
