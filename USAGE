@@ -22,7 +22,7 @@ Copy the file to your boot directory and name it whatever you want.
 
 2. Setting it up in the bootloader
 
-If my initramfs is called: initrd-zfs.img and my bootloader is extlinux,
+If my initramfs is called: initrd-3.7.1-ALL.img and my bootloader is extlinux,
 I would do the following
 
 (open up the bootloader config (for extlinux it's extlinux.conf)
@@ -31,14 +31,14 @@ I would do the following
 
 and add a new entry:
 
-LABEL gentoo
-	MENU LABEL Gentoo [3.7.1-ZFS]
-	LINUX /vmlinuz-3.7.1-ZFS
-	INITRD /initrd-zfs.img
+LABEL funtoo
+	MENU LABEL Funtoo [3.7.1-ALL]
+	LINUX /vmlinuz-3.7.1-ALL
+	INITRD /initrd-3.7.1-ALL.img
 	APPEND pool_name=rpool
 	
-This would boot my `rpool` zpool. `poolname` is the kernel parameter to declare
-the zpool that you want to boot into.
+This would import my `rpool` zpool. `pool_name` is the kernel parameter you
+need to declare so that the initramfs knows which zpool you want to boot into.
 
 =======================================
 Kernel Options:

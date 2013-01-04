@@ -1,16 +1,10 @@
 #!/bin/busybox sh
 
-# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-# Welcome Message
-welcome()
-{
-        einfo "Welcome to the Bliss Initramfs!"
-}
 
 # Function to start rescue shell
 rescue_shell()
@@ -39,12 +33,6 @@ load_modules()
         done
 }
 
-# Prevent kernel from printing on screen
-prevent_printk()
-{
-        echo 0 > /proc/sys/kernel/printk
-}
-
 # Mount Kernel Devices
 mnt_kernel_devs()
 {
@@ -61,28 +49,23 @@ umnt_kernel_devs()
         umount /sys
 }
 
-# Handles LUKS stuff, run this function
+# If USE_LUKS is enabled, run this function
 luks_trigger()
 {
-        if [ "${USE_LUKS}" = "1" ]; then
-                if [ ! -z "${enc_root}" ]; then
-                        einfo "Opening up your encrypted drive..."
-
-                        cryptsetup luksOpen ${enc_root} dmcrypt_root || die "luksOpen failed to open: ${enc_root}"
-                else
-                        die "You didn't pass the 'enc_root' variable to the kernel"
-                fi
+        if [ ! -z "${enc_root}" ]; then
+                eflag "Opening up your encrypted drive..."
+                cryptsetup luksOpen ${enc_root} dmcrypt_root || die "luksOpen failed to open: ${enc_root}"
+        else
+                die "You didn't pass the 'enc_root' variable to the kernel"
         fi
 }
 
-# Handles ZFS stuff, run this function
+# If USE_ZFS is enabled, run this function
 zfs_trigger()
 {
-        if [ "${USE_ZFS}" = "1" ]; then
-                einfo "Mounting your zpool..."
+        eflag "Mounting your zpool..."
 
-                zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || die "Failed to import your zpool"
-        fi
+        zpool import -f -d /dev -o cachefile= -R ${NEW_ROOT} ${pool_name} || die "Failed to import your zpool"
 }
 
 switch_to_new_root()
@@ -90,7 +73,7 @@ switch_to_new_root()
         exec switch_root ${NEW_ROOT} ${NEW_INIT} || die "Failed to switch to your rootfs"
 }
 
-# Utility Functions
+### Utility Functions ###
 
 # Used for displaying information
 einfo() 
@@ -104,26 +87,32 @@ ewarn()
         eline && echo -e "\033[1;33m>>>\033[0;m ${@}"
 }
 
-# Used for flags
+# Used for flags (trigger messages)
 eflag() 
 {
         eline && echo -e "\033[1;35m>>>\033[0;m ${@}"
 }
 
-# Used for options
-eopt() 
-{
-        echo -e "\033[1;36m>>\033[0;m ${@}"
-}
-
 # Used for errors
 die() 
 {
-        eline && echo -e "\033[1;31m>>> ${@} <<<\033[0;m" || rescue_shell 
+        eline && echo -e "\033[1;31m>>>\033[0;m ${@}" && rescue_shell
 }
 
 # Prints empty line
 eline()
 {
         echo ""
+}
+
+# Welcome Message
+welcome()
+{
+        einfo "Welcome to the Bliss Initramfs!"
+}
+
+# Prevent kernel from printing on screen
+prevent_printk()
+{
+        echo 0 > /proc/sys/kernel/printk
 }

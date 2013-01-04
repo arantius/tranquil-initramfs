@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -317,7 +317,7 @@ eopt()
 # Used for errors
 die()
 {
-        eline && echo -e "\033[1;31m>>> ${@} <<<\033[0;m" && clean && eline && exit
+        eline && echo -e "\033[1;31m>>>\033[0;m ${@}" && clean && eline && exit
 }
 
 # Prints empty line

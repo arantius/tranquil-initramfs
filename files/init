@@ -1,6 +1,6 @@
 #!/bin/busybox sh
 
-# Copyright (C) 2012 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ NEW_INIT="/sbin/init"
 USE_ZFS="0"
 USE_LUKS="0"
 
-#################### Let the games begin ####################
+### Lasu la ludoj komenci ###
 
 welcome
 
@@ -28,8 +28,13 @@ prevent_printk
 einfo "Loading modules..."
 load_modules || die "Failed to load kernel modules"
 
-luks_trigger
-zfs_trigger
+if [ "${USE_LUKS}" = "1" ]; then
+        luks_trigger
+fi
+
+if [ "${USE_ZFS}" = "1" ]; then
+        zfs_trigger
+fi
 
 einfo "Unmounting kernel devices..."
 umnt_kernel_devs || die "Failed to umount kernel devices"
