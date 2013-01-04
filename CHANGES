@@ -1,3 +1,15 @@
+1.6.1
+---------
+- Rewrote the way the initramfs mounts the pool and rootfs. Now your
+  "df" and "zfs list" will show the correct mount location for rootfs /
+  rather than showing the location of where the initramfs mounted the pool
+  "/mnt/root".
+- You now must use pool_root= instead of pool_name=. Check the USAGE for more
+  info.
+- The initramfs now uses your zpool.cache if available. This speeds up booting
+  since the initramfs doesn't need your scan for devices in order to find the
+  pool.
+
 1.6.0.1
 ---------
 - Bug fix update, the modules directory wasn't being checked because it

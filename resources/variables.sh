@@ -9,7 +9,7 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.6.0.1"
+_VERSION="1.6.1"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
@@ -55,3 +55,6 @@ _PREL_BIN="cpio"
 
 # Directories to create when generating the initramfs structure
 _CDIRS="bin sbin proc sys dev etc lib lib64 mnt/root resources"
+
+# zpool.cache
+_ZCACHE="/etc/zfs/zpool.cache"
