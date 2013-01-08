@@ -4,8 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Toggle ZFS Flag 
+# Toggle Flags
 _USE_ZFS="1"
+_USE_MODULES="1"
 
 # Required Binaries, Modules, and other files
 _ZFS_BINS="zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool zstreamdump ztest"

@@ -7,27 +7,25 @@
 # Message that will be displayed at the top of the screen
 print_header()
 {
-	echo "-----------------------------------"
-	echo "| ${_NAME} - v${_VERSION}"
-	echo "| Author: ${_CONTACT}"
-	echo "| Distributed under the ${_LICENSE}"
-	echo "-----------------------------------"
+	echo -e "-----------------------------------"
+	echo -e "\e[38;5;228m| ${_NAME} - v${_VERSION}\e[0;m"
+	echo -e "\e[38;5;229m| Author: ${_CONTACT}\e[0;m"
+	echo -e "\e[38;5;230m| Distributed under the ${_LICENSE}\e[0;m"
+	echo -e "-----------------------------------"
 }
 
 # Display the menu
 print_menu()
 {
 	# Check to see if a menu option was passed
-	if [ -z "${choice}" ]; then
+	if [ -z "${_CHOICE}" ]; then
 		einfo "Which initramfs would you like to generate:"
-		eopt "1. ZFS"
-                eopt "2. Encrypted ZFS (LUKS + ZFS)"
-		eopt "3. Exit Program"
 		eline
-		echo -n "Current choice [1]: " && read choice
+		print_options
+		eqst "Current choice [1]: " && read _CHOICE
 	fi
 
-	case ${choice} in
+	case ${_CHOICE} in
 	1|"")
 		einfo "An initramfs for ZFS will be generated!"
 		. hooks/base.sh
@@ -39,6 +37,11 @@ print_menu()
 		. hooks/zfs.sh
                 . hooks/zfs_luks.sh
                 ;;
+	3)
+		einfo "An initramfs for a normal boot will be generated!"
+		. hooks/base.sh
+		. hooks/normal.sh
+		;;
 	*)
 		ewarn "Exiting." && exit
 		;;
@@ -48,19 +51,17 @@ print_menu()
 # If x86_64 then use lib64 libraries, else if i[*]86, use 32 bit libraries
 get_arch()
 {
-	eline
-
 	case ${_ARCH} in
 	x86_64)
 		_LIB_PATH="64"
-		echo "Detected ${_LIB_PATH} bit platform"
+		einfo "Detected ${_LIB_PATH} bit platform"
 		;;
 	i[3-6]86)
 		_LIB_PATH="32"
-		echo "Detected ${_LIB_PATH} bit platform"
+		einfo "Detected ${_LIB_PATH} bit platform"
 		;;
 	*)
-		echo "Your architecture isn't supported, exiting" && eline && clean && exit
+		die "Your architecture isn't supported, exiting"
 		;;
 	esac
 }
@@ -68,45 +69,45 @@ get_arch()
 # Prints the available options if the user passes an invalid number
 print_options()
 {
-	echo "1. ZFS"
-        echo "2. Encrypted ZFS (LUKS + ZFS)"
-}
-
-print_usage()
-{
-	echo "./createInit 1 ${_EXAMPLE_KERNEL}"
+	eopt "1. ZFS"
+	eopt "2. Encrypted ZFS (LUKS + ZFS)"
+	eopt "3. Normal Boot"
+	eopt "4. Exit Program"
 }
 
 # Ask the user if they want to use their current kernel, or another one
 get_target_kernel()
 {
-	# Check to see if a kernel wasn passed
-	if [ -z "${_KERNEL}" ]; then
-		eline
+	if [ "${_USE_MODULES}" = "1" ]; then
+		# Check to see if a kernel was passed
+		if [ -z "${_KERNEL}" ]; then
+			eqst "Do you want to use the current kernel: $(uname -r)? [Y/n]: " && read _CHOICE
 
-		echo -n "Do you want to use the current kernel: $(uname -r)? [Y/n]: " && read choice
-	
-		case ${choice} in
-		y|Y|"")
-			_KERNEL=$(uname -r)
-			;;
-		n|N)
-			eline
-			echo -n "Please enter the kernel name: " && read _KERNEL
-			;;
-		*)
-			echo "Invalid option, re-open the application" && exit
-			;;
-		esac
+			case ${_CHOICE} in
+			y|Y|"")
+				_KERNEL=$(uname -r)
+				;;
+			n|N)
+				eqst "Please enter the kernel name: " && read _KERNEL
+				;;
+			*)
+				die "Invalid option, re-open the application"
+				;;
+			esac
+		fi
 	fi
 }
 
 # Set modules path to correct location and sets kernel name for initramfs
 set_target_kernel()
 {
-	_MODULES="/lib/modules/${_KERNEL}/"
-	_LOCAL_MODULES="${_TMP}/lib/modules/${_KERNEL}/"
-	_INITRD="initrd-${_KERNEL}.img"
+	if [ "${_USE_MODULES}" = "1" ]; then
+		_MODULES="/lib/modules/${_KERNEL}/"
+		_LOCAL_MODULES="${_TMP}/lib/modules/${_KERNEL}/"
+		_INITRD="initrd-${_KERNEL}.img"
+	else
+		_INITRD="initrd.img"
+	fi
 }
 
 # Message for displaying the generating event
@@ -135,10 +136,12 @@ clean()
 # Check to make sure kernel modules directory exists
 check_mods_dir()
 {
-	einfo "Checking to see if modules directory exists for ${_KERNEL}..."
+	if [ "${_USE_MODULES}" = "1" ]; then
+		einfo "Checking to see if modules directory exists for ${_KERNEL}..."
 
-	if [ ! -d "${_MODULES}" ]; then
-		die "Kernel modules directory doesn't exist for ${_KERNEL}. Exiting..."
+		if [ ! -d "${_MODULES}" ]; then
+			die "Kernel modules directory doesn't exist for ${_KERNEL}. Exiting..."
+		fi
 	fi
 }
 
@@ -155,7 +158,7 @@ create_dirs()
 
 	# If the specific kernel directory doesn't exist in the initramfs 
 	# tempdir, then create it
-	if [ ! -z ${_LOCAL_MODULES} ]; then
+	if [ ! -z ${_LOCAL_MODULES} ] && [ "${_USE_MODULES}" = "1" ]; then
 		mkdir -p ${_LOCAL_MODULES}
 	fi
 }
@@ -170,7 +173,7 @@ create_symlinks()
 	for bb in ${_BUSYBOX_LN}; do
 
 		if [ -L "${bb}" ]; then
-			echo "${bb} link exists.. removing it" && eline
+			ewarn "${bb} link exists.. removing it" && eline
 			rm ${bb}
 		fi
 
@@ -203,11 +206,18 @@ config_files()
         # Copy the init script
 	cp ${_HOME}/files/init . 
 	
-	# Substitute any changes to the init file
-	
-	# Enable ZFS in the init if ZFS is being used.
+	# Any last substitions or additions/modifications should be done here
+
 	if [ "${_USE_ZFS}" = "1" ]; then
+		# Enable ZFS in the init if ZFS is being used.
 		sed -i -e '16s/0/1/' init
+
+		# Copies zpool.cache if it exists
+		if [ -f "${_ZCACHE}" ]; then
+			cp ${_ZCACHE} etc/zfs
+		else
+			ewarn "Creating initramfs without zpool.cache"
+		fi
 	fi
 
 	# Enable LUKS in the init if LUKS is being used.
@@ -215,11 +225,9 @@ config_files()
 		sed -i -e '17s/0/1/' init
 	fi
 
-	# Copies zpool.cache if it exists
-	if [ -f "${_ZCACHE}" ]; then
-		cp ${_ZCACHE} etc/zfs
-	else
-		ewarn "Creating initramfs without zpool.cache"
+	# Enable Normal Booting in the init if NORMAL is being used.
+	if [ "${_USE_NORMAL}" = "1" ]; then
+		sed -i -e '18s/0/1/' init
 	fi
 
 	# Give execute permission to the script
@@ -233,25 +241,29 @@ config_files()
 # Compresses the kernel modules
 pack_modules()
 {
-        einfo "Compressing kernel modules..."
+	if [ "${_USE_MODULES}" = "1" ]; then
+		einfo "Compressing kernel modules..."
 
-	cd ${_LOCAL_MODULES}
+		cd ${_LOCAL_MODULES}
 
-        for module in $(find . -name "*.ko"); do
-		gzip ${module}
-        done
+		for module in $(find . -name "*.ko"); do
+			gzip ${module}
+		done
 
-        cd ${_TMP}
+		cd ${_TMP}
+	fi
 }
 
 # Generate depmod info
 modules_dep()
 {
-	einfo "Generating modprobe information..."
-	
-	cd ${_TMP}
+	if [ "${_USE_MODULES}" = "1" ]; then
+		einfo "Generating modprobe information..."
+		
+		cd ${_TMP}
 
-	depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+		depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+	fi
 }
 
 # Create the initramfs
@@ -299,31 +311,37 @@ check_prelim_binaries()
 # Used for displaying information
 einfo()
 {
-        eline && echo -e "\033[1;32m>>>\033[0;m ${@}"
+        eline && echo -e "\e[38;5;120m>\e[38;5;119m>\e[38;5;118m>\e[0;m ${@}"
+}
+
+# Used for input (questions)
+eqst()
+{
+        eline && echo -en "\e[38;5;195m>\e[38;5;194m>\e[38;5;193m>\e[0;m ${@}"
 }
 
 # Used for warnings
 ewarn()
 {
-        eline && echo -e "\033[1;33m>>>\033[0;m ${@}"
+        eline && echo -e "\e[38;5;229m>\e[38;5;228m>\e[38;5;227m>\e[0;m ${@}"
 }
 
 # Used for flags
 eflag()
 {
-        eline && echo -e "\033[1;35m>>>\033[0;m ${@}"
+        eline && echo -e "\e[38;5;99m>\e[38;5;98m>\e[38;5;97m>\e[0;m ${@}"
 }
 
 # Used for options
 eopt()
 {
-        echo -e "\033[1;36m>>\033[0;m ${@}"
+        echo -e "\e[38;5;81m>\e[38;5;80m>\e[0;m ${@}"
 }
 
 # Used for errors
 die()
 {
-        eline && echo -e "\033[1;31m>>>\033[0;m ${@}" && clean && eline && exit
+        eline && echo -e "\e[38;5;160m>\e[38;5;124m>\e[38;5;88m>\e[0;m ${@}" && clean && eline && exit
 }
 
 # Prints empty line
@@ -355,4 +373,10 @@ werr()
         echo "##### ${1} #####"
 	eline
 	exit
+}
+
+# Copies functions with specific flags
+ecp()
+{
+	cp -afL ${1} ${2} ${3}
 }
