@@ -35,24 +35,28 @@ LABEL funtoo
 	MENU LABEL Funtoo [3.7.1-ALL]
 	LINUX /vmlinuz-3.7.1-ALL
 	INITRD /initrd-3.7.1-ALL.img
-	APPEND pool_root=rpool/ROOT/funtoo
+	APPEND root=rpool/ROOT/funtoo
 	
-This would mount my `rpool/ROOT/funtoo` dataset. `pool_root` is the kernel parameter you
+This would mount my `rpool/ROOT/funtoo` dataset. `root` is the kernel parameter you
 need to declare so that the initramfs knows which dataset you want to boot into.
 
 =======================================
 Kernel Options:
 =======================================
-ZFS:
-pool_root - ZFS root name
-	example: APPEND pool_root=rpool/ROOT/funtoo
+Normal Boot:
+root - Where your root filesystem is
+	example: APPEND root=/dev/sda2
 
-cache_size - Sets the ARC cache size (in bytes)
-	example: APPEND cache_size=536870912
-	 this sets the cache_size to 512MB
+ZFS:
+root - ZFS root name
+	example: APPEND root=rpool/ROOT/funtoo
+
+arcmax - Sets the max ARC cache size (in bytes)
+	example: APPEND arcmax=536870912
+	 this sets the arcmax to 512MB
 
 So a complete line could look like this:
- APPEND cache_size=536870912 pool_root=rpool/ROOT/funtoo
+ APPEND arcmax=536870912 root=rpool/ROOT/funtoo
  
  Which would mount the `rpool/ROOT/funtoo` ZFS dataset with the arc_max being 512 MB
 

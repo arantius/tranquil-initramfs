@@ -93,25 +93,25 @@ copy_binaries()
 	# Copy base binaries (all initramfs have these)
 	for x in ${_BASE_BINS}; do
 		if [ "${x}" = "busybox" ]; then
-			cp ${_BIN}/${x} ${_LOCAL_BIN}
+			ecp ${_BIN}/${x} ${_LOCAL_BIN}
 		fi
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_BINS}; do
 			if [ "${x}" = "hostid" ]; then
-				cp ${_USR_BIN}/${x} ${_LOCAL_BIN}
+				ecp ${_USR_BIN}/${x} ${_LOCAL_BIN}
 			elif [ "${x}" = "zpool_layout" ]; then
-				cp ${_BIN}/${x} ${_LOCAL_BIN}
+				ecp ${_BIN}/${x} ${_LOCAL_BIN}
 			else
-				cp ${_SBIN}/${x} ${_LOCAL_SBIN}
+				ecp ${_SBIN}/${x} ${_LOCAL_SBIN}
 			fi
 		done  
 	fi
 
 	if [ "${_USE_LUKS}" = "1" ]; then
 		for x in ${_LUKS_BINS}; do
-			cp ${_SBIN}/${x} ${_LOCAL_SBIN}
+			ecp ${_SBIN}/${x} ${_LOCAL_SBIN}
 		done
 	fi
 }
@@ -121,12 +121,11 @@ copy_modules()
 {
         einfo "Copying modules..."
 
-	if [ "${_USE_ZFS}" = "1" ]; then
-		# Make an spl directory to match the spl/spl structure
-		mkdir -p ${_LOCAL_MODULES}/addon/spl
+	cd ${_TMP}
 
-		cp -a ${_MODULES}/addon/spl ${_LOCAL_MODULES}/addon
-		cp -a ${_MODULES}/addon/zfs ${_LOCAL_MODULES}/addon
+	if [ "${_USE_ZFS}" = "1" ]; then
+		ecp --parents ${_MODULES}/addon/spl . 
+		ecp --parents ${_MODULES}/addon/zfs .
 	fi
 }
 
@@ -135,27 +134,29 @@ copy_modules()
 get_deps()
 {
         einfo "Getting dependencies..."
-	
+
+	# Add interpreter to deps since everything will depend on it
+	deps="${_LIB64}/ld-linux-x86-64.so*"
+
 	for x in ${_BASE_BINS}; do
 		if [ "${x}" = "busybox" ]; then
 			# If our busybox wasn't statically built, we would collect
 			# its libraries here. Maybe I can implement this in the
 			# future if needed.
-			EMPTY=""
+
+			deps="${deps} \
+			$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		fi
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_BINS}; do
 			if [ "${x}" = "zpool_layout" ] || [ "${x}" = "hostid" ]; then
-
-				deps=${deps}" ""$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $1}' | 
-				sed '1d' | sed "s%${_LIB64}%%" | awk -F '(' '{print $1}')"
-		    
+				deps="${deps} \
+				$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 			else
-				deps=${deps}" ""$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $1}' | 
-				sed '1d' | sed "s%${_LIB64}%%" | awk -F '(' '{print $1}')"
-		    
+				deps="${deps} \
+				$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 			fi
 		done
 	fi
@@ -165,7 +166,11 @@ get_deps()
 			# If our luks wasn't statically built, we would collect
 			# its libraries here. Maybe I can implement this in the
 			# future if needed.
-			EMPTY=""
+
+			if [ "${x}" = "cryptsetup" ]; then
+				deps="${deps} \
+				$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
+			fi
 		done
 	fi
 
@@ -178,7 +183,9 @@ copy_deps()
 {
 	einfo "Copying dependencies..."
 
+	cd ${_TMP}
+
 	for y in ${deps}; do		
-                cp -Lf ${_LIB64}/${y} ${_LOCAL_LIB64}
+                ecp --parents ${y} . 
         done
 }

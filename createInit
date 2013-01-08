@@ -26,70 +26,62 @@ fi
 
 # If a initrd option was passed, set the 'choice' variable
 if [ ! -z ${1} ]; then
-	if [ "${1}" -lt 1 ] || [ "${1}" -gt 2 ]; then
-		echo "Please pass one of the below options:" && print_options
-		exit
-	else
-		choice=${1}
-	fi
 
-	if [ ! -z ${2} ]; then
-		# If a kernel was passed, set the _KERNEL variable
-		_KERNEL=${2}
-	else
-		echo "You must also pass a kernel name" && print_usage
+	# Parse options
+	case ${1} in
+	--options|-o)
+		print_options
 		exit
-	fi
+		;;
+	--version|-v)
+		print_header
+		exit
+		;;
+	--help|-h)
+		cat files/help
+		exit
+		;;
+	[1-4])
+		if [ "${1}" = "4" ]; then
+			exit
+		fi
+
+		_CHOICE=${1}
+
+		if [ ! -z ${2} ]; then
+			_KERNEL=${2}
+		elif [ "${1}" != "3" ] && [ -z "${2}" ]; then
+			die "You must also pass a kernel name (i.e: createInit 1 ${_EXAMPLE_KERNEL})"
+		fi
+
+		;;
+	*)
+		die "Incorrect parameters, please pass -h for help"
+		;;
+	esac
 fi
-
 
 #######################################################################
 # The main entry point starts here
 #######################################################################
+
 clear
-
 print_header
-
 print_menu
-
 get_arch
-
 get_target_kernel
-
 set_target_kernel
-
-# Check to see if modules directory exists..
-if [ "${_USE_ZFS}" = "1" ]; then
-	check_mods_dir
-fi
-
+check_mods_dir
 clean
-
 print_start
-
 create_dirs
-
-# Check preliminary binaries that are needed but won't be placed inside
-# the initrd (like cpio)
 check_prelim_binaries
-
 check_binaries && check_modules
-
 copy_binaries && copy_modules
-
-# If it's a ZFS initramfs, compress the copied modules and generate modules.dep
-if [ "${_USE_ZFS}" = "1" ]; then
-	pack_modules && modules_dep
-fi
-
+pack_modules && modules_dep
 get_deps
-
 copy_deps
-
 create_symlinks
-
 config_files
-
 create_initrd
-
 clean_all

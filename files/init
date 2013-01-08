@@ -11,10 +11,11 @@
 
 # Variables
 NEW_ROOT="/mnt/root"
-NEW_INIT="/sbin/init"
+INIT="/sbin/init"
 
 USE_ZFS="0"
 USE_LUKS="0"
+USE_NORMAL="0"
 
 ### Lasu la ludoj komenci ###
 
@@ -22,6 +23,9 @@ welcome
 
 einfo "Mounting kernel devices..."
 mnt_kernel_devs || die "Failed to mount kernel devices"
+
+einfo "Parsing command line values..."
+parse_cmdline
 
 prevent_printk
 
@@ -34,6 +38,10 @@ fi
 
 if [ "${USE_ZFS}" = "1" ]; then
         zfs_trigger
+fi
+
+if [ "${USE_NORMAL}" = "1" ]; then
+	normal_trigger
 fi
 
 einfo "Unmounting kernel devices..."

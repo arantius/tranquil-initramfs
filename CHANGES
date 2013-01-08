@@ -1,3 +1,12 @@
+1.6.2
+---------
+- Added support to generate a regular initramfs that just boots directly
+  into a partition with a filesystem that the kernel supports.
+- Rewrote library dependency gathering algorithm
+- Added better help and switch options
+- Rewrote options passing algorithm
+- 256 COLORS !!!
+
 1.6.1
 ---------
 - Rewrote the way the initramfs mounts the pool and rootfs. Now your
