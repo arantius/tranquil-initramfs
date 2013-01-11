@@ -32,6 +32,11 @@ prevent_printk
 einfo "Loading modules..."
 load_modules || die "Failed to load kernel modules"
 
+if [ "${recover}" = "1" ]; then
+	ewarn "Recovery Mode Enabled... Entering Rescue Environment"
+	rescue_shell
+fi
+
 if [ "${USE_LUKS}" = "1" ]; then
         luks_trigger
 fi
