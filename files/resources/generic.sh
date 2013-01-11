@@ -10,6 +10,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..."
+	eline
 	busybox --install -s
 	exec /bin/sh
 }
@@ -68,14 +69,11 @@ parse_cmdline()
 		enc_root\=*)
 			enc_root=$(get_opt ${x})
 			;;
-		zcache\=*)
-			zcache=$(get_opt ${x})
+		nocache)
+			nocache=1
 			;;
-		reset_cache\=*)
-			reset_cache=$(get_opt ${x})
-			;;
-		recover\=*)
-			recover=$(get_opt ${x})
+		recover)
+			recover=1
 			;;
 		esac
 	done
@@ -105,27 +103,16 @@ zfs_trigger()
 
         pool_name="${root%%/*}"
 
-	#if [ "${reset_cache}" = "on" ] || [ "${reset_cache}" = "1" ]; then
-	#	eflag "Starting to reset zpool.cache..."
-	#	zpool export -f ${pool_name}
-	#	rm ${CACHE}
-	#	zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
 	if [ ! -f "${CACHE}" ]; then
-		eflag "Mounting ${pool_name} without zpool.cache..."
 		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
-	elif [ "${zcache}" = "off" ] || [ "${zcache}" = "0" ]; then
-		eflag "Mounting ${pool_name} with zpool.cache disabled..."
+	elif [ "${nocache}" = "1" ]; then
+		eflag "Mounting ${pool_name} without zpool.cache..."
+
 		zpool export -f ${pool_name}
 		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
 	fi
 
         mount -t zfs -o zfsutil ${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset"
-
-	#if [ "${reset_cache}" = "on" ] || [ "${reset_cache}" = "1" ]; then
-	#	eflag "Ending zpool.cache reset..."
-	#	rm ${NEW_ROOT}/${CACHE}
-	#	cp ${CACHE} ${NEW_ROOT}/${CACHE}
-	#fi
 }
 
 # If USE_NORMAL is enabled, run this function
