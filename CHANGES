@@ -1,6 +1,6 @@
 1.6.3
 ---------
-- Added the "zcache" kernel parameter. Use this if you have an
+- Added the "nocache" kernel parameter. Use this if you have an
   old zpool.cache that is preventing you from booting.
 - Added the "recover" kernel parameter. Use this if want to use the
   initrd as a recovery environment. (Stops initrd and goes into it

@@ -93,20 +93,20 @@ luks_trigger()
 # If USE_ZFS is enabled, run this function
 zfs_trigger()
 {
-        eflag "Mounting your zpool..."
-
-	local CACHE="/etc/zfs/zpool.cache"
-
         if [ -z "${root}" ]; then
 		die "You must pass the root= variable. Example: root=rpool/ROOT/funtoo"
 	fi
 
         pool_name="${root%%/*}"
 
+        eflag "Mounting ${pool_name}..."
+
+	local CACHE="/etc/zfs/zpool.cache"
+
 	if [ ! -f "${CACHE}" ]; then
 		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
 	elif [ "${nocache}" = "1" ]; then
-		eflag "Mounting ${pool_name} without zpool.cache..."
+		eflag "Ignoring zpool.cache..."
 
 		zpool export -f ${pool_name}
 		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
