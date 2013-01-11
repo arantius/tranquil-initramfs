@@ -10,6 +10,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..."
+	eline
 	busybox --install -s
 	exec /bin/sh
 }
@@ -68,6 +69,12 @@ parse_cmdline()
 		enc_root\=*)
 			enc_root=$(get_opt ${x})
 			;;
+		nocache)
+			nocache=1
+			;;
+		recover)
+			recover=1
+			;;
 		esac
 	done
 }
@@ -86,17 +93,22 @@ luks_trigger()
 # If USE_ZFS is enabled, run this function
 zfs_trigger()
 {
-        eflag "Mounting your zpool..."
-
-	local CACHE="/etc/zfs/zpool.cache"
-
         if [ -z "${root}" ]; then
 		die "You must pass the root= variable. Example: root=rpool/ROOT/funtoo"
 	fi
 
         pool_name="${root%%/*}"
 
+        eflag "Mounting ${pool_name}..."
+
+	local CACHE="/etc/zfs/zpool.cache"
+
 	if [ ! -f "${CACHE}" ]; then
+		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
+	elif [ "${nocache}" = "1" ]; then
+		eflag "Ignoring zpool.cache..."
+
+		zpool export -f ${pool_name}
 		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
 	fi
 

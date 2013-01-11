@@ -60,9 +60,21 @@ So a complete line could look like this:
  
  Which would mount the `rpool/ROOT/funtoo` ZFS dataset with the arc_max being 512 MB
 
+nocache - Ignores zpool.cache. Useful for booting if you have an old
+         cache file that is preventing you from booting. Make sure to regenerate a new
+	 initrd so you don't have to keep using this option.
+
+	 example: APPEND root=rpool/ROOT/funtoo nocache
+
 LUKS + ZFS:
 Follow the same instructions as above, but also add "enc_root=" to your
 kernel line.
 
 enc_root - Encrypted root drive
 	example: APPEND enc_root=/dev/sda2
+
+OTHER:
+recover - Use this if you want the initrd to throw you into a rescue shell.
+	  Useful for recovery purposes.
+
+	  example: APPEND recover
