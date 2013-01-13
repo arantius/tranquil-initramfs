@@ -11,3 +11,11 @@ _USE_MODULES="1"
 # Required Binaries, Modules, and other files
 _ZFS_BINS="zpool_layout hostid spl splat mount.zfs zdb zfs zinject zpios zpool zstreamdump ztest"
 _ZFS_MODS="spl splat zavl znvpair zunicode zcommon zfs zpios"
+
+_ZFS_MAN5="vdev_id.conf.5.bz2"
+
+_ZFS_MAN8="vdev_id.8.bz2 \
+	   zdb.8.bz2 \
+	   zfs.8.bz2 \
+	   zpool.8.bz2 \
+	   zstreamdump.8.bz2"

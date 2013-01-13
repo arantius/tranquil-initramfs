@@ -1,4 +1,4 @@
-Bliss Initramfs Creator - v1.6.3
+Bliss Initramfs Creator - v1.6.4
 Jonathan Vasquez <jvasquez1011@gmail.com>
 For Gentoo/Funtoo Linux
 
@@ -26,9 +26,18 @@ Please have the following installed:
   >> [*] Maintain a devtmpfs filesystem to mount at /dev
   >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
 
+  > File systems --->
+  >> Miscellaneous filesystems --->
+  >>> <*> SquashFS 4.0 - Squashed file system support
+  >>> [*] Squashfs XATTR support
+  >>> [*] Include support for ZLIB compressed file systems
+  >>> [*] Include support for LZO compressed file systems
+  >>> [*] Include support for XZ compressed file systems
+
   * All other drivers required to see your PATA/SATA drives must be compiled in.
 
 - app-arch/cpio
+- sys-fs/squashfs-tools
 - sys-apps/busybox
 - sys-kernel/spl
 - spl-fs/zfs

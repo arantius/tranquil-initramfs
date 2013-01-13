@@ -1,3 +1,11 @@
+1.6.4
+---------
+- Added ZFS System Rescue Module support. The code bases for my
+  initramfs creator and for the SRM creator are now merged.
+- When creating a ZFS initramfs/srm, the documentation will also
+  be copied.
+- sys-fs/squashfs-tools must be installed on your system.
+
 1.6.3
 ---------
 - Added the "nocache" kernel parameter. Use this if you have an

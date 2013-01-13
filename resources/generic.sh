@@ -35,12 +35,36 @@ print_menu()
                 einfo "An initramfs for LUKS + ZFS will be generated!"
 		. hooks/base.sh
 		. hooks/zfs.sh
-                . hooks/zfs_luks.sh
+                . hooks/luks.sh
                 ;;
 	3)
 		einfo "An initramfs for a normal boot will be generated!"
 		. hooks/base.sh
 		. hooks/normal.sh
+		;;
+	4)
+		print_more
+		;;
+	*)
+		ewarn "Exiting." && exit
+		;;
+	esac
+}
+
+# This prints out the "More Options" choice
+print_more()
+{
+	einfo "More Options:"
+	eline
+	eopt "1. ZFS - System Rescue Module"
+	eopt "2. Exit Program"
+	eqst "Current choice [1]: " && read _CHOICE
+
+	case ${_CHOICE} in
+	1|"")
+		einfo "Creating a ZFS System Rescue Module!"
+		. hooks/zfs.sh
+		. hooks/srm/zfs_srm.sh
 		;;
 	*)
 		ewarn "Exiting." && exit
@@ -72,7 +96,8 @@ print_options()
 	eopt "1. ZFS"
 	eopt "2. Encrypted ZFS (LUKS + ZFS)"
 	eopt "3. Normal Boot"
-	eopt "4. Exit Program"
+	eopt "4. More Options"
+	eopt "5. Exit Program"
 }
 
 # Ask the user if they want to use their current kernel, or another one
@@ -101,7 +126,11 @@ get_target_kernel()
 # Set modules path to correct location and sets kernel name for initramfs
 set_target_kernel()
 {
-	if [ "${_USE_MODULES}" = "1" ]; then
+	if [ "${_ZFS_SRM}" = "1" ] && [ "${_USE_MODULES}" = "1" ]; then
+		_MODULES="/lib/modules/${_KERNEL}/"
+		_LOCAL_MODULES="${_TMP}/lib64/modules/${_KERNEL}/"
+		_SRM="zfs-${_KERNEL}.srm"
+	elif [ "${_USE_MODULES}" = "1" ]; then
 		_MODULES="/lib/modules/${_KERNEL}/"
 		_LOCAL_MODULES="${_TMP}/lib/modules/${_KERNEL}/"
 		_INITRD="initrd-${_KERNEL}.img"
@@ -113,7 +142,11 @@ set_target_kernel()
 # Message for displaying the generating event
 print_start()
 {
-	einfo "Generating initramfs for ${_KERNEL}..."
+	if [ "${_ZFS_SRM}" = "1" ]; then
+		einfo "Creating ZFS System Rescue Module for ${_KERNEL}..."
+	else
+		einfo "Creating initramfs for ${_KERNEL}..."
+	fi
 }
 
 
@@ -153,7 +186,7 @@ create_dirs()
 	mkdir ${_TMP} && cd ${_TMP} && mkdir -p ${_CDIRS}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-		mkdir -p etc/zfs
+		mkdir -p etc/zfs ${_LOCAL_MAN5} ${_LOCAL_MAN8}
 	fi
 
 	# If the specific kernel directory doesn't exist in the initramfs 
@@ -166,25 +199,27 @@ create_dirs()
 # Create the required symlinks to it
 create_symlinks()
 {
-	einfo "Creating symlinks to Busybox..."
+	if [ "${_USE_BASE}" = "1" ]; then
+		einfo "Creating symlinks to Busybox..."
 
-	cd ${_LOCAL_BIN}
+		cd ${_LOCAL_BIN}
 
-	for bb in ${_BUSYBOX_LN}; do
+		for bb in ${_BUSYBOX_LN}; do
 
-		if [ -L "${bb}" ]; then
-			ewarn "${bb} link exists.. removing it" && eline
-			rm ${bb}
-		fi
+			if [ -L "${bb}" ]; then
+				ewarn "${bb} link exists.. removing it" && eline
+				rm ${bb}
+			fi
 
-		ln -s busybox ${bb}
+			ln -s busybox ${bb}
 
-		if [ ! -L "${bb}" ]; then
-			die "Error creating link from ${bb} to busybox"
-		fi
-	done
+			if [ ! -L "${bb}" ]; then
+				die "Error creating link from ${bb} to busybox"
+			fi
+		done
 
-	cd ${_TMP}
+		cd ${_TMP}
+	fi
 }
 
 # This function copies and sets up any files needed. mtab, init, zpool.cache
@@ -200,15 +235,24 @@ config_files()
 		die "Error created mtab file... Exiting"
 	fi
 
-        # Copy init functions
-        cp -r ${_HOME}/files/resources/* resources/
-	
-        # Copy the init script
-	cp ${_HOME}/files/init . 
+	if [ "${_ZFS_SRM}" != "1" ]; then
+		# Copy init functions
+		cp -r ${_HOME}/files/resources/* resources/
+		
+		# Copy the init script
+		cp ${_HOME}/files/init . 
+
+		# Give execute permission to the script
+		chmod u+x init
+
+		if [ ! -f "init" ]; then
+			die "Error creating init file... Exiting"
+		fi
+	fi
 	
 	# Any last substitions or additions/modifications should be done here
 
-	if [ "${_USE_ZFS}" = "1" ]; then
+	if [ "${_USE_ZFS}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		# Enable ZFS in the init if ZFS is being used.
 		sed -i -e '16s/0/1/' init
 
@@ -229,19 +273,12 @@ config_files()
 	if [ "${_USE_NORMAL}" = "1" ]; then
 		sed -i -e '18s/0/1/' init
 	fi
-
-	# Give execute permission to the script
-	chmod u+x init
-	
-	if [ ! -f "init" ]; then
-		die "Error creating init file... Exiting"
-	fi
 }
 
 # Compresses the kernel modules
 pack_modules()
 {
-	if [ "${_USE_MODULES}" = "1" ]; then
+	if [ "${_USE_MODULES}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		einfo "Compressing kernel modules..."
 
 		cd ${_LOCAL_MODULES}
@@ -257,7 +294,7 @@ pack_modules()
 # Generate depmod info
 modules_dep()
 {
-	if [ "${_USE_MODULES}" = "1" ]; then
+	if [ "${_USE_MODULES}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		einfo "Generating modprobe information..."
 		
 		cd ${_TMP}
@@ -267,16 +304,33 @@ modules_dep()
 }
 
 # Create the initramfs
-create_initrd()
+create()
 {
-	einfo "Creating and Packing initramfs..."
-
 	cd ${_TMP}
 
-	find . -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
+	if [ "${_ZFS_SRM}" = "1" ]; then
 
-	if [ ! -f "${_HOME}/${_INITRD}" ]; then
-		die "Error creating initramfs file.. exiting"
+		einfo "Creating and Packing SRM..."
+
+		# we are creating the squashfs here and we pipe it to logger to hide all
+		# messages I don't know if this is really a good way to do it but trying
+		# | 2>&1 gave an invalid squashfs image (or for w/e reason failed to load
+		# in sysreccd.
+		mksquashfs ${_TMP} ${_HOME}/${_SRM} -all-root -comp xz -noappend -no-progress | logger
+
+		if [ ! -f "${_HOME}/${_SRM}" ]; then
+			die "Error creating the SRM file.. exiting"
+		fi
+
+		md5sum ${_HOME}/${_SRM} > ${_HOME}/${_SRM%.srm}.md5
+	else
+		einfo "Creating and Packing initramfs..."
+
+		find ${_TMP} -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
+
+		if [ ! -f "${_HOME}/${_INITRD}" ]; then
+			die "Error creating initramfs file.. exiting"
+		fi
 	fi
 }
 
@@ -287,7 +341,9 @@ clean_all()
 
 	einfo "Complete :)"
 
-	einfo "Please copy the ${_INITRD} to your /boot directory"
+	if [ "${_ZFS_SRM}" != "1" ]; then
+		einfo "Please copy the ${_INITRD} to your /boot directory"
+	fi
 
 	exit 0
 }
@@ -300,7 +356,13 @@ check_prelim_binaries()
 	for x in ${_PREL_BIN}; do	
 		if [ "${x}" = "cpio" ]; then
 			if [ ! -f "${_BIN}/${x}" ]; then
-				err_bin_dexi ${x}
+				err_bin_dexi ${x} "app-arch/cpio"
+			fi
+		fi
+
+		if [ "${x}" = "mksquashfs" ]; then
+			if [ ! -f "${_USR_BIN}/${x}" ]; then
+				err_bin_dexi ${x} "sys-fs/squashfs-tools"
 			fi
 		fi
 	done
@@ -353,7 +415,11 @@ eline()
 # Some error functions (Binary doesn't exist)
 err_bin_dexi()
 {
-	die "Binary: ${1} doesn't exist. Quitting!"
+	if [ ! -z "${2}" ]; then
+		die "Binary: ${1} doesn't exist. Please emerge ${2}. Qutting!"
+	else
+		die "Binary: ${1} doesn't exist. Quitting!"
+	fi
 }
 
 err_mod_dexi()

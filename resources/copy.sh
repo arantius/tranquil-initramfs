@@ -124,8 +124,26 @@ copy_modules()
 	cd ${_TMP}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-		ecp --parents ${_MODULES}/addon/spl . 
-		ecp --parents ${_MODULES}/addon/zfs .
+		ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES} 
+		ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}
+	fi
+}
+
+# Copy the documentation
+copy_docs()
+{
+        einfo "Copying documentation..."
+
+	cd ${_TMP}
+
+	if [ "${_USE_ZFS}" = "1" ]; then
+		for x in ${_ZFS_MAN5}; do
+			ecp -r ${_MAN5}/${x} ${_LOCAL_MAN5}
+		done
+
+		for x in ${_ZFS_MAN8}; do
+			ecp -r ${_MAN8}/${x} ${_LOCAL_MAN8}
+		done
 	fi
 }
 
