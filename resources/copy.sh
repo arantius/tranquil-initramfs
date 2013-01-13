@@ -124,8 +124,9 @@ copy_modules()
 	cd ${_TMP}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-		ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES} 
-		ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}
+		mkdir ${_LOCAL_MODULES}/addon
+		ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES}/addon
+		ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}/addon
 	fi
 }
 

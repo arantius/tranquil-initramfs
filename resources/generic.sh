@@ -197,7 +197,7 @@ create_dirs()
 }
 
 # Create the required symlinks to it
-create_symlinks()
+create_links()
 {
 	if [ "${_USE_BASE}" = "1" ]; then
 		einfo "Creating symlinks to Busybox..."
@@ -303,7 +303,7 @@ modules_dep()
 	fi
 }
 
-# Create the initramfs
+# Create the initramfs or srm
 create()
 {
 	cd ${_TMP}
@@ -312,11 +312,7 @@ create()
 
 		einfo "Creating and Packing SRM..."
 
-		# we are creating the squashfs here and we pipe it to logger to hide all
-		# messages I don't know if this is really a good way to do it but trying
-		# | 2>&1 gave an invalid squashfs image (or for w/e reason failed to load
-		# in sysreccd.
-		mksquashfs ${_TMP} ${_HOME}/${_SRM} -all-root -comp xz -noappend -no-progress | logger
+		mksquashfs . ${_HOME}/${_SRM} -all-root -comp xz -noappend -no-progress | logger
 
 		if [ ! -f "${_HOME}/${_SRM}" ]; then
 			die "Error creating the SRM file.. exiting"
@@ -326,7 +322,7 @@ create()
 	else
 		einfo "Creating and Packing initramfs..."
 
-		find ${_TMP} -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
+		find . -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
 
 		if [ ! -f "${_HOME}/${_INITRD}" ]; then
 			die "Error creating initramfs file.. exiting"
@@ -335,7 +331,7 @@ create()
 }
 
 # Clean up and exit after a successful build
-clean_all()
+clean_exit()
 {
 	clean
 
