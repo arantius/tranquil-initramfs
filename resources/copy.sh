@@ -150,7 +150,8 @@ copy_docs()
 
 # Gather all the dependencies (shared libraries) needed for all binaries
 # Checks bin/ and sbin/ (in the tempinit after it copied the binaries
-get_deps()
+# and then copy them over.
+do_deps()
 {
         einfo "Getting dependencies..."
 
@@ -159,10 +160,6 @@ get_deps()
 
 	for x in ${_BASE_BINS}; do
 		if [ "${x}" = "busybox" ]; then
-			# If our busybox wasn't statically built, we would collect
-			# its libraries here. Maybe I can implement this in the
-			# future if needed.
-
 			deps="${deps} \
 			$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		fi
@@ -182,10 +179,6 @@ get_deps()
 
 	if [ "${_USE_LUKS}" = "1" ]; then
 		for x in ${_LUKS_BINS}; do
-			# If our luks wasn't statically built, we would collect
-			# its libraries here. Maybe I can implement this in the
-			# future if needed.
-
 			if [ "${x}" = "cryptsetup" ]; then
 				deps="${deps} \
 				$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
@@ -193,13 +186,10 @@ get_deps()
 		done
 	fi
 
-	# Clean up the unholy mess
+	# Eliminate duplicates
 	deps=$(echo ${deps} | tr " " "\n" | sort -d | uniq)
-}
 
-# Copy all the dependencies of the binary files into the initramfs
-copy_deps()
-{
+	# Copy all the dependencies of the binary files into the initramfs
 	einfo "Copying dependencies..."
 
 	cd ${_TMP}

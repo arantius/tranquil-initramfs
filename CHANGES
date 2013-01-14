@@ -5,6 +5,7 @@
 - When creating a ZFS initramfs/srm, the documentation will also
   be copied.
 - sys-fs/squashfs-tools must be installed on your system.
+- Some functions have been consolidated.
 
 1.6.3
 ---------

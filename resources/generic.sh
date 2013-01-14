@@ -57,7 +57,8 @@ print_more()
 	einfo "More Options:"
 	eline
 	eopt "1. ZFS - System Rescue Module"
-	eopt "2. Exit Program"
+	eopt "2. Back"
+	eopt "3. Exit Program"
 	eqst "Current choice [1]: " && read _CHOICE
 
 	case ${_CHOICE} in
@@ -66,22 +67,24 @@ print_more()
 		. hooks/zfs.sh
 		. hooks/srm/zfs_srm.sh
 		;;
+	2)
+		unset _CHOICE
+		clear
+		print_header
+		print_menu
+		;;
 	*)
 		ewarn "Exiting." && exit
 		;;
 	esac
 }
 
-# If x86_64 then use lib64 libraries, else if i[*]86, use 32 bit libraries
+# Makes sure that arch is x86_64
 get_arch()
 {
 	case ${_ARCH} in
 	x86_64)
 		_LIB_PATH="64"
-		einfo "Detected ${_LIB_PATH} bit platform"
-		;;
-	i[3-6]86)
-		_LIB_PATH="32"
 		einfo "Detected ${_LIB_PATH} bit platform"
 		;;
 	*)
@@ -101,7 +104,7 @@ print_options()
 }
 
 # Ask the user if they want to use their current kernel, or another one
-get_target_kernel()
+do_kernel()
 {
 	if [ "${_USE_MODULES}" = "1" ]; then
 		# Check to see if a kernel was passed
@@ -121,11 +124,8 @@ get_target_kernel()
 			esac
 		fi
 	fi
-}
 
-# Set modules path to correct location and sets kernel name for initramfs
-set_target_kernel()
-{
+	# Set modules path to correct location and sets kernel name for initramfs
 	if [ "${_ZFS_SRM}" = "1" ] && [ "${_USE_MODULES}" = "1" ]; then
 		_MODULES="/lib/modules/${_KERNEL}/"
 		_LOCAL_MODULES="${_TMP}/lib64/modules/${_KERNEL}/"
@@ -138,6 +138,7 @@ set_target_kernel()
 		_INITRD="initrd.img"
 	fi
 }
+
 
 # Message for displaying the generating event
 print_start()
@@ -251,7 +252,6 @@ config_files()
 	fi
 	
 	# Any last substitions or additions/modifications should be done here
-
 	if [ "${_USE_ZFS}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		# Enable ZFS in the init if ZFS is being used.
 		sed -i -e '16s/0/1/' init
@@ -275,8 +275,8 @@ config_files()
 	fi
 }
 
-# Compresses the kernel modules
-pack_modules()
+# Compresses the kernel modules and generates modprobe table
+do_modules()
 {
 	if [ "${_USE_MODULES}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		einfo "Compressing kernel modules..."
@@ -287,14 +287,6 @@ pack_modules()
 			gzip ${module}
 		done
 
-		cd ${_TMP}
-	fi
-}
-
-# Generate depmod info
-modules_dep()
-{
-	if [ "${_USE_MODULES}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		einfo "Generating modprobe information..."
 		
 		cd ${_TMP}
@@ -309,7 +301,6 @@ create()
 	cd ${_TMP}
 
 	if [ "${_ZFS_SRM}" = "1" ]; then
-
 		einfo "Creating and Packing SRM..."
 
 		mksquashfs . ${_HOME}/${_SRM} -all-root -comp xz -noappend -no-progress | logger
