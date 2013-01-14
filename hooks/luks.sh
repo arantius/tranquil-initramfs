@@ -8,5 +8,8 @@
 _USE_LUKS="1"
 _USE_MODULES="1"
 
+# Set the kernel we will be using here
+do_kernel
+
 # Required Binaries, Modules, and other files
-_LUKS_BINS="cryptsetup"
+_LUKS_BINS="${_SBIN}/cryptsetup"

@@ -6,4 +6,4 @@
 
 # Required Binaries, Modules, and other files
 _USE_BASE="1"
-_BASE_BINS="busybox"
+_BASE_BINS="${_BIN}/busybox"

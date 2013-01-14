@@ -27,15 +27,15 @@ _BIN="/bin/"
 _SBIN="/sbin/"
 _LIB="/lib/"
 _LIB64="/lib64/"
-_MAN5="/usr/share/man/man5"
-_MAN8="/usr/share/man/man8"
+_MAN="/usr/share/man/"
+_UDEV="${_LIB64}/udev"
 
 _LOCAL_BIN="${_TMP}/${_BIN}"
 _LOCAL_SBIN="${_TMP}/${_SBIN}"
 _LOCAL_LIB="${_TMP}/${_LIB}"
 _LOCAL_LIB64="${_TMP}/${_LIB64}"
-_LOCAL_MAN5="${_TMP}/${_MAN5}"
-_LOCAL_MAN8="${_TMP}/${_MAN8}"
+_LOCAL_MAN="${_TMP}/${_MAN}"
+_LOCAL_UDEV="${_TMP}/${_UDEV}"
 
 _USR_BIN="/usr/bin/"
 _USR_SBIN="/usr/sbin/"
@@ -58,7 +58,19 @@ _BUSYBOX_LN="mount tty sh"
 _PREL_BIN="cpio mksquashfs"
 
 # Directories to create when generating the initramfs structure
-_CDIRS="bin sbin proc sys dev etc lib lib64 mnt/root resources"
+_CDIRS="bin \
+	sbin \
+	usr/bin \
+        proc \
+	sys \
+	dev \
+	etc \
+	mnt/root \
+	resources \
+	lib \
+	lib64/udev/rules.d \
+	usr/share/man/man5 \
+	usr/share/man/man8"
 
 # zpool.cache
 _ZCACHE="/etc/zfs/zpool.cache"

@@ -184,16 +184,17 @@ create_dirs()
 {
 	einfo "Creating directory structure for initramfs..."
 
+	# Make base directories
 	mkdir ${_TMP} && cd ${_TMP} && mkdir -p ${_CDIRS}
 
-	if [ "${_USE_ZFS}" = "1" ]; then
-		mkdir -p etc/zfs ${_LOCAL_MAN5} ${_LOCAL_MAN8}
-	fi
-
-	# If the specific kernel directory doesn't exist in the initramfs 
-	# tempdir, then create it
+	# Make kernel modules directory
 	if [ ! -z ${_LOCAL_MODULES} ] && [ "${_USE_MODULES}" = "1" ]; then
 		mkdir -p ${_LOCAL_MODULES}
+	fi
+
+	# Make ZFS specific directories
+	if [ "${_USE_ZFS}" = "1" ]; then
+		mkdir -p etc/zfs ${_LOCAL_MODULES}/addon 
 	fi
 }
 
@@ -278,7 +279,7 @@ config_files()
 # Compresses the kernel modules and generates modprobe table
 do_modules()
 {
-	if [ "${_USE_MODULES}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
+	if [ "${_USE_MODULES}" = "1" ]; then
 		einfo "Compressing kernel modules..."
 
 		cd ${_LOCAL_MODULES}
@@ -286,12 +287,14 @@ do_modules()
 		for module in $(find . -name "*.ko"); do
 			gzip ${module}
 		done
-
-		einfo "Generating modprobe information..."
 		
-		cd ${_TMP}
+		if [ "${_ZFS_SRM}" != "1" ]; then
+			einfo "Generating modprobe information..."
+			
+			cd ${_TMP}
 
-		depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+			depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+		fi
 	fi
 }
 

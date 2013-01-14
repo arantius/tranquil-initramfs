@@ -6,6 +6,3 @@
 
 # Toggle Flags
 _ZFS_SRM="1"
-
-# Directories to create when generating the initramfs structure
-_CDIRS="bin sbin etc lib64"

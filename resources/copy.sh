@@ -11,10 +11,8 @@ check_binaries()
 
 	# Check base binaries (all initramfs have these)
 	for x in ${_BASE_BINS}; do
-		if [ "${x}" = "busybox" ]; then
-			if [ ! -f "${_BIN}/${x}" ]; then
-				err_bin_dexi ${x}
-			fi
+		if [ ! -f "${x}" ]; then
+			err_bin_dexi ${x}
 		fi
 	done
 
@@ -23,18 +21,8 @@ check_binaries()
 		eflag "Using ZFS"
 
 		for x in ${_INIT_BINS}; do	
-			if [ "${x}" = "hostid" ]; then
-				if [ ! -f "${_USR_BIN}/${x}" ]; then
-					err_bin_dexi ${x}
-				fi
-			elif [ "${x}" = "zpool_layout" ]; then
-				if [ ! -f "${_BIN}/${x}" ]; then
-					err_bin_dexi ${x}
-				fi
-			else
-				if [ ! -f "${_SBIN}/${x}" ]; then
-					err_bin_dexi ${x}
-				fi
+			if [ ! -f "${x}" ]; then
+				err_bin_dexi ${x}
 			fi
 		done
 	fi
@@ -44,10 +32,8 @@ check_binaries()
 		eflag "Using LUKS"
 
 		for x in ${_LUKS_BINS}; do
-			if [ "${x}" = "cryptsetup" ]; then
-				if [ ! -f "${_SBIN}/${x}" ]; then
-					err_bin_dexi ${x}
-				fi
+			if [ ! -f "${x}" ]; then
+				err_bin_dexi ${x}
 			fi
 		done
 	fi
@@ -60,26 +46,8 @@ check_modules()
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_MODS}; do
-			if [ "${x}" = "spl" ] || [ "${x}" = "splat" ]; then
-				if [ ! -f "${_MODULES}/addon/spl/${x}/${x}.ko" ]; then
-					err_mod_dexi ${x}
-				fi
-			elif [ "${x}" = "zavl" ]; then
-				if [ ! -f "${_MODULES}/addon/zfs/avl/${x}.ko" ]; then
-					err_mod_dexi ${x}
-				fi
-			elif [ "${x}" = "znvpair" ]; then
-				if [ ! -f "${_MODULES}/addon/zfs/nvpair/${x}.ko" ]; then
-					err_mod_dexi ${x}
-				fi
-			elif [ "${x}" = "zunicode" ]; then
-				if [ ! -f "${_MODULES}/addon/zfs/unicode/${x}.ko" ]; then
-					err_mod_dexi ${x}
-				fi
-			else
-				if [ ! -f "${_MODULES}/addon/zfs/${x}/${x}.ko" ]; then
-					err_mod_dexi ${x}
-				fi
+			if [ ! -f "${x}" ]; then
+				err_mod_dexi ${x}
 			fi
 		done
 	fi
@@ -92,26 +60,18 @@ copy_binaries()
 
 	# Copy base binaries (all initramfs have these)
 	for x in ${_BASE_BINS}; do
-		if [ "${x}" = "busybox" ]; then
-			ecp ${_BIN}/${x} ${_LOCAL_BIN}
-		fi
+		ecp ${x} ${_TMP}/${x}
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_BINS}; do
-			if [ "${x}" = "hostid" ]; then
-				ecp ${_USR_BIN}/${x} ${_LOCAL_BIN}
-			elif [ "${x}" = "zpool_layout" ]; then
-				ecp ${_BIN}/${x} ${_LOCAL_BIN}
-			else
-				ecp ${_SBIN}/${x} ${_LOCAL_SBIN}
-			fi
+			ecp ${x} ${_TMP}/${x}
 		done  
 	fi
 
 	if [ "${_USE_LUKS}" = "1" ]; then
 		for x in ${_LUKS_BINS}; do
-			ecp ${_SBIN}/${x} ${_LOCAL_SBIN}
+			ecp ${x} ${_TMP}/${x}
 		done
 	fi
 }
@@ -124,9 +84,12 @@ copy_modules()
 	cd ${_TMP}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-		mkdir ${_LOCAL_MODULES}/addon
-		ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES}/addon
-		ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}/addon
+		for x in ${_ZFS_MODS}; do 
+			#ecp ${x} ${_TMP}/${x%/*} || exit
+			ecp ${x} ${_LOCAL_MODULES}/addon || exit
+		done
+		#ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES}/addon
+		#ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}/addon
 	fi
 }
 
@@ -138,12 +101,24 @@ copy_docs()
 	cd ${_TMP}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_MAN5}; do
-			ecp -r ${_MAN5}/${x} ${_LOCAL_MAN5}
+		for x in ${_ZFS_MAN}; do
+			ecp -r ${x} ${_TMP}/${x}
 		done
+	fi
+}
 
-		for x in ${_ZFS_MAN8}; do
-			ecp -r ${_MAN8}/${x} ${_LOCAL_MAN8}
+# Copy udev rules
+# Disabled it from running because this just causes problems on sysresccd.
+# It doesn't do anything in terms of making the /dev/zvol/<>/swap appear or w/e
+copy_rules()
+{
+	einfo "Copying udev rules..."
+
+	cd ${_TMP}
+
+	if [ "${_USE_ZFS}" = "1" ]; then
+		for x in ${_ZFS_UDEV}; do
+			ecp -r ${x} ${_TMP}/${x}
 		done
 	fi
 }
@@ -159,30 +134,21 @@ do_deps()
 	deps="${_LIB64}/ld-linux-x86-64.so*"
 
 	for x in ${_BASE_BINS}; do
-		if [ "${x}" = "busybox" ]; then
-			deps="${deps} \
-			$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
-		fi
+		deps="${deps} \
+		$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_BINS}; do
-			if [ "${x}" = "zpool_layout" ] || [ "${x}" = "hostid" ]; then
-				deps="${deps} \
-				$(ldd ${_LOCAL_BIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
-			else
-				deps="${deps} \
-				$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
-			fi
+			deps="${deps} \
+			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		done
 	fi
 
 	if [ "${_USE_LUKS}" = "1" ]; then
 		for x in ${_LUKS_BINS}; do
-			if [ "${x}" = "cryptsetup" ]; then
-				deps="${deps} \
-				$(ldd ${_LOCAL_SBIN}/${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
-			fi
+			deps="${deps} \
+			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		done
 	fi
 
