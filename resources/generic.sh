@@ -3,6 +3,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 # Message that will be displayed at the top of the screen
 print_header()
@@ -38,11 +41,6 @@ print_menu()
                 . hooks/luks.sh
                 ;;
 	3)
-		einfo "An initramfs for a normal boot will be generated!"
-		. hooks/base.sh
-		. hooks/normal.sh
-		;;
-	4)
 		print_more
 		;;
 	*)
@@ -64,8 +62,8 @@ print_more()
 	case ${_CHOICE} in
 	1|"")
 		einfo "Creating a ZFS System Rescue Module!"
-		. hooks/zfs.sh
 		. hooks/srm/zfs_srm.sh
+		. hooks/zfs.sh
 		;;
 	2)
 		unset _CHOICE
@@ -98,9 +96,8 @@ print_options()
 {
 	eopt "1. ZFS"
 	eopt "2. Encrypted ZFS (LUKS + ZFS)"
-	eopt "3. Normal Boot"
-	eopt "4. More Options"
-	eopt "5. Exit Program"
+	eopt "3. More Options"
+	eopt "4. Exit Program"
 }
 
 # Ask the user if they want to use their current kernel, or another one
@@ -126,7 +123,7 @@ do_kernel()
 	fi
 
 	# Set modules path to correct location and sets kernel name for initramfs
-	if [ "${_ZFS_SRM}" = "1" ] && [ "${_USE_MODULES}" = "1" ]; then
+	if [ "${_ZFS_SRM}" = "1" ]; then
 		_MODULES="/lib/modules/${_KERNEL}/"
 		_LOCAL_MODULES="${_TMP}/lib64/modules/${_KERNEL}/"
 		_SRM="zfs-${_KERNEL}.srm"
@@ -134,8 +131,6 @@ do_kernel()
 		_MODULES="/lib/modules/${_KERNEL}/"
 		_LOCAL_MODULES="${_TMP}/lib/modules/${_KERNEL}/"
 		_INITRD="initrd-${_KERNEL}.img"
-	else
-		_INITRD="initrd.img"
 	fi
 }
 
@@ -194,7 +189,7 @@ create_dirs()
 
 	# Make ZFS specific directories
 	if [ "${_USE_ZFS}" = "1" ]; then
-		mkdir -p etc/zfs ${_LOCAL_MODULES}/addon 
+		mkdir -p etc/zfs
 	fi
 }
 
@@ -269,11 +264,6 @@ config_files()
 	if [ "${_USE_LUKS}" = "1" ]; then
 		sed -i -e '17s/0/1/' init
 	fi
-
-	# Enable Normal Booting in the init if NORMAL is being used.
-	if [ "${_USE_NORMAL}" = "1" ]; then
-		sed -i -e '18s/0/1/' init
-	fi
 }
 
 # Compresses the kernel modules and generates modprobe table
@@ -298,7 +288,7 @@ do_modules()
 	fi
 }
 
-# Create the initramfs or srm
+# Create the solution
 create()
 {
 	cd ${_TMP}
@@ -344,14 +334,12 @@ check_prelim_binaries()
 	einfo "Checking preliminary binaries..."
 
 	for x in ${_PREL_BIN}; do	
-		if [ "${x}" = "cpio" ]; then
-			if [ ! -f "${_BIN}/${x}" ]; then
+		if [ ! -f "${x}" ]; then
+			if [ "${x}" = "/bin/cpio" ]; then
 				err_bin_dexi ${x} "app-arch/cpio"
 			fi
-		fi
 
-		if [ "${x}" = "mksquashfs" ]; then
-			if [ ! -f "${_USR_BIN}/${x}" ]; then
+			if [ "${x}" = "/usr/bin/mksquashfs" ]; then
 				err_bin_dexi ${x} "sys-fs/squashfs-tools"
 			fi
 		fi

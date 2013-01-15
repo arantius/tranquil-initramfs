@@ -5,6 +5,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 # Function to start rescue shell
 rescue_shell()
@@ -12,7 +15,7 @@ rescue_shell()
 	ewarn "Booting into rescue shell..."
 	eline
 	busybox --install -s
-	exec /bin/sh
+	exec setsid sh -c 'exec /bin/sh </dev/tty1 >/dev/tty1 2>&1'
 }
 
 # Function to load ZFS modules

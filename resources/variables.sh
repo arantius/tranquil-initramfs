@@ -3,6 +3,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 # Application Info
 _NAME="Bliss Initramfs Creator"
@@ -13,7 +16,7 @@ _VERSION="1.6.4"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.7.1-ALL"
+_EXAMPLE_KERNEL="3.7.2-ALL"
 
 # Parameters and Locations
 _KERNEL=""
@@ -28,7 +31,7 @@ _SBIN="/sbin/"
 _LIB="/lib/"
 _LIB64="/lib64/"
 _MAN="/usr/share/man/"
-_UDEV="${_LIB64}/udev"
+_UDEV="${_LIB64}/udev" # Not used
 
 _LOCAL_BIN="${_TMP}/${_BIN}"
 _LOCAL_SBIN="${_TMP}/${_SBIN}"
@@ -41,8 +44,8 @@ _USR_BIN="/usr/bin/"
 _USR_SBIN="/usr/sbin/"
 _USR_LIB="/usr/lib/"
 
-_MODULES="" # will be set by the `setTargetKernel` function
-_LOCAL_MODULES="" # will be set by the `setTargetKernel` function
+_MODULES=""        # will be set by the `setTargetKernel` function
+_LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
 
 # Get CPU Architecture
 _ARCH="$(uname -m)"
@@ -55,7 +58,8 @@ _BUSYBOX_LN="mount tty sh"
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
-_PREL_BIN="cpio mksquashfs"
+_PREL_BIN="/bin/cpio \
+	   /usr/bin/mksquashfs"
 
 # Directories to create when generating the initramfs structure
 _CDIRS="bin \
@@ -67,10 +71,7 @@ _CDIRS="bin \
 	etc \
 	mnt/root \
 	resources \
-	lib \
-	lib64/udev/rules.d \
-	usr/share/man/man5 \
-	usr/share/man/man8"
+	lib"
 
 # zpool.cache
 _ZCACHE="/etc/zfs/zpool.cache"

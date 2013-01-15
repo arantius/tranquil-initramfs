@@ -7,7 +7,8 @@
 - sys-fs/squashfs-tools must be installed on your system.
 - Some functions have been consolidated.
 - Restructured a bit how files are located and copied
-- udev rules will be copied to the initramfs/srm
+- Normal Boot has been removed
+- This project is no longer GPL compatible.
 
 1.6.3
 ---------

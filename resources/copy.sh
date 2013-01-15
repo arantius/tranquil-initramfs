@@ -3,6 +3,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 # Checks to see if the binaries exist
 check_binaries()
@@ -17,7 +20,6 @@ check_binaries()
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
-
 		eflag "Using ZFS"
 
 		for x in ${_INIT_BINS}; do	
@@ -28,7 +30,6 @@ check_binaries()
 	fi
 
 	if [ "${_USE_LUKS}" = "1" ]; then
-
 		eflag "Using LUKS"
 
 		for x in ${_LUKS_BINS}; do
@@ -83,13 +84,16 @@ copy_modules()
 
 	cd ${_TMP}
 
-	if [ "${_USE_ZFS}" = "1" ]; then
+	if [ "${_ZFS_SRM}" = "1" ]; then
 		for x in ${_ZFS_MODS}; do 
-			#ecp ${x} ${_TMP}/${x%/*} || exit
-			ecp ${x} ${_LOCAL_MODULES}/addon || exit
+			local p=$(dirname ${_TMP}/${x} | sed 's:/lib/:/lib64/:')
+			mkdir -p ${p} && ecp -r ${x} ${p} 
 		done
-		#ecp -r ${_MODULES}/addon/spl ${_LOCAL_MODULES}/addon
-		#ecp -r ${_MODULES}/addon/zfs ${_LOCAL_MODULES}/addon
+	elif [ "${_USE_ZFS}" = "1" ]; then
+		for x in ${_ZFS_MODS}; do 
+			mkdir -p "`dirname ${_TMP}/${x}`"
+			ecp -r ${x} ${_TMP}/${x} 
+		done
 	fi
 }
 
@@ -102,22 +106,7 @@ copy_docs()
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_MAN}; do
-			ecp -r ${x} ${_TMP}/${x}
-		done
-	fi
-}
-
-# Copy udev rules
-# Disabled it from running because this just causes problems on sysresccd.
-# It doesn't do anything in terms of making the /dev/zvol/<>/swap appear or w/e
-copy_rules()
-{
-	einfo "Copying udev rules..."
-
-	cd ${_TMP}
-
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_UDEV}; do
+			mkdir -p "`dirname ${_TMP}/${x}`"
 			ecp -r ${x} ${_TMP}/${x}
 		done
 	fi
