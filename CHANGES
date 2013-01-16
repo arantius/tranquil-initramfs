@@ -9,6 +9,7 @@
 - Restructured a bit how files are located and copied
 - Normal Boot has been removed
 - This project is no longer GPL compatible.
+- Job control has been enabled in the initramfs
 
 1.6.3
 ---------

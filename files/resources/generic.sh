@@ -15,7 +15,7 @@ rescue_shell()
 	ewarn "Booting into rescue shell..."
 	eline
 	busybox --install -s
-	exec setsid sh -c 'exec /bin/sh </dev/tty1 >/dev/tty1 2>&1'
+	exec setsid /bin/sh -c 'exec /bin/sh </dev/tty1 >/dev/tty1 2>&1'
 }
 
 # Function to load ZFS modules
