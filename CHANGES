@@ -1,3 +1,11 @@
+1.6.5
+---------
+- Added function that cleans up initramfs and srm directory structure
+- Updated to support 0.6.0_rc14
+- squashfs-tools is no longer required if you just want to make an initramfs
+- udev rules are now working. This means you can make a swap partition and use it
+  via /dev/zvol/<pool_name>/<swap_name> immediately from inside the sysresccd.
+
 1.6.4
 ---------
 - Added ZFS System Rescue Module support. The code bases for my

@@ -9,3 +9,6 @@
 
 # Toggle Flags
 _ZFS_SRM="1"
+
+# Dependency
+_PREL_BIN="${_PREL_BIN} /usr/bin/mksquashfs"

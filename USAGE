@@ -32,9 +32,9 @@ I would do the following
 and add a new entry:
 
 LABEL funtoo
-	MENU LABEL Funtoo [3.7.1-ALL]
-	LINUX /vmlinuz-3.7.1-ALL
-	INITRD /initrd-3.7.1-ALL.img
+	MENU LABEL Funtoo [3.7.5-ALL]
+	LINUX /vmlinuz-3.7.5-ALL
+	INITRD /initrd-3.7.5-ALL.img
 	APPEND root=rpool/ROOT/funtoo
 	
 This would mount my `rpool/ROOT/funtoo` dataset. `root` is the kernel parameter you
@@ -43,10 +43,6 @@ need to declare so that the initramfs knows which dataset you want to boot into.
 =======================================
 Kernel Options:
 =======================================
-Normal Boot:
-root - Where your root filesystem is
-	example: APPEND root=/dev/sda2
-
 ZFS:
 root - ZFS root name
 	example: APPEND root=rpool/ROOT/funtoo

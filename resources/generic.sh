@@ -191,6 +191,9 @@ create_dirs()
 	if [ "${_USE_ZFS}" = "1" ]; then
 		mkdir -p etc/zfs
 	fi
+
+	# Delete any directories not needed
+	strip
 }
 
 # Create the required symlinks to it
@@ -334,13 +337,17 @@ check_prelim_binaries()
 	einfo "Checking preliminary binaries..."
 
 	for x in ${_PREL_BIN}; do	
+
 		if [ ! -f "${x}" ]; then
+
 			if [ "${x}" = "/bin/cpio" ]; then
 				err_bin_dexi ${x} "app-arch/cpio"
 			fi
 
-			if [ "${x}" = "/usr/bin/mksquashfs" ]; then
-				err_bin_dexi ${x} "sys-fs/squashfs-tools"
+			if [ "${_ZFS_SRM}" = "1" ]; then
+				if [ "${x}" = "/usr/bin/mksquashfs" ]; then
+					err_bin_dexi ${x} "sys-fs/squashfs-tools"
+				fi
 			fi
 		fi
 	done
@@ -423,4 +430,12 @@ werr()
 ecp()
 {
 	cp -afL ${1} ${2} ${3}
+}
+
+# Cleans out directories not needed for the initramfs or srm
+strip()
+{
+	if [ "${_ZFS_SRM}" = "1" ]; then
+		rm -rf ${_TMP}/{bin,lib,mnt,resources,dev,proc,sys}
+	fi
 }

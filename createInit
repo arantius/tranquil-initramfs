@@ -80,6 +80,7 @@ check_prelim_binaries
 check_binaries && check_modules
 copy_binaries && copy_modules
 copy_docs
+copy_udev
 do_modules
 do_deps
 create_links

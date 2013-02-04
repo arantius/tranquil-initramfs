@@ -12,11 +12,11 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.6.4"
+_VERSION="1.6.5"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.7.2-ALL"
+_EXAMPLE_KERNEL="3.7.5-ALL"
 
 # Parameters and Locations
 _KERNEL=""
@@ -31,7 +31,7 @@ _SBIN="/sbin/"
 _LIB="/lib/"
 _LIB64="/lib64/"
 _MAN="/usr/share/man/"
-_UDEV="${_LIB64}/udev" # Not used
+_UDEV="${_LIB64}/udev"
 
 _LOCAL_BIN="${_TMP}/${_BIN}"
 _LOCAL_SBIN="${_TMP}/${_SBIN}"
@@ -58,8 +58,7 @@ _BUSYBOX_LN="mount tty sh"
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
-_PREL_BIN="/bin/cpio \
-	   /usr/bin/mksquashfs"
+_PREL_BIN="/bin/cpio"
 
 # Directories to create when generating the initramfs structure
 _CDIRS="bin \
