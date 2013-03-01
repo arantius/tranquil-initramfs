@@ -3,20 +3,17 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-# This Source Code Form is "Incompatible With Secondary Licenses", as
-# defined by the Mozilla Public License, v. 2.0.
 
 # Application Info
 _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.6.5"
+_VERSION="1.6.6"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.7.5-ALL"
+_EXAMPLE_KERNEL="3.8.1-ALL"
 
 # Parameters and Locations
 _KERNEL=""
