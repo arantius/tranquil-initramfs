@@ -250,7 +250,7 @@ config_files()
 	# Any last substitions or additions/modifications should be done here
 	if [ "${_USE_ZFS}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		# Enable ZFS in the init if ZFS is being used.
-		sed -i -e '19s/0/1/' init
+		sed -i -e '16s/0/1/' init
 
 		# Copies zpool.cache if it exists
 		if [ -f "${_ZCACHE}" ]; then
@@ -262,7 +262,7 @@ config_files()
 
 	# Enable LUKS in the init if LUKS is being used.
 	if [ "${_USE_LUKS}" = "1" ]; then
-		sed -i -e '20s/0/1/' init
+		sed -i -e '17s/0/1/' init
 	fi
 }
 

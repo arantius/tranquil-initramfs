@@ -9,11 +9,11 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.6.6"
+_VERSION="1.6.7"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.8.1-ALL"
+_EXAMPLE_KERNEL="3.8.2-ALL"
 
 # Parameters and Locations
 _KERNEL=""
@@ -21,13 +21,13 @@ _INITRD=""
 _INIT=""
 
 _HOME="$(pwd)"
-_TMP="${_HOME}/tempinit/"
+_TMP="${_HOME}/tempinit"
 
-_BIN="/bin/"
-_SBIN="/sbin/"
-_LIB="/lib/"
-_LIB64="/lib64/"
-_MAN="/usr/share/man/"
+_BIN="/bin"
+_SBIN="/sbin"
+_LIB="/lib"
+_LIB64="/lib64"
+_MAN="/usr/share/man"
 _UDEV="${_LIB64}/udev"
 
 _LOCAL_BIN="${_TMP}/${_BIN}"
@@ -37,9 +37,9 @@ _LOCAL_LIB64="${_TMP}/${_LIB64}"
 _LOCAL_MAN="${_TMP}/${_MAN}"
 _LOCAL_UDEV="${_TMP}/${_UDEV}"
 
-_USR_BIN="/usr/bin/"
-_USR_SBIN="/usr/sbin/"
-_USR_LIB="/usr/lib/"
+_USR_BIN="/usr/bin"
+_USR_SBIN="/usr/sbin"
+_USR_LIB="/usr/lib"
 
 _MODULES=""        # will be set by the `setTargetKernel` function
 _LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
