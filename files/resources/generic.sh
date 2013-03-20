@@ -21,7 +21,7 @@ load_modules()
         modules=""
 
         if [ "${USE_ZFS}" = "1" ]; then
-                modules="${modules} spl splat zavl znvpair zcommon zunicode zfs zpios"
+                modules="${modules} spl zavl znvpair zcommon zunicode zfs"
         fi
 
         for x in ${modules}; do

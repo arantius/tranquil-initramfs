@@ -9,7 +9,7 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.6.8"
+_VERSION="1.6.8.1"
 _LICENSE="MPLv2"
 
 # Used only for documentation purposes
