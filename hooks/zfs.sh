@@ -27,13 +27,11 @@ _ZFS_BINS="${_USR_BIN}/hostid \
 	   ${_SBIN}/ztest"
 
 _ZFS_MODS="${_MODULES}/addon/spl/spl/spl.ko \
-	   ${_MODULES}/addon/spl/splat/splat.ko \
 	   ${_MODULES}/addon/zfs/avl/zavl.ko \
 	   ${_MODULES}/addon/zfs/nvpair/znvpair.ko \
 	   ${_MODULES}/addon/zfs/unicode/zunicode.ko \
 	   ${_MODULES}/addon/zfs/zcommon/zcommon.ko \
-	   ${_MODULES}/addon/zfs/zfs/zfs.ko \
-	   ${_MODULES}/addon/zfs/zpios/zpios.ko"
+	   ${_MODULES}/addon/zfs/zfs/zfs.ko"
 
 _ZFS_MAN="${_MAN}/man5/vdev_id.conf.5.bz2 \
 	  ${_MAN}/man8/vdev_id.8.bz2 \

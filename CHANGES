@@ -1,3 +1,7 @@
+1.6.8
+---------
+- Removed the inclusion of debug modules (splat.ko, zpios.ko).
+
 1.6.7
 ---------
 - Fixed the sed subtitions in resources/generic.sh. The init script wouldn't boot
