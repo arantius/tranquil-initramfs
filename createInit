@@ -83,4 +83,4 @@ do_deps
 create_links
 config_files
 create
-#clean_exit
+clean_exit
