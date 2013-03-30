@@ -1,3 +1,7 @@
+1.6.9
+---------
+- Updated for ZoL 0.6.1
+
 1.6.8.1
 ---------
 - Removed remnant splat and zpios modules trying to be loaded in the init.

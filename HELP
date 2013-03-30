@@ -10,4 +10,4 @@ You can run the program directly by typing:
 or you can pass options to it. If you know the kernel and option you want,
 you can pass it to the script directly like this:
 
-# ./createInit 1 3.8.1-ALL
+# ./createInit 1 3.8.5-ALL

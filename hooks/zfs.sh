@@ -13,8 +13,6 @@ do_kernel
 
 # Required Binaries, Modules, and other files
 _ZFS_BINS="${_USR_BIN}/hostid \
-	   ${_SBIN}/spl \
-	   ${_SBIN}/splat \
 	   ${_SBIN}/fsck.zfs \
 	   ${_SBIN}/mount.zfs \
 	   ${_SBIN}/zdb \
@@ -26,17 +24,24 @@ _ZFS_BINS="${_USR_BIN}/hostid \
 	   ${_SBIN}/zstreamdump \
 	   ${_SBIN}/ztest"
 
-_ZFS_MODS="${_MODULES}/addon/spl/spl/spl.ko \
-	   ${_MODULES}/addon/zfs/avl/zavl.ko \
-	   ${_MODULES}/addon/zfs/nvpair/znvpair.ko \
-	   ${_MODULES}/addon/zfs/unicode/zunicode.ko \
-	   ${_MODULES}/addon/zfs/zcommon/zcommon.ko \
-	   ${_MODULES}/addon/zfs/zfs/zfs.ko"
+_ZFS_MODS="${_MODULES}/extra/spl/spl.ko \
+	   ${_MODULES}/extra/avl/zavl.ko \
+	   ${_MODULES}/extra/nvpair/znvpair.ko \
+	   ${_MODULES}/extra/unicode/zunicode.ko \
+	   ${_MODULES}/extra/zcommon/zcommon.ko \
+	   ${_MODULES}/extra/zfs/zfs.ko"
 
-_ZFS_MAN="${_MAN}/man5/vdev_id.conf.5.bz2 \
+_ZFS_MAN="${_MAN}/man1/zhack.1.bz2 \
+          ${_MAN}/man1/zpios.1.bz2 \
+          ${_MAN}/man1/ztest.1.bz2 \
+          ${_MAN}/man5/vdev_id.conf.5.bz2 \
+          ${_MAN}/man5/zpool-features.5.bz2 \
+          ${_MAN}/man8/fsck.zfs.8.bz2 \
+          ${_MAN}/man8/mount.zfs.8.bz2 \
 	  ${_MAN}/man8/vdev_id.8.bz2 \
 	  ${_MAN}/man8/zdb.8.bz2 \
 	  ${_MAN}/man8/zfs.8.bz2 \
+          ${_MAN}/man8/zinject.8.bz2 \
 	  ${_MAN}/man8/zpool.8.bz2 \
 	  ${_MAN}/man8/zstreamdump.8.bz2"
 
