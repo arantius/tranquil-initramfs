@@ -1,3 +1,17 @@
+1.7.0
+---------
+- Adds support for single user mode (via 'su' boot parameter).
+  This is a really bad su mode though. Use it if you forgot to 
+  change your password after installation.
+- Adds support to recreate the zpool.cache from within the initramfs 
+  (via 'refresh' boot parameter)
+- Removed some old code that wasn't being used anymore.
+- Added a few more functions to consolidate stuff.
+- The version of the creator that the initramfs was made with will be displayed at boot
+- Fixed bug where when asking for help via parameters (./createInit -h), it was
+  pointing to the wrong location.
+- Sourcing files is now done via relative path rather than using $(pwd)
+
 1.6.9
 ---------
 - Updated for ZoL 0.6.1

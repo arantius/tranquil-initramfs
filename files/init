@@ -16,6 +16,8 @@ INIT="/sbin/init"
 USE_ZFS="0"
 USE_LUKS="0"
 
+VERSION="0"
+
 ### Lasu la ludoj komenci ###
 
 welcome
@@ -36,20 +38,16 @@ if [ "${recover}" = "1" ]; then
 	rescue_shell
 fi
 
-if [ "${USE_LUKS}" = "1" ]; then
-        luks_trigger
+if [ "${su}" = "1" ]; then
+	ewarn "Single User Enabled... Entering Rescue Environment"
+        single_user
 fi
 
-if [ "${USE_ZFS}" = "1" ]; then
-        zfs_trigger
+if [ "${refresh}" = "1" ]; then
+        refresh_cache
 fi
 
-if [ "${USE_NORMAL}" = "1" ]; then
-	normal_trigger
-fi
+check_triggers
 
-einfo "Unmounting kernel devices..."
-umnt_kernel_devs || die "Failed to umount kernel devices"
-
-einfo "Switching to your rootfs..." && eline
-switch_to_new_root
+# Let's clean up and go to the OS
+have_a_nice_day

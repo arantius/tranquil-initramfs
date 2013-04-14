@@ -75,6 +75,12 @@ parse_cmdline()
 		recover)
 			recover=1
 			;;
+		refresh)
+			refresh=1
+			;;
+		su)
+			su=1
+			;;
 		esac
 	done
 }
@@ -103,32 +109,81 @@ zfs_trigger()
 
 	local CACHE="/etc/zfs/zpool.cache"
 
-	if [ ! -f "${CACHE}" ]; then
-		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
-	elif [ "${nocache}" = "1" ]; then
-		eflag "Ignoring zpool.cache..."
-
-		zpool export -f ${pool_name}
-		zpool import -N -f ${pool_name} || die "Failed to import your pool: ${pool_name}"
+	if [ ! -f "${CACHE}" ] || [ "${nocache}" = "1" ] || [ "${refresh}" = "1" ]; then
+                remount_pool
 	fi
 
         mount -t zfs -o zfsutil ${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset"
 }
 
-# If USE_NORMAL is enabled, run this function
-normal_trigger()
-{
-        if [ -z "${root}" ]; then
-                die "You didn't pass the 'root' variable to the kernel. Example: root=/dev/sda2"
-        fi
-
-	eflag "Mounting your root drive..."
-	mount ${root} ${NEW_ROOT} || die "Failed to mount your root drive: ${root}"
-}
-
+# Self explanatory
 switch_to_new_root()
 {
         exec switch_root ${NEW_ROOT} ${INIT} || die "Failed to switch to your rootfs"
+}
+
+# Checks all triggers
+check_triggers()
+{
+        if [ "${USE_LUKS}" = "1" ]; then
+                luks_trigger
+        fi
+
+        if [ "${USE_ZFS}" = "1" ]; then
+                zfs_trigger
+        fi
+}
+
+# Regenerates a brand new zpool.cache file and installs it in the system
+refresh_cache()
+{
+        eflag "Refreshing zpool.cache..."
+	
+        local CACHE="/etc/zfs/zpool.cache"
+
+        check_triggers
+
+        # If there is an old cache in the rootfs, then delete it.
+        if [ -f "${NEW_ROOT}/${CACHE}" ]; then
+                rm -f ${NEW_ROOT}/${CACHE}
+        fi
+
+        cp -f ${CACHE} ${NEW_ROOT}/${CACHE}
+
+        ewarn "Please recreate your initramfs so that it can use the new zpool.cache!"
+        sleep 5 
+
+        # Now that we refreshed the cache, let's just continue into the OS
+	have_a_nice_day
+}
+
+# Single User Mode
+single_user()
+{
+        check_triggers
+        chroot ${NEW_ROOT} /bin/bash --login
+}
+
+# Cleanly exports and imports pool
+
+# I made this function since Gentoo/Funtoo don't cleanly umount the pool
+# during shutdown/restart. This is actually only used if we aren't going to
+# be using the zpool.cache.
+remount_pool()
+{
+        zpool export -f ${pool_name}
+        zpool import -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
+}
+
+# Central exit point needed to cleanly exit from either the main function
+# or the refresh_cache function.
+have_a_nice_day()
+{
+	einfo "Unmounting kernel devices..."
+	umnt_kernel_devs || die "Failed to umount kernel devices"
+
+	einfo "Switching to your rootfs..." && eline
+	switch_to_new_root
 }
 
 ### Utility Functions ###
@@ -166,7 +221,7 @@ eline()
 # Welcome Message
 welcome()
 {
-        einfo "Welcome to the Bliss Initramfs!"
+        einfo "Welcome to Bliss! [${VERSION}]"
 }
 
 # Prevent kernel from printing on screen

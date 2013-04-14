@@ -22,21 +22,32 @@ Copy the file to your boot directory and name it whatever you want.
 
 2. Setting it up in the bootloader
 
-If my initramfs is called: initrd-3.7.1-ALL.img and my bootloader is extlinux,
-I would do the following
+If the following information is true:
+Kernel     = vmlinuz-3.8.7-ALL
+Initramfs  = initrd-3.8.7-ALL.img 
+Bootloader = GRUB 2
+Partition Layout is GPT
+and /boot is on /dev/sda1 formatted with the ext2 filesystem
 
-(open up the bootloader config (for extlinux it's extlinux.conf)
+I would do the following:
 
-`vim /boot/extlinux/extlinux.conf`
+(open up the bootloader config (for GRUB 2 it's grub.cfg))
+
+`vim /boot/grub/grub.cfg`
 
 and add a new entry:
 
-LABEL funtoo
-	MENU LABEL Funtoo [3.7.5-ALL]
-	LINUX /vmlinuz-3.7.5-ALL
-	INITRD /initrd-3.7.5-ALL.img
-	APPEND root=rpool/ROOT/funtoo
-	
+# Funtoo
+menuentry "Funtoo - 3.8.7" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.8.7-ALL root=rpool/ROOT/funtoo quiet
+	initrd /initrd-3.8.7-ALL.img
+}
+
 This would mount my `rpool/ROOT/funtoo` dataset. `root` is the kernel parameter you
 need to declare so that the initramfs knows which dataset you want to boot into.
 
@@ -61,6 +72,23 @@ nocache - Ignores zpool.cache. Useful for booting if you have an old
 	 initrd so you don't have to keep using this option.
 
 	 example: APPEND root=rpool/ROOT/funtoo nocache
+
+refresh_cache - Ignores the zpool.cache (if there is one in the initramfs),
+                Mounts the OS and deletes the old zpool.cache that it has,
+		Copies the new zpool.cache that the initramfs created into
+		the OS.
+
+		This is extremely useful if you had an old zfs pool and you
+		changed it in any way (Maybe you have a RAID1 and now have
+		a RAID10? or a RAIDZ2).
+
+	 	example: APPEND root=rpool/ROOT/funtoo refresh_cache
+
+su - Single User Mode. This is a really crappy implementation of a single user,
+     mode. But at least it will help you if you forgot to change your password,
+     after installation.
+
+     example: APPEND root=rpool/ROOT/funtoo su
 
 LUKS + ZFS:
 Follow the same instructions as above, but also add "enc_root=" to your
