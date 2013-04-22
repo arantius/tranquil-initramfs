@@ -1,3 +1,7 @@
+1.7.1
+---------
+- Relicensed from the MPLv2 to the Simplified BSD License
+
 1.7.0
 ---------
 - Adds support for single user mode (via 'su' boot parameter).

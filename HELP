@@ -10,4 +10,4 @@ You can run the program interactively by just starting the application:
 or you can run it directly by passing options to it. If you know the kernel and option you want,
 you can pass it to the script like this:
 
-# ./createInit 1 3.8.7-ALL
+# ./createInit 1 3.8.8-ALL
