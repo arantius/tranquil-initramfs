@@ -305,6 +305,10 @@ do_modules()
 			
 			cd ${_TMP}
 
+                        # Copy modules.order and modules.builtin just so depmod
+                        # doesn't spit out warnings. -_-
+                        cp -a ${_MODULES}/modules.{order,builtin} ${_LOCAL_MODULES}
+
 			depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
 		fi
 	fi

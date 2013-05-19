@@ -1,3 +1,10 @@
+1.7.2
+---------
+- Now copies the modules.order and modules.builtin files into the initramfs 
+  so the depmod program doesn't complain. These files don't have any affect 
+  on the functionality of the initramfs. The initramfs will work fine without
+  them.
+
 1.7.1
 ---------
 - Relicensed from the MPLv2 to the Simplified BSD License

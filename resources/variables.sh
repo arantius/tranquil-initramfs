@@ -28,11 +28,11 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.7.1"
+_VERSION="1.7.2"
 _LICENSE="Simplified BSD License"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.8.8-ALL"
+_EXAMPLE_KERNEL="3.8.13-ALL"
 
 # Parameters and Locations
 _KERNEL=""
