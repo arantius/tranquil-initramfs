@@ -24,70 +24,70 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Application Info
-_NAME="Bliss Initramfs Creator"
-_AUTHOR="Jonathan Vasquez"
-_EMAIL="jvasquez1011@gmail.com"
-_CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.8.0"
-_LICENSE="Simplified BSD License"
+NAME="Bliss Initramfs Creator"
+AUTHOR="Jonathan Vasquez"
+EMAIL="jvasquez1011@gmail.com"
+CONTACT="${AUTHOR} <${EMAIL}>"
+VERSION="1.8.1"
+LICENSE="Simplified BSD License"
 
 # Used only for documentation purposes
-_EXAMPLE_KERNEL="3.8.13-ALL"
+EXAMPLE_KERNEL="3.8.13-ALL"
 
 # Parameters and Locations
-_KERNEL=""
-_INITRD=""
-_INIT=""
+KERNEL=""
+INITRD=""
+INIT=""
 
-_HOME="$(pwd)"
-_TMP_CORE="${_HOME}/temp_core"
-_TMP_KMOD="${_HOME}/temp_kmod"
+HOME="$(pwd)"
+TMP_CORE="${HOME}/temp_core"
+TMP_KMOD="${HOME}/temp_kmod"
 
-_BIN="/bin"
-_SBIN="/sbin"
-_LIB="/lib"
-_LIB64="/lib64"
-_MAN="/usr/share/man"
-_UDEV="${_LIB64}/udev"
+BIN="/bin"
+SBIN="/sbin"
+LIB="/lib"
+LIB64="/lib64"
+MAN="/usr/share/man"
+UDEV="${LIB64}/udev"
 
-_LOCAL_BIN="${_TMP_CORE}/${_BIN}"
-_LOCAL_SBIN="${_TMP_CORE}/${_SBIN}"
-_LOCAL_LIB="${_TMP_CORE}/${_LIB}"
-_LOCAL_LIB64="${_TMP_CORE}/${_LIB64}"
-_LOCAL_MAN="${_TMP_CORE}/${_MAN}"
-_LOCAL_UDEV="${_TMP_CORE}/${_UDEV}"
+LOCAL_BIN="${TMP_CORE}/${BIN}"
+LOCAL_SBIN="${TMP_CORE}/${SBIN}"
+LOCAL_LIB="${TMP_CORE}/${LIB}"
+LOCAL_LIB64="${TMP_CORE}/${LIB64}"
+LOCAL_MAN="${TMP_CORE}/${MAN}"
+LOCAL_UDEV="${TMP_CORE}/${UDEV}"
 
-_USR_BIN="/usr/bin"
-_USR_SBIN="/usr/sbin"
-_USR_LIB="/usr/lib"
+USR_BIN="/usr/bin"
+USR_SBIN="/usr/sbin"
+USR_LIB="/usr/lib"
 
-_MODULES=""        # will be set by the `setTargetKernel` function
-_LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
+MODULES=""        # will be set by the `setTargetKernel` function
+LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
 
 # Get CPU Architecture
-_ARCH="$(uname -m)"
+ARCH="$(uname -m)"
 
 # Basically a boolean that is used to switch to the correct library path
-_LIB_PATH=""
+LIB_PATH=""
 
 # Required Busybox Symlinks
-_BUSYBOX_LN="mount tty sh"
+BUSYBOX_LN="mount tty sh"
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
-_PREL_BIN="/bin/cpio"
+PREL_BIN="/bin/cpio"
 
 # Directories to create when generating the initramfs structure
-_CDIRS="${_TMP_CORE}/bin \
-	${_TMP_CORE}/sbin \
-	${_TMP_CORE}/usr/bin \
-        ${_TMP_CORE}/proc \
-	${_TMP_CORE}/sys \
-	${_TMP_CORE}/dev \
-	${_TMP_CORE}/etc \
-	${_TMP_CORE}/mnt/root \
-	${_TMP_CORE}/resources \
-	${_TMP_CORE}/lib"
+CDIRS="${TMP_CORE}/bin \
+	${TMP_CORE}/sbin \
+	${TMP_CORE}/usr/bin \
+        ${TMP_CORE}/proc \
+	${TMP_CORE}/sys \
+	${TMP_CORE}/dev \
+	${TMP_CORE}/etc \
+	${TMP_CORE}/mnt/root \
+	${TMP_CORE}/resources \
+	${TMP_CORE}/lib"
 
 # zpool.cache
-_ZCACHE="/etc/zfs/zpool.cache"
+ZCACHE="/etc/zfs/zpool.cache"

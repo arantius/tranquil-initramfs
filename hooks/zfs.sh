@@ -24,48 +24,52 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Toggle Flags
-_USE_ZFS="1"
-_USE_MODULES="1"
+USE_ZFS="1"
+USE_MODULES="1"
 
 # Set the kernel we will be using here
 do_kernel
 
 # Required Binaries, Modules, and other files
-_ZFS_BINS="${_USR_BIN}/hostid \
-	   ${_SBIN}/fsck.zfs \
-	   ${_SBIN}/mount.zfs \
-	   ${_SBIN}/zdb \
-	   ${_SBIN}/zfs \
-	   ${_SBIN}/zhack \
-	   ${_SBIN}/zinject \
-	   ${_SBIN}/zpios \
-	   ${_SBIN}/zpool \
-	   ${_SBIN}/zstreamdump \
-	   ${_SBIN}/ztest"
+ZFS_BINS="
+	${USR_BIN}/hostid
+	${SBIN}/fsck.zfs
+	${SBIN}/mount.zfs
+	${SBIN}/zdb
+	${SBIN}/zfs
+	${SBIN}/zhack
+	${SBIN}/zinject
+	${SBIN}/zpios
+	${SBIN}/zpool
+	${SBIN}/zstreamdump
+	${SBIN}/ztest"
 
-_ZFS_MODS="${_MODULES}/extra/spl/spl.ko \
-	   ${_MODULES}/extra/avl/zavl.ko \
-	   ${_MODULES}/extra/nvpair/znvpair.ko \
-	   ${_MODULES}/extra/unicode/zunicode.ko \
-	   ${_MODULES}/extra/zcommon/zcommon.ko \
-	   ${_MODULES}/extra/zfs/zfs.ko"
+ZFS_MODS="
+	${MODULES}/extra/spl/spl.ko
+	${MODULES}/extra/avl/zavl.ko
+	${MODULES}/extra/nvpair/znvpair.ko
+	${MODULES}/extra/unicode/zunicode.ko
+	${MODULES}/extra/zcommon/zcommon.ko
+	${MODULES}/extra/zfs/zfs.ko"
 
-_ZFS_MAN="${_MAN}/man1/zhack.1.bz2 \
-          ${_MAN}/man1/zpios.1.bz2 \
-          ${_MAN}/man1/ztest.1.bz2 \
-          ${_MAN}/man5/vdev_id.conf.5.bz2 \
-          ${_MAN}/man5/zpool-features.5.bz2 \
-          ${_MAN}/man8/fsck.zfs.8.bz2 \
-          ${_MAN}/man8/mount.zfs.8.bz2 \
-	  ${_MAN}/man8/vdev_id.8.bz2 \
-	  ${_MAN}/man8/zdb.8.bz2 \
-	  ${_MAN}/man8/zfs.8.bz2 \
-          ${_MAN}/man8/zinject.8.bz2 \
-	  ${_MAN}/man8/zpool.8.bz2 \
-	  ${_MAN}/man8/zstreamdump.8.bz2"
+ZFS_MAN="
+	${MAN}/man1/zhack.1.bz2
+	${MAN}/man1/zpios.1.bz2
+	${MAN}/man1/ztest.1.bz2
+	${MAN}/man5/vdev_id.conf.5.bz2
+	${MAN}/man5/zpool-features.5.bz2	
+	${MAN}/man8/fsck.zfs.8.bz2
+	${MAN}/man8/mount.zfs.8.bz2
+	${MAN}/man8/vdev_id.8.bz2
+	${MAN}/man8/zdb.8.bz2
+	${MAN}/man8/zfs.8.bz2
+	${MAN}/man8/zinject.8.bz2
+	${MAN}/man8/zpool.8.bz2 
+	${MAN}/man8/zstreamdump.8.bz2"
 
-_ZFS_UDEV="${_UDEV}/rules.d/60-zvol.rules \
-	   ${_UDEV}/rules.d/69-vdev.rules \
-	   ${_UDEV}/rules.d/90-zfs.rules \
-	   ${_UDEV}/vdev_id \
-	   ${_UDEV}/zvol_id"
+ZFS_UDEV="
+	${UDEV}/rules.d/60-zvol.rules
+	${UDEV}/rules.d/69-vdev.rules
+	${UDEV}/rules.d/90-zfs.rules
+	${UDEV}/vdev_id
+	${UDEV}/zvol_id"

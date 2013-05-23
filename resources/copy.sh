@@ -29,26 +29,26 @@ check_binaries()
 	einfo "Checking binaries..."
 
 	# Check base binaries (all initramfs have these)
-	for x in ${_BASE_BINS}; do
+	for x in ${BASE_BINS}; do
 		if [ ! -f "${x}" ]; then
 			err_bin_dexi ${x}
 		fi
 	done
 
-	if [ "${_USE_ZFS}" = "1" ]; then
+	if [ "${USE_ZFS}" = "1" ]; then
 		eflag "Using ZFS"
 
-		for x in ${_INIT_BINS}; do	
+		for x in ${INIT_BINS}; do	
 			if [ ! -f "${x}" ]; then
 				err_bin_dexi ${x}
 			fi
 		done
 	fi
 
-	if [ "${_USE_LUKS}" = "1" ]; then
+	if [ "${USE_LUKS}" = "1" ]; then
 		eflag "Using LUKS"
 
-		for x in ${_LUKS_BINS}; do
+		for x in ${LUKS_BINS}; do
 			if [ ! -f "${x}" ]; then
 				err_bin_dexi ${x}
 			fi
@@ -61,8 +61,8 @@ check_modules()
 {
 	einfo "Checking modules..."
 
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_MODS}; do
+	if [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_MODS}; do
 			if [ ! -f "${x}" ]; then
 				err_mod_dexi ${x}
 			fi
@@ -76,19 +76,19 @@ copy_binaries()
         einfo "Copying binaries..."
 
 	# Copy base binaries (all initramfs have these)
-	for x in ${_BASE_BINS}; do
-		ecp ${x} ${_TMP_CORE}/${x}
+	for x in ${BASE_BINS}; do
+		ecp ${x} ${TMP_CORE}/${x}
 	done
 
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_BINS}; do
-			ecp ${x} ${_TMP_CORE}/${x}
+	if [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_BINS}; do
+			ecp ${x} ${TMP_CORE}/${x}
 		done  
 	fi
 
-	if [ "${_USE_LUKS}" = "1" ]; then
-		for x in ${_LUKS_BINS}; do
-			ecp ${x} ${_TMP_CORE}/${x}
+	if [ "${USE_LUKS}" = "1" ]; then
+		for x in ${LUKS_BINS}; do
+			ecp ${x} ${TMP_CORE}/${x}
 		done
 	fi
 }
@@ -98,17 +98,15 @@ copy_modules()
 {
         einfo "Copying modules..."
 
-	cd ${_TMP_CORE}
-
-	if [ "${_ZFS_SRM}" = "1" ]; then
-		for x in ${_ZFS_MODS}; do 
-			local p=$(dirname ${_TMP_KMOD}/${x} | sed 's:/lib/:/lib64/:')
+	if [ "${ZFS_SRM}" = "1" ]; then
+		for x in ${ZFS_MODS}; do 
+			local p=$(dirname ${TMP_KMOD}/${x} | sed 's:/lib/:/lib64/:')
 			mkdir -p ${p} && ecp -r ${x} ${p} 
 		done
-	elif [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_MODS}; do 
-			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
-			ecp -r ${x} ${_TMP_CORE}/${x} 
+	elif [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_MODS}; do 
+			mkdir -p "`dirname ${TMP_CORE}/${x}`"
+			ecp -r ${x} ${TMP_CORE}/${x} 
 		done
 	fi
 }
@@ -118,12 +116,10 @@ copy_docs()
 {
         einfo "Copying documentation..."
 
-	cd ${_TMP_CORE}
-
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_MAN}; do
-			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
-			ecp -r ${x} ${_TMP_CORE}/${x}
+	if [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_MAN}; do
+			mkdir -p "`dirname ${TMP_CORE}/${x}`"
+			ecp -r ${x} ${TMP_CORE}/${x}
 		done
 	fi
 }
@@ -133,23 +129,21 @@ copy_udev()
 {
 	einfo "Copying udev rules..."
 
-	cd ${_TMP_CORE}
-
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_UDEV}; do
-			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
-			ecp -r ${x} ${_TMP_CORE}/${x}
+	if [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_UDEV}; do
+			mkdir -p "`dirname ${TMP_CORE}/${x}`"
+			ecp -r ${x} ${TMP_CORE}/${x}
 		done
 
 		# If it's an SRM, move it to the same directory that
 		# sysresccd keeps their udev files.
-		if [ "${_ZFS_SRM}" = "1" ]; then
-			mkdir ${_TMP_CORE}/lib
-			mv ${_TMP_CORE}/lib64/udev lib
+		if [ "${ZFS_SRM}" = "1" ]; then
+			mkdir ${TMP_CORE}/lib
+			mv ${TMP_CORE}/lib64/udev ${TMP_CORE}/lib
 
 			# Also do some substitions so that udev uses the correct udev_id file
-			sed -i -e 's:/lib64/:/lib/:' ${_TMP_CORE}/lib/udev/rules.d/69-vdev.rules
-			sed -i -e 's:/lib64/:/lib/:' ${_TMP_CORE}/lib/udev/rules.d/60-zvol.rules
+			sed -i -e 's:/lib64/:/lib/:' ${TMP_CORE}/lib/udev/rules.d/69-vdev.rules
+			sed -i -e 's:/lib64/:/lib/:' ${TMP_CORE}/lib/udev/rules.d/60-zvol.rules
 		fi
 	fi
 }
@@ -162,22 +156,22 @@ do_deps()
         einfo "Getting dependencies..."
 
 	# Add interpreter to deps since everything will depend on it
-	deps="${_LIB64}/ld-linux-x86-64.so*"
+	deps="${LIB64}/ld-linux-x86-64.so*"
 
-	for x in ${_BASE_BINS}; do
+	for x in ${BASE_BINS}; do
 		deps="${deps} \
 		$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 	done
 
-	if [ "${_USE_ZFS}" = "1" ]; then
-		for x in ${_ZFS_BINS}; do
+	if [ "${USE_ZFS}" = "1" ]; then
+		for x in ${ZFS_BINS}; do
 			deps="${deps} \
 			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		done
 	fi
 
-	if [ "${_USE_LUKS}" = "1" ]; then
-		for x in ${_LUKS_BINS}; do
+	if [ "${USE_LUKS}" = "1" ]; then
+		for x in ${LUKS_BINS}; do
 			deps="${deps} \
 			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
 		done
@@ -189,9 +183,7 @@ do_deps()
 	# Copy all the dependencies of the binary files into the initramfs
 	einfo "Copying dependencies..."
 
-	cd ${_TMP_CORE}
-
 	for y in ${deps}; do		
-                ecp --parents ${y} . 
+                ecp --parents ${y} ${TMP_CORE} 
         done
 }

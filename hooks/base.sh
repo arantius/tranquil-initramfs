@@ -24,5 +24,5 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Required Binaries, Modules, and other files
-_USE_BASE="1"
-_BASE_BINS="${_BIN}/busybox"
+USE_BASE="1"
+BASE_BINS="${BIN}/busybox"

@@ -1,3 +1,12 @@
+1.8.1
+---------
+- Fixed a bug where the initramfs wouldn't work at boot (kernel panic)
+  because the initramfs wasn't packaging the files in the correct directory
+  structure.
+- Continued to improve application flow
+- All variables have been renamed so that they don't have the "_" prefix
+- Made the code more elegant in some areas
+
 1.8.0
 ---------
 - Restructed the program so that the SRM option can create SRMs for both

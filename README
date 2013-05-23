@@ -1,4 +1,4 @@
-Bliss Initramfs Creator - v1.8.0
+Bliss Initramfs Creator - v1.8.1
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Funtoo Linux @ ZoL 0.6.1
 
@@ -40,7 +40,7 @@ Please have the following installed:
 - app-arch/cpio
 - sys-apps/busybox
 - sys-kernel/spl
-- spl-fs/zfs
+- sys-fs/zfs
 - sys-fs/zfs-kmod
 
 For SRM creation:

@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Toggle Flags
-_ZFS_SRM="1"
+ZFS_SRM="1"
 
 # Dependency
-_PREL_BIN="${_PREL_BIN} /usr/bin/mksquashfs"
+PREL_BIN="/usr/bin/mksquashfs ${PREL_BIN}"

@@ -65,12 +65,12 @@ if [ ! -z ${1} ]; then
 			exit
 		fi
 
-		_CHOICE=${1}
+		CHOICE=${1}
 
 		if [ ! -z ${2} ]; then
-			_KERNEL=${2}
+			KERNEL=${2}
 		elif [ "${1}" != "3" ]; then
-			die "You must also pass a kernel name (i.e: createInit 1 ${_EXAMPLE_KERNEL})"
+			die "You must also pass a kernel name (i.e: createInit 1 ${EXAMPLE_KERNEL})"
 		fi
 
 		;;

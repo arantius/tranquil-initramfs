@@ -24,8 +24,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Toggle Flags
-_USE_LUKS="1"
-_USE_MODULES="1"
+USE_LUKS="1"
+USE_MODULES="1"
 
 # Required Binaries, Modules, and other files
-_LUKS_BINS="${_SBIN}/cryptsetup"
+LUKS_BINS="${SBIN}/cryptsetup"
