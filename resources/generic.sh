@@ -57,6 +57,7 @@ print_menu()
                 . hooks/luks.sh
                 ;;
 	3)
+		unset _CHOICE
 		print_more
 		;;
 	*)
@@ -141,11 +142,12 @@ do_kernel()
 	# Set modules path to correct location and sets kernel name for initramfs
 	if [ "${_ZFS_SRM}" = "1" ]; then
 		_MODULES="/lib/modules/${_KERNEL}/"
-		_LOCAL_MODULES="${_TMP}/lib64/modules/${_KERNEL}/"
-		_SRM="zfs-${_KERNEL}.srm"
+		_LOCAL_MODULES="${_TMP_KMOD}/lib64/modules/${_KERNEL}/"
+		_SRM_CORE="zfs-core-${_KERNEL}.srm"
+		_SRM_KMOD="zfs-kmod-${_KERNEL}.srm"
 	elif [ "${_USE_MODULES}" = "1" ]; then
 		_MODULES="/lib/modules/${_KERNEL}/"
-		_LOCAL_MODULES="${_TMP}/lib/modules/${_KERNEL}/"
+		_LOCAL_MODULES="${_TMP_CORE}/lib/modules/${_KERNEL}/"
 		_INITRD="initrd-${_KERNEL}.img"
 	fi
 }
@@ -155,24 +157,35 @@ do_kernel()
 print_start()
 {
 	if [ "${_ZFS_SRM}" = "1" ]; then
-		einfo "Creating ZFS System Rescue Module for ${_KERNEL}..."
+		einfo "Creating SRMs for ${_KERNEL}..."
 	else
 		einfo "Creating initramfs for ${_KERNEL}..."
 	fi
 }
 
 
-# Check to see if "${_TMP}" exists, if it does, delete it for a fresh start
+# Check to see if "${_TMP_CORE}" exists, if it does, delete it for a fresh start
 # Utility function to return back to home dir and clean up. For exiting on errors
 clean()
 {
+	# Go back to the original working directory so that we are
+	# completely sure that there will be no inteference cleaning up.
 	cd ${_HOME}
 
-	if [ -d ${_TMP} ]; then
-		rm -rf ${_TMP}
+	if [ -d ${_TMP_CORE} ]; then
+		rm -rf ${_TMP_CORE}
 
-		if [ -d ${_TMP} ]; then
-			echo "Failed to delete the directory. Exiting..." && exit
+		if [ -d ${_TMP_CORE} ]; then
+			echo "Failed to delete the ${_TMP_CORE} directory. Exiting..." && exit
+		fi
+
+	fi
+
+	if [ -d ${_TMP_KMOD} ]; then
+		rm -rf ${_TMP_KMOD}
+
+		if [ -d ${_TMP_KMOD} ]; then
+			echo "Failed to delete the ${_TMP_KMOD} directory. Exiting..." && exit
 		fi
 	fi
 }
@@ -196,7 +209,7 @@ create_dirs()
 	einfo "Creating directory structure for initramfs..."
 
 	# Make base directories
-	mkdir ${_TMP} && cd ${_TMP} && mkdir -p ${_CDIRS}
+	mkdir ${_TMP_CORE} && mkdir ${_TMP_KMOD} && mkdir -p ${_CDIRS}
 
 	# Make kernel modules directory
 	if [ ! -z ${_LOCAL_MODULES} ] && [ "${_USE_MODULES}" = "1" ]; then
@@ -205,7 +218,7 @@ create_dirs()
 
 	# Make ZFS specific directories
 	if [ "${_USE_ZFS}" = "1" ]; then
-		mkdir -p etc/zfs
+		mkdir -p ${_TMP_CORE}/etc/zfs
 	fi
 
 	# Delete any directories not needed
@@ -218,23 +231,22 @@ create_links()
 	if [ "${_USE_BASE}" = "1" ]; then
 		einfo "Creating symlinks to Busybox..."
 
+		# Needs to be from this directory so that the links are relative
 		cd ${_LOCAL_BIN}
 
-		for bb in ${_BUSYBOX_LN}; do
+		for x in ${_BUSYBOX_LN}; do
 
-			if [ -L "${bb}" ]; then
-				ewarn "${bb} link exists.. removing it" && eline
-				rm ${bb}
+			if [ -L "${x}" ]; then
+				ewarn "${x} link exists.. removing it" && eline
+				rm ${x}
 			fi
 
-			ln -s busybox ${bb}
+			ln -s busybox ${x}
 
-			if [ ! -L "${bb}" ]; then
-				die "Error creating link from ${bb} to busybox"
+			if [ ! -L "${x}" ]; then
+				die "Error creating link from ${x} to busybox"
 			fi
 		done
-
-		cd ${_TMP}
 	fi
 }
 
@@ -243,25 +255,23 @@ config_files()
 {
 	einfo "Configuring files..."
 
-	cd ${_TMP}
+	touch ${_TMP_CORE}/etc/mtab
 
-	touch etc/mtab
-
-	if [ ! -f "etc/mtab" ]; then
+	if [ ! -f "${_TMP_CORE}/etc/mtab" ]; then
 		die "Error created mtab file... Exiting"
 	fi
 
 	if [ "${_ZFS_SRM}" != "1" ]; then
 		# Copy init functions
-		cp -r ${_HOME}/files/resources/* resources/
+		cp -r ${_HOME}/files/resources/* ${_TMP_CORE}/resources/
 		
 		# Copy the init script
-		cp ${_HOME}/files/init . 
+		cp ${_HOME}/files/init ${_TMP_CORE} 
 
 		# Give execute permission to the script
-		chmod u+x init
+		chmod u+x ${_TMP_CORE}/init
 
-		if [ ! -f "init" ]; then
+		if [ ! -f "${_TMP_CORE}/init" ]; then
 			die "Error creating init file... Exiting"
 		fi
 	fi
@@ -269,14 +279,14 @@ config_files()
 	# Any last substitions or additions/modifications should be done here
 	if [ "${_USE_ZFS}" = "1" ] && [ "${_ZFS_SRM}" != "1" ]; then
 		# Enable ZFS in the init if ZFS is being used.
-		sed -i -e "35s/0/1/" init
+		sed -i -e "35s/0/1/" ${_TMP_CORE}/init
 
 		# Sets initramfs script version number
-		sed -i -e "38s/0/${_VERSION}/" init
+		sed -i -e "38s/0/${_VERSION}/" ${_TMP_CORE}/init
 
 		# Copies zpool.cache if it exists
 		if [ -f "${_ZCACHE}" ]; then
-			cp ${_ZCACHE} etc/zfs
+			cp ${_ZCACHE} ${_TMP_CORE}/etc/zfs
 		else
 			ewarn "Creating initramfs without zpool.cache"
 		fi
@@ -284,7 +294,7 @@ config_files()
 
 	# Enable LUKS in the init if LUKS is being used.
 	if [ "${_USE_LUKS}" = "1" ]; then
-		sed -i -e "36s/0/1/" init
+		sed -i -e "36s/0/1/" ${_TMP_CORE}/init
 	fi
 }
 
@@ -294,22 +304,18 @@ do_modules()
 	if [ "${_USE_MODULES}" = "1" ]; then
 		einfo "Compressing kernel modules..."
 
-		cd ${_LOCAL_MODULES}
-
-		for module in $(find . -name "*.ko"); do
+		for module in $(find ${_LOCAL_MODULES} -name "*.ko"); do
 			gzip ${module}
 		done
 		
 		if [ "${_ZFS_SRM}" != "1" ]; then
 			einfo "Generating modprobe information..."
 			
-			cd ${_TMP}
-
                         # Copy modules.order and modules.builtin just so depmod
                         # doesn't spit out warnings. -_-
                         cp -a ${_MODULES}/modules.{order,builtin} ${_LOCAL_MODULES}
 
-			depmod -b . ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+			depmod -b ${_TMP_CORE} ${_KERNEL} || die "You don't have depmod? Something is seriously wrong!"
 		fi
 	fi
 }
@@ -317,22 +323,26 @@ do_modules()
 # Create the solution
 create()
 {
-	cd ${_TMP}
-
 	if [ "${_ZFS_SRM}" = "1" ]; then
-		einfo "Creating and Packing SRM..."
+		einfo "Creating and Packing SRMs..."
 
-		mksquashfs . ${_HOME}/${_SRM} -all-root -comp xz -noappend -no-progress | logger
+		# Create the Core SRM file
+		mksquashfs ${_TMP_CORE} ${_HOME}/${_SRM_CORE} -all-root -comp xz -noappend -no-progress | logger
 
-		if [ ! -f "${_HOME}/${_SRM}" ]; then
-			die "Error creating the SRM file.. exiting"
+		if [ ! -f "${_HOME}/${_SRM_CORE}" ]; then
+			die "Error creating the Core SRM file.. exiting"
 		fi
 
-		md5sum ${_HOME}/${_SRM} > ${_HOME}/${_SRM%.srm}.md5
+		# Create the KMod SRM file
+		mksquashfs ${_TMP_KMOD} ${_HOME}/${_SRM_KMOD} -all-root -comp xz -noappend -no-progress | logger
+
+		if [ ! -f "${_HOME}/${_SRM_KMOD}" ]; then
+			die "Error creating the KMod SRM file.. exiting"
+		fi
 	else
 		einfo "Creating and Packing initramfs..."
 
-		find . -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
+		find ${_TMP_CORE} -print0 | cpio -o --null --format=newc | gzip -9 > ${_HOME}/${_INITRD}
 
 		if [ ! -f "${_HOME}/${_INITRD}" ]; then
 			die "Error creating initramfs file.. exiting"
@@ -343,9 +353,7 @@ create()
 # Clean up and exit after a successful build
 clean_exit()
 {
-	clean
-
-	einfo "Complete :)"
+	clean && einfo "Complete :)"
 
 	if [ "${_ZFS_SRM}" != "1" ]; then
 		einfo "Please copy the ${_INITRD} to your /boot directory"
@@ -360,7 +368,6 @@ check_prelim_binaries()
 	einfo "Checking preliminary binaries..."
 
 	for x in ${_PREL_BIN}; do	
-
 		if [ ! -f "${x}" ]; then
 
 			if [ "${x}" = "/bin/cpio" ]; then
@@ -381,37 +388,37 @@ check_prelim_binaries()
 # Used for displaying information
 einfo()
 {
-        eline && echo -e "\e[38;5;120m>\e[38;5;119m>\e[38;5;118m>\e[0;m ${@}"
+        eline && echo -e "\e[1;32m>>>\e[0;m ${@}"
 }
 
 # Used for input (questions)
 eqst()
 {
-        eline && echo -en "\e[38;5;195m>\e[38;5;194m>\e[38;5;193m>\e[0;m ${@}"
+        eline && echo -en "\e[1;37m>>>\e[0;m ${@}"
 }
 
 # Used for warnings
 ewarn()
 {
-        eline && echo -e "\e[38;5;229m>\e[38;5;228m>\e[38;5;227m>\e[0;m ${@}"
+        eline && echo -e "\e[1;33m>>>\e[0;m ${@}"
 }
 
 # Used for flags
 eflag()
 {
-        eline && echo -e "\e[38;5;99m>\e[38;5;98m>\e[38;5;97m>\e[0;m ${@}"
+        eline && echo -e "\e[1;34m>>>\e[0;m ${@}"
 }
 
 # Used for options
 eopt()
 {
-        echo -e "\e[38;5;81m>\e[38;5;80m>\e[0;m ${@}"
+        echo -e "\e[1;36m>>\e[0;m ${@}"
 }
 
 # Used for errors
 die()
 {
-        eline && echo -e "\e[38;5;160m>\e[38;5;124m>\e[38;5;88m>\e[0;m ${@}" && clean && eline && exit
+        eline && echo -e "\e[1;31m>>>\e[0;m ${@}" && clean && eline && exit
 }
 
 # Prints empty line
@@ -430,6 +437,7 @@ err_bin_dexi()
 	fi
 }
 
+# Some error functions (Module doesn't exist)
 err_mod_dexi()
 {
 	die "Module: ${1} doesn't exist. Quitting!"
@@ -441,12 +449,10 @@ err()
         eline && die "Error: ${1}"
 }
 
+# Prints wide error messages
 werr()
 {
-	eline
-        echo "##### ${1} #####"
-	eline
-	exit
+	eline && echo "##### ${1} #####" && eline && exit
 }
 
 # Copies functions with specific flags
@@ -459,6 +465,6 @@ ecp()
 strip()
 {
 	if [ "${_ZFS_SRM}" = "1" ]; then
-		rm -rf ${_TMP}/{bin,lib,mnt,resources,dev,proc,sys}
+		rm -rf ${_TMP_CORE}/{bin,lib,mnt,resources,dev,proc,sys}
 	fi
 }

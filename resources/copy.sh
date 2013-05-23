@@ -77,18 +77,18 @@ copy_binaries()
 
 	# Copy base binaries (all initramfs have these)
 	for x in ${_BASE_BINS}; do
-		ecp ${x} ${_TMP}/${x}
+		ecp ${x} ${_TMP_CORE}/${x}
 	done
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_BINS}; do
-			ecp ${x} ${_TMP}/${x}
+			ecp ${x} ${_TMP_CORE}/${x}
 		done  
 	fi
 
 	if [ "${_USE_LUKS}" = "1" ]; then
 		for x in ${_LUKS_BINS}; do
-			ecp ${x} ${_TMP}/${x}
+			ecp ${x} ${_TMP_CORE}/${x}
 		done
 	fi
 }
@@ -98,17 +98,17 @@ copy_modules()
 {
         einfo "Copying modules..."
 
-	cd ${_TMP}
+	cd ${_TMP_CORE}
 
 	if [ "${_ZFS_SRM}" = "1" ]; then
 		for x in ${_ZFS_MODS}; do 
-			local p=$(dirname ${_TMP}/${x} | sed 's:/lib/:/lib64/:')
+			local p=$(dirname ${_TMP_KMOD}/${x} | sed 's:/lib/:/lib64/:')
 			mkdir -p ${p} && ecp -r ${x} ${p} 
 		done
 	elif [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_MODS}; do 
-			mkdir -p "`dirname ${_TMP}/${x}`"
-			ecp -r ${x} ${_TMP}/${x} 
+			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
+			ecp -r ${x} ${_TMP_CORE}/${x} 
 		done
 	fi
 }
@@ -118,12 +118,12 @@ copy_docs()
 {
         einfo "Copying documentation..."
 
-	cd ${_TMP}
+	cd ${_TMP_CORE}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_MAN}; do
-			mkdir -p "`dirname ${_TMP}/${x}`"
-			ecp -r ${x} ${_TMP}/${x}
+			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
+			ecp -r ${x} ${_TMP_CORE}/${x}
 		done
 	fi
 }
@@ -133,23 +133,23 @@ copy_udev()
 {
 	einfo "Copying udev rules..."
 
-	cd ${_TMP}
+	cd ${_TMP_CORE}
 
 	if [ "${_USE_ZFS}" = "1" ]; then
 		for x in ${_ZFS_UDEV}; do
-			mkdir -p "`dirname ${_TMP}/${x}`"
-			ecp -r ${x} ${_TMP}/${x}
+			mkdir -p "`dirname ${_TMP_CORE}/${x}`"
+			ecp -r ${x} ${_TMP_CORE}/${x}
 		done
 
 		# If it's an SRM, move it to the same directory that
 		# sysresccd keeps their udev files.
 		if [ "${_ZFS_SRM}" = "1" ]; then
-			mkdir ${_TMP}/lib
-			mv ${_TMP}/lib64/udev lib
+			mkdir ${_TMP_CORE}/lib
+			mv ${_TMP_CORE}/lib64/udev lib
 
 			# Also do some substitions so that udev uses the correct udev_id file
-			sed -i -e 's:/lib64/:/lib/:' ${_TMP}/lib/udev/rules.d/69-vdev.rules
-			sed -i -e 's:/lib64/:/lib/:' ${_TMP}/lib/udev/rules.d/60-zvol.rules
+			sed -i -e 's:/lib64/:/lib/:' ${_TMP_CORE}/lib/udev/rules.d/69-vdev.rules
+			sed -i -e 's:/lib64/:/lib/:' ${_TMP_CORE}/lib/udev/rules.d/60-zvol.rules
 		fi
 	fi
 }
@@ -189,7 +189,7 @@ do_deps()
 	# Copy all the dependencies of the binary files into the initramfs
 	einfo "Copying dependencies..."
 
-	cd ${_TMP}
+	cd ${_TMP_CORE}
 
 	for y in ${deps}; do		
                 ecp --parents ${y} . 

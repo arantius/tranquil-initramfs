@@ -1,3 +1,15 @@
+1.8.0
+---------
+- Restructed the program so that the SRM option can create SRMs for both
+  normal and alternate kernels in sysresccd, and have them both on the root of
+  your iso or usb.
+- Cleaned up a lot of application flow so that the application uses the path
+  variables already defined in the variables.sh rather than relying on relative
+  symbols (like . represent 'here').
+- Colors have been brought back to simple colors so that it can look
+  as uniform as possible in most terminals or screens.
+- The creator no longer makes an .md5 file for the .srms.
+
 1.7.2
 ---------
 - Now copies the modules.order and modules.builtin files into the initramfs 

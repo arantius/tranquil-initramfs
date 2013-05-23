@@ -28,7 +28,7 @@ _NAME="Bliss Initramfs Creator"
 _AUTHOR="Jonathan Vasquez"
 _EMAIL="jvasquez1011@gmail.com"
 _CONTACT="${_AUTHOR} <${_EMAIL}>"
-_VERSION="1.7.2"
+_VERSION="1.8.0"
 _LICENSE="Simplified BSD License"
 
 # Used only for documentation purposes
@@ -40,7 +40,8 @@ _INITRD=""
 _INIT=""
 
 _HOME="$(pwd)"
-_TMP="${_HOME}/tempinit"
+_TMP_CORE="${_HOME}/temp_core"
+_TMP_KMOD="${_HOME}/temp_kmod"
 
 _BIN="/bin"
 _SBIN="/sbin"
@@ -49,12 +50,12 @@ _LIB64="/lib64"
 _MAN="/usr/share/man"
 _UDEV="${_LIB64}/udev"
 
-_LOCAL_BIN="${_TMP}/${_BIN}"
-_LOCAL_SBIN="${_TMP}/${_SBIN}"
-_LOCAL_LIB="${_TMP}/${_LIB}"
-_LOCAL_LIB64="${_TMP}/${_LIB64}"
-_LOCAL_MAN="${_TMP}/${_MAN}"
-_LOCAL_UDEV="${_TMP}/${_UDEV}"
+_LOCAL_BIN="${_TMP_CORE}/${_BIN}"
+_LOCAL_SBIN="${_TMP_CORE}/${_SBIN}"
+_LOCAL_LIB="${_TMP_CORE}/${_LIB}"
+_LOCAL_LIB64="${_TMP_CORE}/${_LIB64}"
+_LOCAL_MAN="${_TMP_CORE}/${_MAN}"
+_LOCAL_UDEV="${_TMP_CORE}/${_UDEV}"
 
 _USR_BIN="/usr/bin"
 _USR_SBIN="/usr/sbin"
@@ -77,16 +78,16 @@ _BUSYBOX_LN="mount tty sh"
 _PREL_BIN="/bin/cpio"
 
 # Directories to create when generating the initramfs structure
-_CDIRS="bin \
-	sbin \
-	usr/bin \
-        proc \
-	sys \
-	dev \
-	etc \
-	mnt/root \
-	resources \
-	lib"
+_CDIRS="${_TMP_CORE}/bin \
+	${_TMP_CORE}/sbin \
+	${_TMP_CORE}/usr/bin \
+        ${_TMP_CORE}/proc \
+	${_TMP_CORE}/sys \
+	${_TMP_CORE}/dev \
+	${_TMP_CORE}/etc \
+	${_TMP_CORE}/mnt/root \
+	${_TMP_CORE}/resources \
+	${_TMP_CORE}/lib"
 
 # zpool.cache
 _ZCACHE="/etc/zfs/zpool.cache"

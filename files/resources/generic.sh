@@ -208,27 +208,27 @@ have_a_nice_day()
 ### Utility Functions ###
 
 # Used for displaying information
-einfo() 
+einfo()
 {
-        eline && echo -e "\033[1;32m>>>\033[0;m ${@}"
+        eline && echo -e "\e[1;32m>>>\e[0;m ${@}"
 }
 
 # Used for warnings
-ewarn() 
+ewarn()
 {
-        eline && echo -e "\033[1;33m>>>\033[0;m ${@}"
+        eline && echo -e "\e[1;33m>>>\e[0;m ${@}"
 }
 
-# Used for flags (trigger messages)
-eflag() 
+# Used for flags
+eflag()
 {
-        eline && echo -e "\033[1;35m>>>\033[0;m ${@}"
+        eline && echo -e "\e[1;34m>>>\e[0;m ${@}"
 }
 
 # Used for errors
-die() 
+die()
 {
-        eline && echo -e "\033[1;31m>>>\033[0;m ${@}" && rescue_shell
+        eline && echo -e "\e[1;31m>>>\e[0;m ${@}" && rescue_shell 
 }
 
 # Prints empty line
