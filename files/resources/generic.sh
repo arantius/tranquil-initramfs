@@ -1,29 +1,8 @@
-#!/bin/busybox sh
-
-# Simplified BSD License
+# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Copyright (C) 2013 Jonathan Vasquez <jvasquez1011@gmail.com> 
-# All Rights Reserved
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met: 
-#
-# 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer. 
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution. 
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Function to start rescue shell
 rescue_shell()
@@ -104,15 +83,43 @@ parse_cmdline()
 	done
 }
 
+# Extract all the drives needed to decrypt before mounting the pool
+get_drives()
+{
+        if [ -z "${1}" ]; then
+                die "Nothing was passed to get_drives()"
+        fi
+
+        drives=($(echo "${1}" | tr "," "\n"))
+
+        ewarn "Number of Drives Gathered: ${#drives[@]}"
+
+        ewarn "Printing drives:"
+
+        for i in $(seq 0 $((${#drives[@]} - 1))); do
+                ewarn "At ${i} we have: ${drives[${i}]}"
+        done
+}
+
 # If USE_LUKS is enabled, run this function
 luks_trigger()
 {
         if [ -z "${enc_root}" ]; then
-                die "You didn't pass the 'enc_root' variable to the kernel. Example: enc_root=/dev/sda2"
+                die "You didn't pass the 'enc_root' variable to the kernel. Example: enc_root=/dev/sda2,/dev/sdb2"
         fi
-	
-	eflag "Opening up your encrypted drive..."
-        cryptsetup luksOpen ${enc_root} dmcrypt_root || die "luksOpen failed to open: ${enc_root}"
+
+        get_drives ${enc_root}
+
+        if [ ! -z "${drives}" ]; then
+                eflag "Opening up your encrypted drive(s)..."
+
+                for i in $(seq 0 $((${#drives[@]} - 1))); do
+                        echo "Opening ${i}: ${drives[${i}]}"
+                        cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
+                done
+        else
+                die "Failed to get drives.. drives value is empty"
+        fi
 }
 
 # If USE_ZFS is enabled, run this function

@@ -1,3 +1,9 @@
+1.8.2
+---------
+- Relicensed back to MPLv2
+- Now the initramfs will unlock multiple encrypted devices before mounting the zfs pool
+- New 'createInit' parameter passing code
+
 1.8.1
 ---------
 - Fixed a bug where the initramfs wouldn't work at boot (kernel panic)

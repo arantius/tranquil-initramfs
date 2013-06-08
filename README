@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - v1.8.1
+Bliss Initramfs Creator - v1.8.2
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Funtoo Linux @ ZoL 0.6.1
 
-Distributed under the Simplified BSD License which can be found in the LICENSE file.
+Distributed under the MPLv2 license which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
 dependencies needed to mount your zpool.
