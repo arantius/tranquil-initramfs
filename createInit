@@ -25,40 +25,40 @@ if [ $(whoami) != "root" ]; then
 fi
 
 # If a initrd option was passed, set the 'choice' variable
-if [ ! -z ${1} ]; then
+if [ ! -z "${1}" ]; then
 
-	# Parse options
-	case ${1} in
-	--options|-o)
-		print_options
-		exit
-		;;
-	--version|-v)
-		print_header
-		exit
-		;;
-	--help|-h)
-		cat HELP
-		exit
-		;;
-	[1-4])
-		if [ "${1}" = "4" ]; then
-			exit
+        # Parse options
+        case "${1}" in
+        --options|-o)
+                print_options
+                exit
+                ;;
+        --version|-v)
+                print_header
+                exit
+                ;;
+        --help|-h)
+                cat HELP
+                exit
+                ;;
+        [1-4])
+                if [ "${1}" = "4" ]; then
+                        exit
+                fi
+
+                CHOICE="${1}"
+
+                if [ ! -z "${2}" ]; then
+                        KERNEL="${2}"
+                elif [ "${1}" != "3" ]; then
+                        die "You must also pass a kernel name (i.e: createInit 1 ${EXAMPLE_KERNEL})"
 		fi
 
-		CHOICE=${1}
-
-		if [ ! -z ${2} ]; then
-			KERNEL=${2}
-		elif [ "${1}" != "3" ]; then
-			die "You must also pass a kernel name (i.e: createInit 1 ${EXAMPLE_KERNEL})"
-		fi
-
-		;;
-	*)
-		die "Incorrect parameters, please pass -h for help"
-		;;
-	esac
+                ;;
+        *)
+                die "Incorrect parameters, please pass -h for help"
+                ;;
+        esac
 fi
 
 #######################################################################

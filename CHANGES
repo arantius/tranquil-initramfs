@@ -2,7 +2,7 @@
 ---------
 - Relicensed back to MPLv2
 - Now the initramfs will unlock multiple encrypted devices before mounting the zfs pool
-- New 'createInit' parameter passing code
+  * Instructions can be found in the USAGE file
 
 1.8.1
 ---------

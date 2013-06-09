@@ -68,16 +68,16 @@ parse_cmdline()
 			enc_root=$(get_opt ${x})
 			;;
 		nocache)
-			nocache=1
+			nocache="1"
 			;;
 		recover)
-			recover=1
+			recover="1" 
 			;;
 		refresh)
-			refresh=1
+			refresh="1"
 			;;
 		su)
-			su=1
+			su="1"
 			;;
 		esac
 	done
@@ -86,19 +86,7 @@ parse_cmdline()
 # Extract all the drives needed to decrypt before mounting the pool
 get_drives()
 {
-        if [ -z "${1}" ]; then
-                die "Nothing was passed to get_drives()"
-        fi
-
-        drives=($(echo "${1}" | tr "," "\n"))
-
-        ewarn "Number of Drives Gathered: ${#drives[@]}"
-
-        ewarn "Printing drives:"
-
-        for i in $(seq 0 $((${#drives[@]} - 1))); do
-                ewarn "At ${i} we have: ${drives[${i}]}"
-        done
+        drives=$(echo ${enc_root} | tr "," "\n")
 }
 
 # If USE_LUKS is enabled, run this function
@@ -108,17 +96,26 @@ luks_trigger()
                 die "You didn't pass the 'enc_root' variable to the kernel. Example: enc_root=/dev/sda2,/dev/sdb2"
         fi
 
-        get_drives ${enc_root}
+        einfo "Gathering encrypted devices..." && get_drives
+
+        eqst "Enter passphrase (Leave blank if your devices have different passphrases): " && stty -echo && read code && stty echo
 
         if [ ! -z "${drives}" ]; then
-                eflag "Opening up your encrypted drive(s)..."
+                eline && eflag "Opening up your encrypted drive(s)..."
 
-                for i in $(seq 0 $((${#drives[@]} - 1))); do
-                        echo "Opening ${i}: ${drives[${i}]}"
-                        cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
+                local x="1"
+
+                for i in ${drives}; do
+                        if [ ! -z "${code}" ]; then
+                                echo "${code}" | cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+                        else
+                                cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+                        fi        
+                        
+                        x=`expr ${x} + 1`
                 done
         else
-                die "Failed to get drives.. drives value is empty"
+                die "Failed to get drives.. The 'drives' value is empty"
         fi
 }
 
@@ -192,13 +189,13 @@ single_user()
 
 # Cleanly exports and imports pool
 
-# I made this function since Gentoo/Funtoo don't cleanly umount the pool
+# I made this function since Gentoo/Funtoo doesn't cleanly umount the pool
 # during shutdown/restart. This is actually only used if we aren't going to
 # be using the zpool.cache.
 remount_pool()
 {
         zpool export -f ${pool_name}
-        zpool import -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
+        zpool import -f -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
 }
 
 # Central exit point needed to cleanly exit from either the main function
@@ -218,6 +215,12 @@ have_a_nice_day()
 einfo()
 {
         eline && echo -e "\e[1;32m>>>\e[0;m ${@}"
+}
+
+# Used for input (questions)
+eqst()
+{
+        eline && echo -en "\e[1;37m>>>\e[0;m ${@}"
 }
 
 # Used for warnings

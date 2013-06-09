@@ -56,14 +56,14 @@ Kernel Options:
 =======================================
 ZFS:
 root - ZFS root name
-	example: APPEND root=rpool/ROOT/funtoo
+	example: linux <kernel> root=rpool/ROOT/funtoo
 
 arcmax - Sets the max ARC cache size (in bytes)
-	example: APPEND arcmax=536870912
+	example: linux <kernel> arcmax=536870912
 	 this sets the arcmax to 512MB
 
 So a complete line could look like this:
- APPEND arcmax=536870912 root=rpool/ROOT/funtoo
+ linux <kernel> arcmax=536870912 root=rpool/ROOT/funtoo
  
  Which would mount the `rpool/ROOT/funtoo` ZFS dataset with the arc_max being 512 MB
 
@@ -71,7 +71,7 @@ nocache - Ignores zpool.cache. Useful for booting if you have an old
          cache file that is preventing you from booting. Make sure to regenerate a new
 	 initrd so you don't have to keep using this option.
 
-	 example: APPEND root=rpool/ROOT/funtoo nocache
+	 example: linux <kernel> root=rpool/ROOT/funtoo nocache
 
 refresh_cache - Ignores the zpool.cache (if there is one in the initramfs),
                 Mounts the OS and deletes the old zpool.cache that it has,
@@ -82,23 +82,34 @@ refresh_cache - Ignores the zpool.cache (if there is one in the initramfs),
 		changed it in any way (Maybe you have a RAID1 and now have
 		a RAID10? or a RAIDZ2).
 
-	 	example: APPEND root=rpool/ROOT/funtoo refresh_cache
+	 	example: linux <kernel> root=rpool/ROOT/funtoo refresh_cache
 
 su - Single User Mode. This is a really crappy implementation of a single user,
      mode. But at least it will help you if you forgot to change your password,
      after installation.
 
-     example: APPEND root=rpool/ROOT/funtoo su
+     example: linux <kernel> root=rpool/ROOT/funtoo su
 
 LUKS + ZFS:
 Follow the same instructions as above, but also add "enc_root=" to your
 kernel line.
 
 enc_root - Encrypted root drive
-	example: APPEND enc_root=/dev/sda2
+	example: linux <kernel> enc_root=/dev/sda2
+
+If you have your zpool on spread over multiple drives, you can pass them all
+to this variable as well:
+	example: linux <kernel> enc_root=/dev/sda2,/dev/sdb3,/dev/sdc4,/dev/sdd5,/dev/sde6
+
+LUKS passphrase:
+The easiest way to pass the passphrase is just to wait till the initramfs asks you for it.
+When this happens, it will use the _same_ passphrase for all your pools. This is to make it
+convenient for you. It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's say),
+and then you had to put the password for each one. If you still want to do this, then just leave
+the passphrase blank when the initramfs asks you for it.
 
 OTHER:
 recover - Use this if you want the initrd to throw you into a rescue shell.
 	  Useful for recovery purposes.
 
-	  example: APPEND recover
+	  example: linux <kernel> recover
