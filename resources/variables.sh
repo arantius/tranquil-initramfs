@@ -9,7 +9,7 @@ NAME="Bliss Initramfs Creator"
 AUTHOR="Jonathan Vasquez"
 EMAIL="jvasquez1011@gmail.com"
 CONTACT="${AUTHOR} <${EMAIL}>"
-VERSION="1.8.2"
+VERSION="1.8.3"
 LICENSE="MPLv2"
 
 # Used only for documentation purposes
@@ -21,6 +21,7 @@ INITRD=""
 INIT=""
 
 HOME="$(pwd)"
+DEPMOD="${HOME}/plugins/depmod"
 TMP_CORE="${HOME}/temp_core"
 TMP_KMOD="${HOME}/temp_kmod"
 

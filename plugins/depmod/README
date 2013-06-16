@@ -1,0 +1,13 @@
+This directory holds the modules.* files that 'depmod' generates. 
+
+If you are building your own SB (Slax Bundle) and don't want to (or don't want your users to)
+have to run 'depmod' every single time they boot SLAX, then you should do the following:
+
+1. Boot Regular SLAX CD
+2. Once in the environment, put your zfs-core, zfs-kmod bundles on a location in SLAX.
+3. Activate the bundle by running 'slax activate <name of bundle>'
+4. Once this is done, run 'depmod' to generate the new modules list.
+5. Go to your /lib/modules/<kernel> and copy all the modules.* files to a safe location.
+
+Once you collected those files, put all the modules.* files inside this directory and the creator
+will automatically detect them and place them inside your .sb.

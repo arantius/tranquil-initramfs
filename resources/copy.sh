@@ -81,8 +81,8 @@ copy_modules()
 
 	if [ "${ZFS_SRM}" = "1" ]; then
 		for x in ${ZFS_MODS}; do 
-			local p=$(dirname ${TMP_KMOD}/${x} | sed 's:/lib/:/lib64/:')
-			mkdir -p ${p} && ecp -r ${x} ${p} 
+			mkdir -p "`dirname ${TMP_KMOD}/${x}`"
+			ecp -r ${x} ${TMP_KMOD}/${x} 
 		done
 	elif [ "${USE_ZFS}" = "1" ]; then
 		for x in ${ZFS_MODS}; do 
@@ -116,8 +116,8 @@ copy_udev()
 			ecp -r ${x} ${TMP_CORE}/${x}
 		done
 
-		# If it's an SRM, move it to the same directory that
-		# sysresccd keeps their udev files.
+		# If it's a SB, move it to the same directory that
+		# SLAX keeps its udev files.
 		if [ "${ZFS_SRM}" = "1" ]; then
 			mkdir ${TMP_CORE}/lib
 			mv ${TMP_CORE}/lib64/udev ${TMP_CORE}/lib

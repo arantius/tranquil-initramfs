@@ -8,9 +8,9 @@
 print_header()
 {
 	echo -e "-----------------------------------"
-	echo -e "\e[38;5;228m| ${NAME} - v${VERSION}\e[0;m"
-	echo -e "\e[38;5;229m| Author: ${CONTACT}\e[0;m"
-	echo -e "\e[38;5;230m| Distributed under the ${LICENSE}\e[0;m"
+	echo -e "\e[1;33m| ${NAME} - v${VERSION}\e[0;m"
+	echo -e "\e[1;33m| Author: ${CONTACT}\e[0;m"
+	echo -e "\e[1;33m| Distributed under the ${LICENSE}\e[0;m"
 	echo -e "-----------------------------------"
 }
 
@@ -52,14 +52,14 @@ print_more()
 {
 	einfo "More Options:"
 	eline
-	eopt "1. ZFS - System Rescue Module"
+	eopt "1. SLAX Bundle (ZFS)"
 	eopt "2. Back"
 	eopt "3. Exit Program"
 	eqst "Current choice [1]: " && read CHOICE
 
 	case ${CHOICE} in
 	1|"")
-		einfo "Creating a ZFS System Rescue Module!"
+		einfo "Creating a SLAX Bundle for ZFS!"
 		. hooks/srm/zfs_srm.sh
 		. hooks/zfs.sh
 		;;
@@ -122,9 +122,9 @@ do_kernel()
 	# Set modules path to correct location and sets kernel name for initramfs
 	if [ "${ZFS_SRM}" = "1" ]; then
 		MODULES="/lib/modules/${KERNEL}/"
-		LOCAL_MODULES="${TMP_KMOD}/lib64/modules/${KERNEL}/"
-		SRM_CORE="zfs-core-${KERNEL}.srm"
-		SRM_KMOD="zfs-kmod-${KERNEL}.srm"
+		LOCAL_MODULES="${TMP_KMOD}/lib/modules/${KERNEL}/"
+		SRM_CORE="zfs-core-${KERNEL}.sb"
+		SRM_KMOD="zfs-kmod-${KERNEL}.sb"
 	elif [ "${USE_MODULES}" = "1" ]; then
 		MODULES="/lib/modules/${KERNEL}/"
 		LOCAL_MODULES="${TMP_CORE}/lib/modules/${KERNEL}/"
@@ -137,7 +137,7 @@ do_kernel()
 print_start()
 {
 	if [ "${ZFS_SRM}" = "1" ]; then
-		einfo "Creating SRMs for ${KERNEL}..."
+		einfo "Creating SBs for ${KERNEL}..."
 	else
 		einfo "Creating initramfs for ${KERNEL}..."
 	fi
@@ -296,6 +296,11 @@ do_modules()
                         cp -a ${MODULES}/modules.{order,builtin} ${LOCAL_MODULES}
 
 			depmod -b ${TMP_CORE} ${KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+		elif [ "${ZFS_SRM}" = "1" ]; then
+			if [ -f "${DEPMOD}/modules.dep" ]; then
+				einfo "Copying modprobe information..."
+				cp -a ${DEPMOD}/modules.* ${LOCAL_MODULES}
+			fi
 		fi
 	fi
 }
@@ -304,16 +309,16 @@ do_modules()
 create()
 {
 	if [ "${ZFS_SRM}" = "1" ]; then
-		einfo "Creating and Packing SRMs..."
+		einfo "Creating and Packing SBs..."
 
-		# Create the Core SRM file
+		# Create the Core SB file
 		mksquashfs ${TMP_CORE} ${HOME}/${SRM_CORE} -all-root -comp xz -noappend -no-progress | logger
 
 		if [ ! -f "${HOME}/${SRM_CORE}" ]; then
 			die "Error creating the Core SRM file.. exiting"
 		fi
 
-		# Create the KMod SRM file
+		# Create the KMod SB file
 		mksquashfs ${TMP_KMOD} ${HOME}/${SRM_KMOD} -all-root -comp xz -noappend -no-progress | logger
 
 		if [ ! -f "${HOME}/${SRM_KMOD}" ]; then

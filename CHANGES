@@ -1,3 +1,13 @@
+1.8.3
+---------
+- Fixed a benign bug that printed out that the rpool didn't exist (because there was no cachefile).
+  Now the 'remount_pool' function will only try to export the pool if you are refreshing.
+- Switched from creating SRMs (System Rescue Modules) to SBs (SLAX Bundles).
+  System Rescue CD is no longer used for this creator. SLAX will now be used.
+- Fixed the title colors so that they are also consistent with different shells
+- Added the "plugins/depmod" directory. You can use this directory to place gathered "modules.*" files.
+  Read the README in that directory for more information.
+
 1.8.2
 ---------
 - Relicensed back to MPLv2
