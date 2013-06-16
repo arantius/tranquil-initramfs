@@ -194,10 +194,7 @@ single_user()
 # be using the zpool.cache.
 remount_pool()
 {
-	if [ "${refresh}" = "1" ]; then
-        	zpool export -f ${pool_name}
-	fi
-
+       	zpool export -f ${pool_name} > /dev/null 2>&1
         zpool import -f -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
 }
 
