@@ -129,6 +129,25 @@ copy_udev()
 	fi
 }
 
+# Copy any other files that need to be copied
+copy_other()
+{
+	einfo "Copying other files..."
+
+	# Copy Bash Files
+	for x in ${BASH_FILES}; do
+		ecp --parents ${x} ${TMP_CORE}
+	done
+
+	# Modify Bash Stuff
+	#sed -i -e '63s%\[\033[01;31m\]\h%ok%' ${LOCAL_ETC}/bash/bashrc
+	#sed -i -e '9d' ${LOCAL_ETC}/bash/bashrc
+
+	# Copy Vim Files
+	for x in ${VIM_FILES}; do
+		ecp --parents ${x} ${TMP_CORE}
+	done
+}
 # Gather all the dependencies (shared libraries) needed for all binaries
 # Checks bin/ and sbin/ (in the tempinit after it copied the binaries
 # and then copy them over.

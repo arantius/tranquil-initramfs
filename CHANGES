@@ -1,3 +1,12 @@
+1.8.4
+---------
+- Initramfs now uses bash instead of busybox's default shell (ash).
+- Added ability to use keyfile with luks (enc_type=pass or key)
+- Added vim and nano to the initramfs
+- The initramfs will automatically make all the busybox nodes in /bin before packing.
+- Bash colors are now added
+- You can now decide whether or not you want to copy your zpool cache
+
 1.8.3
 ---------
 - Fixed a benign bug that printed out that the rpool didn't exist

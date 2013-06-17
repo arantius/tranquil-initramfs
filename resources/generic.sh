@@ -209,7 +209,7 @@ create_dirs()
 create_links()
 {
 	if [ "${USE_BASE}" = "1" ]; then
-		einfo "Creating symlinks to Busybox..."
+		einfo "Creating symlinks..."
 
 		# Needs to be from this directory so that the links are relative
 		cd ${LOCAL_BIN}
@@ -227,6 +227,22 @@ create_links()
 				die "Error creating link from ${x} to busybox"
 			fi
 		done
+
+		# Create 'sh' symlink to 'bash'
+
+		if [ -L "sh" ]; then
+			ewarn "sh link exists.. removing it" && eline
+			rm sh
+		fi
+
+		ln -s bash sh
+
+		if [ ! -L "sh" ]; then
+			die "Error creating link from sh to bash"
+		fi
+
+		# Create busybox links
+		./busybox --install  .
 	fi
 }
 

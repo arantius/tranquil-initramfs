@@ -6,4 +6,17 @@
 
 # Required Binaries, Modules, and other files
 USE_BASE="1"
-BASE_BINS="${BIN}/busybox"
+BASE_BINS="
+	${BIN}/busybox 
+	${BIN}/bash 
+	${BIN}/nano
+	${USR_BIN}/vim"
+
+# Files related to Bash
+BASH_FILES="
+	${ETC}/bash/bashrc
+	${ETC}/DIR_COLORS"
+
+NANO_FILES="${ETC}/nanorc"
+
+VIM_FILES="${ETC}/vim/vimrc"

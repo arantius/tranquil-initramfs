@@ -9,7 +9,7 @@ NAME="Bliss Initramfs Creator"
 AUTHOR="Jonathan Vasquez"
 EMAIL="jvasquez1011@gmail.com"
 CONTACT="${AUTHOR} <${EMAIL}>"
-VERSION="1.8.3"
+VERSION="1.8.4"
 LICENSE="MPLv2"
 
 # Used only for documentation purposes
@@ -31,6 +31,7 @@ LIB="/lib"
 LIB64="/lib64"
 MAN="/usr/share/man"
 UDEV="${LIB64}/udev"
+ETC="/etc"
 
 LOCAL_BIN="${TMP_CORE}/${BIN}"
 LOCAL_SBIN="${TMP_CORE}/${SBIN}"
@@ -38,6 +39,7 @@ LOCAL_LIB="${TMP_CORE}/${LIB}"
 LOCAL_LIB64="${TMP_CORE}/${LIB64}"
 LOCAL_MAN="${TMP_CORE}/${MAN}"
 LOCAL_UDEV="${TMP_CORE}/${UDEV}"
+LOCAL_ETC="${TMP_CORE}/${ETC}"
 
 USR_BIN="/usr/bin"
 USR_SBIN="/usr/sbin"
@@ -53,7 +55,7 @@ ARCH="$(uname -m)"
 LIB_PATH=""
 
 # Required Busybox Symlinks
-BUSYBOX_LN="mount tty sh"
+BUSYBOX_LN=""
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd

@@ -78,6 +78,7 @@ check_binaries && check_modules
 copy_binaries && copy_modules
 copy_docs
 copy_udev
+copy_other
 do_modules
 do_deps
 create_links

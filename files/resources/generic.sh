@@ -9,8 +9,7 @@ rescue_shell()
 {
 	ewarn "Booting into rescue shell..."
 	eline
-	busybox --install -s
-	exec setsid /bin/sh -c 'exec /bin/sh </dev/tty1 >/dev/tty1 2>&1'
+	exec setsid /bin/bash -c 'exec /bin/bash </dev/tty1 >/dev/tty1 2>&1'
 }
 
 # Function to load ZFS modules
@@ -67,6 +66,9 @@ parse_cmdline()
 		enc_root\=*)
 			enc_root=$(get_opt ${x})
 			;;
+                enc_type\=*)
+                        enc_type=$(get_opt ${x})
+                        ;;
 		nocache)
 			nocache="1"
 			;;
@@ -98,24 +100,56 @@ luks_trigger()
 
         einfo "Gathering encrypted devices..." && get_drives
 
-        eqst "Enter passphrase (Leave blank if your devices have different passphrases): " && stty -echo && read code && stty echo
-
-        if [ ! -z "${drives}" ]; then
-                eline && eflag "Opening up your encrypted drive(s)..."
-
-                local x="1"
-
-                for i in ${drives}; do
-                        if [ ! -z "${code}" ]; then
-                                echo "${code}" | cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
-                        else
-                                cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
-                        fi        
-                        
-                        x=`expr ${x} + 1`
-                done
+        if [ -z "${enc_type}" ]; then
+                die "You didn't pass the 'enc_type' variable to the kernel. Example enc_type=key or enc_type=pass"
+	elif [ "${enc_type}" != "pass" -a "${enc_type}" != "key" ]; then
+		die "You have passed an invalid option. Only "pass" and "key" are supported."
         else
-                die "Failed to get drives.. The 'drives' value is empty"
+                if [ "${enc_type}" = "pass" ]; then
+                        eqst "Enter passphrase (Leave blank if more than 1): " && read -s code
+                elif [ "${enc_type}" = "key" ]; then
+                        echo "Keyfile stuff here"
+
+                        einfo "Gathering detect devices:"
+			sleep 3
+			ls /dev/sd*
+
+			eqst "Enter secret: " && read -s lol
+			eqst "Enter drive where keyfile is located: " && read drive
+			eqst "Enter path to keyfile (Mounted at /mnt/key): " && read file
+			mkdir /mnt/key
+
+			eflag "Mounting ${drive} to /mnt/key"
+			mount ${drive} /mnt/key
+		fi
+
+		if [ ! -z "${drives}" ]; then
+			eline && eflag "Opening up your encrypted drive(s)..."
+
+			local x="1"
+
+			for i in ${drives}; do
+
+				if [ "${enc_type}" == "pass" ]; then
+					if [ ! -z "${code}" ]; then
+						echo "${code}" | cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+					else
+						cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+					fi        
+				elif [ "${enc_type}" == "key" ]; then
+					if [ -f "${file}" ]; then
+						cryptsetup --key-file ${file} luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+					else
+						die "Keyfile doesn't exist in this path: ${file}"
+					fi
+					
+				fi
+				
+				x=`expr ${x} + 1`
+			done
+		else
+			die "Failed to get drives.. The 'drives' value is empty"
+		fi
         fi
 }
 
