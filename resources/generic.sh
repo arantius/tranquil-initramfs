@@ -30,12 +30,14 @@ print_menu()
 		einfo "An initramfs for ZFS will be generated!"
 		. hooks/base.sh
 		. hooks/zfs.sh
+		. hooks/addon.sh
 		;;
         2)
                 einfo "An initramfs for LUKS + ZFS will be generated!"
 		. hooks/base.sh
 		. hooks/zfs.sh
                 . hooks/luks.sh
+		. hooks/addon.sh
                 ;;
 	3)
 		unset CHOICE
@@ -192,13 +194,18 @@ create_dirs()
 	mkdir ${TMP_CORE} && mkdir ${TMP_KMOD} && mkdir -p ${CDIRS}
 
 	# Make kernel modules directory
-	if [ ! -z ${LOCAL_MODULES} ] && [ "${USE_MODULES}" = "1" ]; then
+	if [ ! -z ${LOCAL_MODULES} -a "${USE_MODULES}" == "1" ]; then
 		mkdir -p ${LOCAL_MODULES}
 	fi
 
 	# Make ZFS specific directories
-	if [ "${USE_ZFS}" = "1" ]; then
+	if [ "${USE_ZFS}" == "1" ]; then
 		mkdir -p ${TMP_CORE}/etc/zfs
+	fi
+
+	# Make LUKS specific directories
+	if [ "${USE_LUKS}" == "1" ]; then
+		mkdir -p ${TMP_CORE}/mnt/key
 	fi
 
 	# Delete any directories not needed
@@ -210,28 +217,12 @@ create_links()
 {
 	if [ "${USE_BASE}" = "1" ]; then
 		einfo "Creating symlinks..."
-
+	
 		# Needs to be from this directory so that the links are relative
 		cd ${LOCAL_BIN}
 
-		for x in ${BUSYBOX_LN}; do
-
-			if [ -L "${x}" ]; then
-				ewarn "${x} link exists.. removing it" && eline
-				rm ${x}
-			fi
-
-			ln -s busybox ${x}
-
-			if [ ! -L "${x}" ]; then
-				die "Error creating link from ${x} to busybox"
-			fi
-		done
-
 		# Create 'sh' symlink to 'bash'
-
 		if [ -L "sh" ]; then
-			ewarn "sh link exists.. removing it" && eline
 			rm sh
 		fi
 
@@ -243,6 +234,15 @@ create_links()
 
 		# Create busybox links
 		./busybox --install  .
+
+		cd ${LOCAL_SBIN}
+		
+		for i in ${KMOD_SYM}; do
+			ln -s kmod ${i}
+			
+			# Remove the busybox equivalent
+			rm ${LOCAL_BIN}/${i}
+		done
 	fi
 }
 
@@ -273,24 +273,39 @@ config_files()
 	fi
 	
 	# Any last substitions or additions/modifications should be done here
-	if [ "${USE_ZFS}" = "1" ] && [ "${ZFS_SRM}" != "1" ]; then
+	if [ "${USE_ZFS}" == "1" -a "${ZFS_SRM}" != "1" ]; then
 		# Enable ZFS in the init if ZFS is being used.
-		sed -i -e "16s/0/1/" ${TMP_CORE}/init
+		sed -i -e "13s/0/1/" ${TMP_CORE}/init
 
 		# Sets initramfs script version number
-		sed -i -e "19s/0/${VERSION}/" ${TMP_CORE}/init
+		sed -i -e "16s/0/${VERSION}/" ${TMP_CORE}/init
 
 		# Copies zpool.cache if it exists
 		if [ -f "${ZCACHE}" ]; then
-			cp ${ZCACHE} ${TMP_CORE}/etc/zfs
+			eqst "Do you want to use the current zpool.cache? [y/N]: " && read CHOICE
+
+			case ${CHOICE} in
+			y|Y)
+				ewarn "Creating initramfs with zpool.cache"
+				cp ${ZCACHE} ${TMP_CORE}/etc/zfs
+				;;
+			n|N|*)
+				ewarn "Creating initramfs without zpool.cache"
+				;;
+			esac
 		else
 			ewarn "Creating initramfs without zpool.cache"
 		fi
 	fi
 
 	# Enable LUKS in the init if LUKS is being used.
-	if [ "${USE_LUKS}" = "1" ]; then
-		sed -i -e "17s/0/1/" ${TMP_CORE}/init
+	if [ "${USE_LUKS}" == "1" ]; then
+		sed -i -e "14s/0/1/" ${TMP_CORE}/init
+	fi
+
+	# Plug in the modules that the user wants to load
+	if [ "${USE_ADDON}" == "1" ]; then
+		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${TMP_CORE}/resources/generic.sh
 	fi
 }
 

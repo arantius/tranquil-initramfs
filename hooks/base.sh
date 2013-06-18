@@ -7,16 +7,21 @@
 # Required Binaries, Modules, and other files
 USE_BASE="1"
 BASE_BINS="
-	${BIN}/busybox 
+	${BIN}/busybox
 	${BIN}/bash 
 	${BIN}/nano
-	${USR_BIN}/vim"
+	${SBIN}/kmod"
 
 # Files related to Bash
 BASH_FILES="
 	${ETC}/bash/bashrc
 	${ETC}/DIR_COLORS"
 
+# Files related to nano
 NANO_FILES="${ETC}/nanorc"
 
-VIM_FILES="${ETC}/vim/vimrc"
+# Any other files that are needed
+OTHER_FILES="${ETC}/terminfo"
+
+# KMod Symlinks
+KMOD_SYM="depmod insmod lsmod modinfo modprobe rmmod"

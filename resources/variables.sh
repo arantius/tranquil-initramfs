@@ -33,6 +33,12 @@ MAN="/usr/share/man"
 UDEV="${LIB64}/udev"
 ETC="/etc"
 
+USR_BIN="/usr/bin"
+USR_SBIN="/usr/sbin"
+USR_LIB="/usr/lib"
+USR_SHARE="/usr/share"
+USR_EXEC="/usr/libexec"
+
 LOCAL_BIN="${TMP_CORE}/${BIN}"
 LOCAL_SBIN="${TMP_CORE}/${SBIN}"
 LOCAL_LIB="${TMP_CORE}/${LIB}"
@@ -40,10 +46,7 @@ LOCAL_LIB64="${TMP_CORE}/${LIB64}"
 LOCAL_MAN="${TMP_CORE}/${MAN}"
 LOCAL_UDEV="${TMP_CORE}/${UDEV}"
 LOCAL_ETC="${TMP_CORE}/${ETC}"
-
-USR_BIN="/usr/bin"
-USR_SBIN="/usr/sbin"
-USR_LIB="/usr/lib"
+LOCAL_USR_SHARE="${TMP_CORE}/${USR_SHARE}"
 
 MODULES=""        # will be set by the `setTargetKernel` function
 LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
@@ -54,15 +57,13 @@ ARCH="$(uname -m)"
 # Basically a boolean that is used to switch to the correct library path
 LIB_PATH=""
 
-# Required Busybox Symlinks
-BUSYBOX_LN=""
-
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
 PREL_BIN="/bin/cpio"
 
 # Directories to create when generating the initramfs structure
-CDIRS="${TMP_CORE}/bin \
+CDIRS="
+	${TMP_CORE}/bin \
 	${TMP_CORE}/sbin \
 	${TMP_CORE}/usr/bin \
         ${TMP_CORE}/proc \

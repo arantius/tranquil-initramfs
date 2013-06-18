@@ -25,14 +25,6 @@ ZFS_BINS="
 	${SBIN}/zstreamdump
 	${SBIN}/ztest"
 
-ZFS_MODS="
-	${MODULES}/extra/spl/spl.ko
-	${MODULES}/extra/avl/zavl.ko
-	${MODULES}/extra/nvpair/znvpair.ko
-	${MODULES}/extra/unicode/zunicode.ko
-	${MODULES}/extra/zcommon/zcommon.ko
-	${MODULES}/extra/zfs/zfs.ko"
-
 ZFS_MAN="
 	${MAN}/man1/zhack.1.bz2
 	${MAN}/man1/zpios.1.bz2

@@ -7,28 +7,25 @@
 # Function to start rescue shell
 rescue_shell()
 {
-	ewarn "Booting into rescue shell..."
-	eline
+	ewarn "Booting into rescue shell..." && eline
 	exec setsid /bin/bash -c 'exec /bin/bash </dev/tty1 >/dev/tty1 2>&1'
 }
 
 # Function to load ZFS modules
 load_modules()
 {
-        modules=""
+        if [ "${USE_ZFS}" == "1" ]; then
+		modules=""
 
-        if [ "${USE_ZFS}" = "1" ]; then
-                modules="${modules} spl zavl znvpair zcommon zunicode zfs"
+		for x in ${modules}; do
+			# If it's the ZFS module, and there is a arcmax set, then set the arc max to it
+			if [ "${x}" == "zfs" -a ! -z "${arcmax}" ]; then
+				modprobe ${x} zfs_arc_max="${arcmax}"
+			else
+				modprobe ${x}
+			fi
+		done
         fi
-
-        for x in ${modules}; do
-                # If it's the ZFS module, and there is a arcmax set, then set the arc max to it
-                if [ "${x}" = "zfs" ] && [ ! -z "${arcmax}" ]; then
-                        modprobe ${x} zfs_arc_max=${arcmax}
-                else
-                        modprobe ${x}
-                fi
-        done
 }
 
 # Mount Kernel Devices
@@ -49,7 +46,7 @@ umnt_kernel_devs()
 
 # Function for parsing command line options with "=" in them
 get_opt() {
-	echo "$@" | cut -d "=" -f 2
+	echo "${@}" | cut -d "=" -f 2
 }
 
 # Process command line options
@@ -88,7 +85,7 @@ parse_cmdline()
 # Extract all the drives needed to decrypt before mounting the pool
 get_drives()
 {
-        drives=$(echo ${enc_root} | tr "," "\n")
+        drives=($(echo ${enc_root} | tr "," "\n"))
 }
 
 # If USE_LUKS is enabled, run this function
@@ -100,53 +97,64 @@ luks_trigger()
 
         einfo "Gathering encrypted devices..." && get_drives
 
+	for i in $(seq 0 $((${#drives[@]} - 1))); do
+		eflag "Drive ${i}: ${drives[${i}]}"
+	done
+
         if [ -z "${enc_type}" ]; then
-                die "You didn't pass the 'enc_type' variable to the kernel. Example enc_type=key or enc_type=pass"
-	elif [ "${enc_type}" != "pass" -a "${enc_type}" != "key" ]; then
-		die "You have passed an invalid option. Only "pass" and "key" are supported."
+                die "You didn't pass the 'enc_type' variable to the kernel. Example enc_type=[pass,key,key-gpg]"
+	elif [ "${enc_type}" != "pass" -a "${enc_type}" != "key" -a "${enc_type}" != "key_gpg" ]; then
+		die "You have passed an invalid option. Only "pass", "key", and "key_gpg" are supported."
         else
-                if [ "${enc_type}" = "pass" ]; then
-                        eqst "Enter passphrase (Leave blank if more than 1): " && read -s code
-                elif [ "${enc_type}" = "key" ]; then
-                        echo "Keyfile stuff here"
+		# Gathers information required (passphrase, keyfile location, etc)
+                if [ "${enc_type}" == "pass" ]; then
+                        eqst "Enter passphrase (Leave blank if more than 1): " && read -s code && eline
+                elif [ "${enc_type}" == "key" -o "${enc_type}" == "key_gpg" ]; then
+                        einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
 
-                        einfo "Gathering detect devices:"
-			sleep 3
-			ls /dev/sd*
-
-			eqst "Enter secret: " && read -s lol
 			eqst "Enter drive where keyfile is located: " && read drive
-			eqst "Enter path to keyfile (Mounted at /mnt/key): " && read file
-			mkdir /mnt/key
 
-			eflag "Mounting ${drive} to /mnt/key"
-			mount ${drive} /mnt/key
+			mount ${drive} ${KEY_DRIVE}
+
+			eqst "Enter relative path to keyfile: " && read file
+
+			local key_path="${KEY_DRIVE}/${file}"
+
+			eqst "Enter decryption phrase: " && read -s phrase && eline
+
+			if [ -z "${phrase}" ]; then
+				die "No decryption phrase was given."
+			fi
 		fi
 
 		if [ ! -z "${drives}" ]; then
-			eline && eflag "Opening up your encrypted drive(s)..."
+			einfo "Opening up your encrypted drive(s)..."
 
-			local x="1"
-
-			for i in ${drives}; do
-
+			for i in $(seq 0 $((${#drives[@]} - 1))); do
 				if [ "${enc_type}" == "pass" ]; then
 					if [ ! -z "${code}" ]; then
-						echo "${code}" | cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+						echo "${code}" | cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
-						cryptsetup luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+						cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					fi        
 				elif [ "${enc_type}" == "key" ]; then
-					if [ -f "${file}" ]; then
-						cryptsetup --key-file ${file} luksOpen ${i} vault_${x} || die "luksOpen failed to open: ${i}"
+					if [ -f "${key_path}" ]; then
+						cryptsetup --key-file "${key_path}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
+					else
+						die "Keyfile doesn't exist in this path: ${key_path}"
+					fi
+				elif [ "${enc_type}" == "key_gpg" ]; then
+					if [ -f "${key_path}" ]; then
+						echo "${phrase}" | gpg --batch --passphrase-fd 0 -q -d ${key_path} 2> /dev/null | 
+						cryptsetup --key-file=- luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
 						die "Keyfile doesn't exist in this path: ${file}"
 					fi
-					
 				fi
-				
-				x=`expr ${x} + 1`
 			done
+
+			# Umount the drive with the keyfile if we had one
+			umount ${drive} > /dev/null 2>&1
 		else
 			die "Failed to get drives.. The 'drives' value is empty"
 		fi
@@ -166,7 +174,7 @@ zfs_trigger()
 
 	local CACHE="/etc/zfs/zpool.cache"
 
-	if [ ! -f "${CACHE}" ] || [ "${nocache}" = "1" ] || [ "${refresh}" = "1" ]; then
+	if [ ! -f "${CACHE}" -o "${nocache}" = "1" -o "${refresh}" = "1" ]; then
                 remount_pool
 	fi
 
@@ -182,11 +190,11 @@ switch_to_new_root()
 # Checks all triggers
 check_triggers()
 {
-        if [ "${USE_LUKS}" = "1" ]; then
+        if [ "${USE_LUKS}" == "1" ]; then
                 luks_trigger
         fi
 
-        if [ "${USE_ZFS}" = "1" ]; then
+        if [ "${USE_ZFS}" == "1" ]; then
                 zfs_trigger
         fi
 }
@@ -208,7 +216,7 @@ refresh_cache()
         cp -f ${CACHE} ${NEW_ROOT}/${CACHE}
 
         ewarn "Please recreate your initramfs so that it can use the new zpool.cache!"
-        sleep 5 
+        sleep 3
 
         # Now that we refreshed the cache, let's just continue into the OS
 	have_a_nice_day

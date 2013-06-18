@@ -1,11 +1,25 @@
 1.8.4
 ---------
+
+Major Changes:
 - Initramfs now uses bash instead of busybox's default shell (ash).
-- Added ability to use keyfile with luks (enc_type=pass or key)
-- Added vim and nano to the initramfs
-- The initramfs will automatically make all the busybox nodes in /bin before packing.
+- Kernel loading mechanism has been switched from busybox's kernel stuff to kmod
+- Added ability to use keyfile with luks (enc_type=pass, key, or key_gpg)
+- Added nano, kmod, and gpg to the initramfs
+- Modules can now be added automatically with full dependencies. This means that 
+  you can say "I want to use nouveau, zfs, and another driver" and the creator will
+  automagically get every module that that module needs in order for it to work.
+
+Minor Changes:
+- Reduced sleep time from 5 to 4 in refresh_cache function for files/resources/generic.sh
+- Made the modules loading function smaller in files/resources/generic.sh
+- Transitioning over to equal signs from Strict POSIX to normal bash "=" to "=="
+- Transitioning over if functions to use -o or -a rather than:   ] && [   ] || [
 - Bash colors are now added
 - You can now decide whether or not you want to copy your zpool cache
+- The initramfs will automatically make all the busybox nodes in /bin before packing.
+- Now using bash style arrays for the luks devices function.
+- Prints out the luks devices nicely at boot
 
 1.8.3
 ---------

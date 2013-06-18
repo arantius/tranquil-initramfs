@@ -74,8 +74,9 @@ clean
 print_start
 create_dirs
 check_prelim_binaries
-check_binaries && check_modules
-copy_binaries && copy_modules
+check_binaries && copy_binaries
+get_modules
+copy_modules
 copy_docs
 copy_udev
 copy_other

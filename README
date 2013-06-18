@@ -14,8 +14,8 @@ and getting all those files.
 Please have the following installed:
 
 - Linux Kernel
-  ZLIB_INFLATE/DEFLATE must be compiled into the kernel (not as a module).
-  > ZLIB_INFLATE [=y], ZLIB_DEFLATE [=y]
+  ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared 
+  in the ADDON_MODS variable in hooks/addon.sh.
   
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
@@ -26,7 +26,7 @@ Please have the following installed:
   >> [*] Maintain a devtmpfs filesystem to mount at /dev
   >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
 
-  # Only if you want to make an SRM
+  # Only if you want to make an SLAX Bundle
   > File systems --->
   >> Miscellaneous filesystems --->
   >>> <*> SquashFS 4.0 - Squashed file system support
@@ -35,19 +35,24 @@ Please have the following installed:
   >>> [*] Include support for LZO compressed file systems
   >>> [*] Include support for XZ compressed file systems
 
-  * All other drivers required to see your PATA/SATA drives must be compiled in.
+  * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
+    or you can compile them as a module and declare them in the ADDON_MODS variable.
 
 - app-arch/cpio
+- app-shells/bash
+- app-editors/nano
 - sys-apps/busybox
 - sys-kernel/spl
 - sys-fs/zfs
-- sys-fs/zfs-kmod
+- sys-fs/zfs-kmod 
+- sys-apps/kmod
 
-For SRM creation:
+For SLAX Bundle (SB) creation:
 - sys-fs/squashfs-tools
 
 For LUKS support:
 - sys-fs/cryptsetup
+- app-crypt/gnupg
 
 - Linux Kernel
   Device Drivers --->
