@@ -1,3 +1,10 @@
+1.8.5
+---------
+- Fixed a bug that prevented the initramfs from copying the modules.
+  This bug occured when you were in a live cd (somewhere other than live system),
+  and you tried to create an initramfs. The modules weren't found because modprobe uses
+  `uname -r` to detect the base directory for modules. Now modprobe is using -S <kernel>.
+
 1.8.4
 ---------
 

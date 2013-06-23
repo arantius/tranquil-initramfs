@@ -85,7 +85,7 @@ get_moddeps()
 {
 	for i in ${@}; do
 		# Concatenate the previous results with the current ones
-		local d=("${d[@]}" $(modprobe --show-depends ${i} | awk -F ' ' '{print $2}'))
+		local d=("${d[@]}" $(modprobe -S ${KERNEL} --show-depends ${i} | awk -F ' ' '{print $2}'))
 	done
 
 	# Remove Duplicates
