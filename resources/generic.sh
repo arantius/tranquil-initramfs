@@ -235,13 +235,18 @@ create_links()
 		# Create busybox links
 		./busybox --install  .
 
-		cd ${LOCAL_SBIN}
+		# Go to the directory where kmod is in
+		if [ -f "${LOCAL_SBIN}/kmod" ]; then
+			cd ${LOCAL_SBIN}
+		elif [ -f "${LOCAL_BIN}/kmod" ]; then
+			cd ${LOCAL_BIN}
+		fi
 		
 		for i in ${KMOD_SYM}; do
-			ln -s kmod ${i}
-			
 			# Remove the busybox equivalent
 			rm ${LOCAL_BIN}/${i}
+
+			ln -s kmod ${i}
 		done
 	fi
 }
