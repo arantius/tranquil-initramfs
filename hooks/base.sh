@@ -6,11 +6,13 @@
 
 # Required Binaries, Modules, and other files
 USE_BASE="1"
+
+# Detect where the binaries are
 BASE_BINS="
-	${BIN}/busybox
-	${BIN}/bash 
-	${BIN}/nano
-	${SBIN}/kmod"
+        $(whereis busybox | cut -d " " -f 2)
+        $(whereis bash | cut -d " " -f 2)
+        $(whereis nano | cut -d " " -f 2)
+        $(whereis kmod | cut -d " " -f 2)"
 
 # Files related to Bash
 BASH_FILES="

@@ -1,3 +1,8 @@
+1.8.6
+---------
+- Added dynamic detection of base binaries. Might need to do this for all binaries in the future.
+  * Reason for this is that sometimes Funtoo and Gentoo store core files in different locations.
+
 1.8.5
 ---------
 - Fixed a bug that prevented the initramfs from copying the modules.
