@@ -66,6 +66,12 @@ parse_cmdline()
                 enc_type\=*)
                         enc_type=$(get_opt ${x})
                         ;;
+                enc_key\=*)
+                        enc_key=$(get_opt ${x})
+                        ;;
+                enc_key_drive\=*)
+                        enc_key_drive=$(get_opt ${x})
+                        ;;
 		nocache)
 			nocache="1"
 			;;
@@ -112,19 +118,35 @@ luks_trigger()
                 elif [ "${enc_type}" == "key" -o "${enc_type}" == "key_gpg" ]; then
                         einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
 
-			eqst "Enter drive where keyfile is located: " && read drive
+			# What drive is the keyfile in?
+			if [ -z "${enc_key_drive}" ]; then
+				eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
 
-			mount ${drive} ${KEY_DRIVE}
-
-			eqst "Enter relative path to keyfile: " && read file
-
-			local key_path="${KEY_DRIVE}/${file}"
-
-			eqst "Enter decryption phrase: " && read -s phrase && eline
-
-			if [ -z "${phrase}" ]; then
-				die "No decryption phrase was given."
+				if [ -z "${enc_key_drive}" ]; then
+					die "Error setting path to keyfile's drive!"
+				fi
 			fi
+
+			# What is the path to the keyfile?
+			if [ -z "${enc_key}" ]; then
+				eqst "Enter path to keyfile: " && read enc_key && eline
+
+				if [ -z "${enc_key}" ]; then
+					die "Error setting path to keyfile!"
+				fi
+			fi
+			
+			# What is the decryption key?
+			if [ "${enc_type}" == "key_gpg" ]; then
+				eqst "Enter decryption code: " && read -s code && eline
+
+				if [ -z "${phrase}" ]; then
+					die "No decryption code was given."
+				fi
+			fi
+
+			# Mount the drive
+			mount ${enc_key_drive} ${KEY_DRIVE}
 		fi
 
 		if [ ! -z "${drives}" ]; then
@@ -138,23 +160,23 @@ luks_trigger()
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					fi        
 				elif [ "${enc_type}" == "key" ]; then
-					if [ -f "${key_path}" ]; then
-						cryptsetup --key-file "${key_path}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
+					if [ -f "${enc_key}" ]; then
+						cryptsetup --key-file "${enc_key}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
-						die "Keyfile doesn't exist in this path: ${key_path}"
+						die "Keyfile doesn't exist in this path: ${enc_key}"
 					fi
 				elif [ "${enc_type}" == "key_gpg" ]; then
-					if [ -f "${key_path}" ]; then
-						echo "${phrase}" | gpg --batch --passphrase-fd 0 -q -d ${key_path} 2> /dev/null | 
+					if [ -f "${enc_key}" ]; then
+						echo "${code}" | gpg --batch --passphrase-fd 0 -q -d ${enc_key} 2> /dev/null | 
 						cryptsetup --key-file=- luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
-						die "Keyfile doesn't exist in this path: ${file}"
+						die "Keyfile doesn't exist in this path: ${enc_key}"
 					fi
 				fi
 			done
 
 			# Umount the drive with the keyfile if we had one
-			umount ${drive} > /dev/null 2>&1
+			umount ${enc_key_drive} > /dev/null 2>&1
 		else
 			die "Failed to get drives.. The 'drives' value is empty"
 		fi

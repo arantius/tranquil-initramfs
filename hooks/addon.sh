@@ -7,4 +7,4 @@
 USE_ADDON="1"
 
 # Add the modules that you want to include in the initramfs below
-ADDON_MODS="zfs nouveau"
+ADDON_MODS="zfs"

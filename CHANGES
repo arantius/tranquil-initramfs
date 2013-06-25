@@ -2,6 +2,8 @@
 ---------
 - Added dynamic detection of base binaries. Might need to do this for all binaries in the future.
   * Reason for this is that sometimes Funtoo and Gentoo store core files in different locations.
+- Added support for passing the keyfile as a kernel parameter (enc_key, enc_key_drive)
+- Simplified the encrypted process
 
 1.8.5
 ---------
