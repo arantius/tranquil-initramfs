@@ -147,6 +147,9 @@ luks_trigger()
 
 			# Mount the drive
 			mount ${enc_key_drive} ${KEY_DRIVE}
+
+			# Set path to keyfile
+			keyfile="${KEY_DRIVE}/${enc_key}"
 		fi
 
 		if [ ! -z "${drives}" ]; then
@@ -160,17 +163,17 @@ luks_trigger()
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					fi        
 				elif [ "${enc_type}" == "key" ]; then
-					if [ -f "${enc_key}" ]; then
-						cryptsetup --key-file "${enc_key}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
+					if [ -f "${keyfile}" ]; then
+						cryptsetup --key-file "${keyfile}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
-						die "Keyfile doesn't exist in this path: ${enc_key}"
+						die "Keyfile doesn't exist in this path: ${keyfile}"
 					fi
 				elif [ "${enc_type}" == "key_gpg" ]; then
-					if [ -f "${enc_key}" ]; then
-						echo "${code}" | gpg --batch --passphrase-fd 0 -q -d ${enc_key} 2> /dev/null | 
+					if [ -f "${keyfile}" ]; then
+						echo "${code}" | gpg --batch --passphrase-fd 0 -q -d ${keyfile} 2> /dev/null | 
 						cryptsetup --key-file=- luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
-						die "Keyfile doesn't exist in this path: ${enc_key}"
+						die "Keyfile doesn't exist in this path: ${keyfile}"
 					fi
 				fi
 			done
