@@ -233,7 +233,7 @@ create_links()
 		fi
 
 		# Create busybox links
-		./busybox --install  .
+		${LOCAL_BIN}/busybox --install  .
 
 		# Go to the directory where kmod is in
 		if [ -f "${LOCAL_SBIN}/kmod" ]; then
