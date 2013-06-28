@@ -1,3 +1,7 @@
+1.8.7.1
+---------
+- Initramfs will not not append the .img flag to the initrd file.
+
 1.8.7
 ---------
 - Fixed a bug where busybox wasn't being detected properly in an outside environment.

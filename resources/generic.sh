@@ -130,7 +130,7 @@ do_kernel()
 	elif [ "${USE_MODULES}" = "1" ]; then
 		MODULES="/lib/modules/${KERNEL}/"
 		LOCAL_MODULES="${TMP_CORE}/lib/modules/${KERNEL}/"
-		INITRD="initrd-${KERNEL}.img"
+		INITRD="initrd-${KERNEL}"
 	fi
 }
 
