@@ -50,7 +50,11 @@ copy_binaries()
 
 	# Copy base binaries (all initramfs have these)
 	for x in ${BASE_BINS}; do
-		ecp --parents ${x} ${TMP_CORE}
+		if [ "${x##*/}" == "busybox" ]; then
+			ecp ${x} ${TMP_CORE}/bin
+		else
+			ecp --parents ${x} ${TMP_CORE}
+		fi
 	done
 
 	if [ "${USE_ZFS}" == "1" ]; then
@@ -96,6 +100,9 @@ get_moddeps()
 copy_modules()
 {
         einfo "Copying modules..."
+
+	# Making sure that the dependencies are up to date
+	depmod ${KERNEL}
 
 	if [ "${USE_ADDON}" == "1" ]; then
 		for i in $(seq 0 $((${#moddeps[@]} - 1))); do
@@ -169,6 +176,7 @@ copy_other()
 		sed -i -e "72a \\\t\tPS1='\\\u@initrd \\\W \\\\$ '" ${LOCAL_ETC}/bash/bashrc
 		sed -i -e '75d' ${LOCAL_ETC}/bash/bashrc
 		sed -i -e "74a \\\t\tPS1='\\\u@initrd \\\w \\\\$ '" ${LOCAL_ETC}/bash/bashrc
+		sed -i -e '69d' ${LOCAL_ETC}/bash/bashrc
 
 		# Copy Vim Files
 		for x in ${VIM_FILES}; do
@@ -188,6 +196,13 @@ copy_other()
 	fi
 
 }
+
+# Gets dependency list for parameter
+get_dlist()
+{
+	ldd ${1} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}'
+}
+
 # Gather all the dependencies (shared libraries) needed for all binaries
 # Checks bin/ and sbin/ (in the tempinit after it copied the binaries
 # and then copy them over.
@@ -199,26 +214,22 @@ do_deps()
 	deps="${LIB64}/ld-linux-x86-64.so*"
 
 	for x in ${BASE_BINS}; do
-		deps="${deps} \
-		$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
+		deps="${deps} $(get_dlist ${x})"
 	done
 
 	if [ "${USE_ZFS}" = "1" ]; then
 		for x in ${ZFS_BINS}; do
-			deps="${deps} \
-			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
+			deps="${deps} $(get_dlist ${x})"
 		done
 	fi
 
 	if [ "${USE_LUKS}" = "1" ]; then
 		for x in ${LUKS_BINS}; do
-			deps="${deps} \
-			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
+			deps="${deps} $(get_dlist ${x})"
 		done
 
 		for x in ${GPG_BINS}; do
-			deps="${deps} \
-			$(ldd ${x} | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}')"
+			deps="${deps} $(get_dlist ${x})"
 		done
 	fi
 

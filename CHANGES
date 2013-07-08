@@ -1,3 +1,22 @@
+1.8.8
+---------
+
+Major Changes:
+- Busybox 1.21.1 static binary now included.
+- 'reboot -f' and 'poweroff -f' commands now work within the initramfs.
+- The creator now runs depmod before gathering the modules. This prevents it from not being able
+  to gather the modules if the modules were rebuilt but dependency information wasn't updated yet.
+
+Minor Changes:
+- MPLv2 License is now in the COPYING file
+- Added LICENSES folder to include licenses for compliance (for busybox)
+- Fixed a bug where grep was saying it didn't know about it's parameters.
+- Removed 'nano' from the ebuild
+- Fixed a bug where the program would try to build the initramfs if you tried to make it
+  with a null assigned kernel (in the "Please enter a kernel" step).
+- Cleaned up some code and added get_dlist() function
+- Removed "-o, -v" parameters and 'HELP' file
+
 1.8.7.1
 ---------
 - Initramfs will not not append the .img flag to the initrd file.

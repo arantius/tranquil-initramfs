@@ -15,9 +15,9 @@
 # the appropriate hook in which the initramfs will be created.
 
 # Source functions
-. resources/variables.sh
-. resources/generic.sh
-. resources/copy.sh
+. libraries/variables.sh
+. libraries/common.sh
+. libraries/copy.sh
 
 # This script must be ran as root
 if [ $(whoami) != "root" ]; then
@@ -28,21 +28,9 @@ fi
 if [ ! -z "${1}" ]; then
 
         # Parse options
-        case "${1}" in
-        --options|-o)
-                print_options
-                exit
-                ;;
-        --version|-v)
-                print_header
-                exit
-                ;;
-        --help|-h)
-                cat HELP
-                exit
-                ;;
+	case "${1}" in
         [1-4])
-                if [ "${1}" = "4" ]; then
+        	if [ "${1}" = "4" ]; then
                         exit
                 fi
 
@@ -56,7 +44,7 @@ if [ ! -z "${1}" ]; then
 
                 ;;
         *)
-                die "Incorrect parameters, please pass -h for help"
+                die "Incorrect parameters!"
                 ;;
         esac
 fi

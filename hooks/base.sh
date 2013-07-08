@@ -9,21 +9,14 @@ USE_BASE="1"
 
 # Detect where the binaries are
 BASE_BINS="
-        $(whereis busybox | cut -d " " -f 2)
+        ${BB}
         $(whereis bash | cut -d " " -f 2)
-        $(whereis nano | cut -d " " -f 2)
         $(whereis kmod | cut -d " " -f 2)"
 
 # Files related to Bash
 BASH_FILES="
 	${ETC}/bash/bashrc
 	${ETC}/DIR_COLORS"
-
-# Files related to nano
-NANO_FILES="${ETC}/nanorc"
-
-# Any other files that are needed
-OTHER_FILES="${ETC}/terminfo"
 
 # KMod Symlinks
 KMOD_SYM="depmod insmod lsmod modinfo modprobe rmmod"

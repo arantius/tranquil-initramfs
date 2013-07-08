@@ -7,7 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
 # Import Functions
-. resources/generic.sh
+. libraries/common.sh
 
 # Variables
 USE_ZFS="0"

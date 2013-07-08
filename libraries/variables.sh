@@ -9,17 +9,13 @@ NAME="Bliss Initramfs Creator"
 AUTHOR="Jonathan Vasquez"
 EMAIL="jvasquez1011@gmail.com"
 CONTACT="${AUTHOR} <${EMAIL}>"
-VERSION="1.8.7.1"
+VERSION="1.8.8"
 LICENSE="MPLv2"
 
 # Used only for documentation purposes
 EXAMPLE_KERNEL="3.8.13-ALL"
 
 # Parameters and Locations
-KERNEL=""
-INITRD=""
-INIT=""
-
 HOME="$(pwd)"
 DEPMOD="${HOME}/plugins/depmod"
 TMP_CORE="${HOME}/temp_core"
@@ -51,11 +47,11 @@ LOCAL_USR_SHARE="${TMP_CORE}/${USR_SHARE}"
 MODULES=""        # will be set by the `setTargetKernel` function
 LOCAL_MODULES=""  # will be set by the `setTargetKernel` function
 
+# Plugins Directory
+PLUGINS="${HOME}/plugins"
+
 # Get CPU Architecture
 ARCH="$(uname -m)"
-
-# Basically a boolean that is used to switch to the correct library path
-LIB_PATH=""
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
@@ -71,8 +67,11 @@ CDIRS="
 	${TMP_CORE}/dev \
 	${TMP_CORE}/etc \
 	${TMP_CORE}/mnt/root \
-	${TMP_CORE}/resources \
+	${TMP_CORE}/libraries \
 	${TMP_CORE}/lib"
 
 # zpool.cache
 ZCACHE="/etc/zfs/zpool.cache"
+
+# Busybox
+BB="${PLUGINS}/busybox/busybox"

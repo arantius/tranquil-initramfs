@@ -113,6 +113,10 @@ do_kernel()
 				;;
 			n|N)
 				eqst "Please enter the kernel name: " && read KERNEL
+
+				if [ -z "${KERNEL}" ]; then
+					die "You didn't enter a kernel. Exiting..."
+				fi
 				;;
 			*)
 				die "Invalid option, re-open the application"
@@ -264,7 +268,7 @@ config_files()
 
 	if [ "${ZFS_SRM}" != "1" ]; then
 		# Copy init functions
-		cp -r ${HOME}/files/resources/* ${TMP_CORE}/resources/
+		cp -r ${HOME}/files/libraries/* ${TMP_CORE}/libraries/
 		
 		# Copy the init script
 		cp ${HOME}/files/init ${TMP_CORE} 
@@ -310,7 +314,7 @@ config_files()
 
 	# Plug in the modules that the user wants to load
 	if [ "${USE_ADDON}" == "1" ]; then
-		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${TMP_CORE}/resources/generic.sh
+		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${TMP_CORE}/libraries/common.sh
 	fi
 }
 
@@ -491,6 +495,6 @@ ecp()
 strip()
 {
 	if [ "${ZFS_SRM}" = "1" ]; then
-		rm -rf ${TMP_CORE}/{bin,lib,mnt,resources,dev,proc,sys}
+		rm -rf ${TMP_CORE}/{bin,lib,mnt,libraries,dev,proc,sys}
 	fi
 }
