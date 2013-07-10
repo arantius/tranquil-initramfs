@@ -14,12 +14,12 @@ rescue_shell()
 # Function to load ZFS modules
 load_modules()
 {
-        if [ "${USE_ZFS}" == "1" ]; then
+        if [[ ${USE_ZFS} == "1" ]]; then
 		modules=""
 
 		for x in ${modules}; do
 			# If it's the ZFS module, and there is a arcmax set, then set the arc max to it
-			if [ "${x}" == "zfs" -a ! -z "${arcmax}" ]; then
+			if [[ ${x} == "zfs" ]] && [[ ! -z ${arcmax} ]]; then
 				modprobe ${x} zfs_arc_max="${arcmax}"
 			else
 				modprobe ${x}
@@ -97,7 +97,7 @@ get_drives()
 # If USE_LUKS is enabled, run this function
 luks_trigger()
 {
-        if [ -z "${enc_root}" ]; then
+        if [[ -z ${enc_root} ]]; then
                 die "You didn't pass the 'enc_root' variable to the kernel. Example: enc_root=/dev/sda2,/dev/sdb2"
         fi
 
@@ -107,40 +107,40 @@ luks_trigger()
 		eflag "Drive ${i}: ${drives[${i}]}"
 	done
 
-        if [ -z "${enc_type}" ]; then
+        if [[ -z ${enc_type} ]]; then
                 die "You didn't pass the 'enc_type' variable to the kernel. Example enc_type=[pass,key,key-gpg]"
-	elif [ "${enc_type}" != "pass" -a "${enc_type}" != "key" -a "${enc_type}" != "key_gpg" ]; then
+	elif [[ ${enc_type} != "pass" ]] && [[ ${enc_type} != "key" ]] && [[ ${enc_type} != "key_gpg" ]]; then
 		die "You have passed an invalid option. Only "pass", "key", and "key_gpg" are supported."
         else
 		# Gathers information required (passphrase, keyfile location, etc)
-                if [ "${enc_type}" == "pass" ]; then
+                if [[ ${enc_type} == "pass" ]]; then
                         eqst "Enter passphrase (Leave blank if more than 1): " && read -s code && eline
-                elif [ "${enc_type}" == "key" -o "${enc_type}" == "key_gpg" ]; then
+                elif [[ ${enc_type} == "key" ]] || [[ ${enc_type} == "key_gpg" ]]; then
                         einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
 
 			# What drive is the keyfile in?
-			if [ -z "${enc_key_drive}" ]; then
+			if [[ -z ${enc_key_drive} ]]; then
 				eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
 
-				if [ -z "${enc_key_drive}" ]; then
+				if [[ -z ${enc_key_drive} ]]; then
 					die "Error setting path to keyfile's drive!"
 				fi
 			fi
 
 			# What is the path to the keyfile?
-			if [ -z "${enc_key}" ]; then
+			if [[ -z ${enc_key} ]]; then
 				eqst "Enter path to keyfile: " && read enc_key && eline
 
-				if [ -z "${enc_key}" ]; then
+				if [[ -z ${enc_key} ]]; then
 					die "Error setting path to keyfile!"
 				fi
 			fi
 			
 			# What is the decryption key?
-			if [ "${enc_type}" == "key_gpg" ]; then
+			if [[ ${enc_type} == "key_gpg" ]]; then
 				eqst "Enter decryption code: " && read -s code && eline
 
-				if [ -z "${phrase}" ]; then
+				if [[ -z ${phrase} ]]; then
 					die "No decryption code was given."
 				fi
 			fi
@@ -152,24 +152,24 @@ luks_trigger()
 			keyfile="${KEY_DRIVE}/${enc_key}"
 		fi
 
-		if [ ! -z "${drives}" ]; then
+		if [[ ! -z ${drives} ]]; then
 			einfo "Opening up your encrypted drive(s)..."
 
 			for i in $(seq 0 $((${#drives[@]} - 1))); do
-				if [ "${enc_type}" == "pass" ]; then
-					if [ ! -z "${code}" ]; then
+				if [[ ${enc_type} == "pass" ]]; then
+					if [[ ! -z ${code} ]]; then
 						echo "${code}" | cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					fi        
-				elif [ "${enc_type}" == "key" ]; then
-					if [ -f "${keyfile}" ]; then
+				elif [[ ${enc_type} == "key" ]]; then
+					if [[ -f ${keyfile} ]]; then
 						cryptsetup --key-file "${keyfile}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
 						die "Keyfile doesn't exist in this path: ${keyfile}"
 					fi
-				elif [ "${enc_type}" == "key_gpg" ]; then
-					if [ -f "${keyfile}" ]; then
+				elif [[ ${enc_type} == "key_gpg" ]]; then
+					if [[ -f ${keyfile} ]]; then
 						echo "${code}" | gpg --batch --passphrase-fd 0 -q -d ${keyfile} 2> /dev/null | 
 						cryptsetup --key-file=- luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
@@ -189,7 +189,7 @@ luks_trigger()
 # If USE_ZFS is enabled, run this function
 zfs_trigger()
 {
-        if [ -z "${root}" ]; then
+        if [[ -z ${root} ]]; then
 		die "You must pass the root= variable. Example: root=rpool/ROOT/funtoo"
 	fi
 
@@ -199,7 +199,7 @@ zfs_trigger()
 
 	local CACHE="/etc/zfs/zpool.cache"
 
-	if [ ! -f "${CACHE}" -o "${nocache}" = "1" -o "${refresh}" = "1" ]; then
+	if [[ ! -f ${CACHE} ]] || [[ ${nocache} == "1" ]] || [[ ${refresh} == "1" ]]; then
                 remount_pool
 	fi
 
@@ -215,11 +215,11 @@ switch_to_new_root()
 # Checks all triggers
 check_triggers()
 {
-        if [ "${USE_LUKS}" == "1" ]; then
+        if [[ ${USE_LUKS} == "1" ]]; then
                 luks_trigger
         fi
 
-        if [ "${USE_ZFS}" == "1" ]; then
+        if [[ ${USE_ZFS} == "1" ]]; then
                 zfs_trigger
         fi
 }
@@ -234,7 +234,7 @@ refresh_cache()
         check_triggers
 
         # If there is an old cache in the rootfs, then delete it.
-        if [ -f "${NEW_ROOT}/${CACHE}" ]; then
+        if [[ -f ${NEW_ROOT}/${CACHE} ]]; then
                 rm -f ${NEW_ROOT}/${CACHE}
         fi
 

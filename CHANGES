@@ -6,6 +6,9 @@ Major Changes:
 - Removed "Slax Bundle" creation option. This application will strictly be for creating
   an initramfs.
 
+Minor Changes:
+- Code is now using bash style if statements ([[ ]])
+
 1.8.8
 ---------
 

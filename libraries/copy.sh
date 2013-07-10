@@ -104,7 +104,7 @@ copy_modules()
 	# Making sure that the dependencies are up to date
 	depmod ${KERNEL}
 
-	if [[ ${USE_ADDON}== "1" ]]; then
+	if [[ ${USE_ADDON} == "1" ]]; then
 		for i in $(seq 0 $((${#moddeps[@]} - 1))); do
 			ecp "--parents -r" ${moddeps[${i}]} ${T}
 		done

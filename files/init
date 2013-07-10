@@ -34,19 +34,19 @@ prevent_printk
 einfo "Loading modules..."
 load_modules || die "Failed to load kernel modules"
 
-if [ "${recover}" == "1" ]; then
+if [[ ${recover} == "1" ]]; then
 	ewarn "Recovery Mode Enabled... Entering Rescue Environment"
 	rescue_shell
 fi
 
-if [ "${su}" == "1" ]; then
+if [[ ${su} == "1" ]]; then
 	ewarn "Single User Enabled... Entering Rescue Environment"
         single_user
 fi
 
 # If refreshing, the refresh_cache function will run the check_triggers
 # function and also exit through there.
-if [ "${refresh}" == "1" ]; then
+if [[ ${refresh} == "1" ]]; then
         refresh_cache
 fi
 

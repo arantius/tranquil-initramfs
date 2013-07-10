@@ -26,13 +26,13 @@ print_menu()
 
 	case ${CHOICE} in
 	1|"")
-		einfo "Generating ZFS initramfs..."
+		einfo "An initramfs for ZFS will be generated."
 		. hooks/base.sh
 		. hooks/zfs.sh
 		. hooks/addon.sh
 		;;
         2)
-                einfo "Generating LUKS + ZFS initramfs..."
+		einfo "An initramfs for Encrypted ZFS will be generated."
 		. hooks/base.sh
 		. hooks/zfs.sh
                 . hooks/luks.sh

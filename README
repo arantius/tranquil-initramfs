@@ -45,9 +45,6 @@ Please have the following installed:
 - sys-fs/zfs-kmod 
 - sys-apps/kmod
 
-For SLAX Bundle (SB) creation:
-- sys-fs/squashfs-tools
-
 For LUKS support:
 - sys-fs/cryptsetup
 - app-crypt/gnupg

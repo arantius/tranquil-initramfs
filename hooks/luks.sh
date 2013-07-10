@@ -6,7 +6,6 @@
 
 # Toggle Flags
 USE_LUKS="1"
-USE_MODULES="1"
 
 # Required Binaries, Modules, and other files
 LUKS_BINS="${SBIN}/cryptsetup"

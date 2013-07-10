@@ -6,7 +6,6 @@
 
 # Toggle Flags
 USE_ZFS="1"
-USE_MODULES="1"
 
 # Set the kernel we will be using here
 do_kernel
