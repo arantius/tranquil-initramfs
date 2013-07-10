@@ -12,7 +12,7 @@ USE_MODULES="1"
 LUKS_BINS="${SBIN}/cryptsetup"
 
 GPG_BINS="
-	${USR_BIN}/gpg
-	${USR_BIN}/gpg-agent"
+	${UBIN}/gpg
+	${UBIN}/gpg-agent"
 
-GPG_FILES="${USR_SHARE}/gnupg/gpg-conf.skel"
+GPG_FILES="${USHARE}/gnupg/gpg-conf.skel"

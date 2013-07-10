@@ -11,32 +11,32 @@ check_binaries()
 
 	# Check base binaries (all initramfs have these)
 	for x in ${BASE_BINS}; do
-		if [ ! -f "${x}" ]; then
+		if [[ ! -f ${x} ]]; then
 			err_bin_dexi ${x}
 		fi
 	done
 
-	if [ "${USE_ZFS}" == "1" ]; then
+	if [[ ${USE_ZFS} == "1" ]]; then
 		eflag "Using ZFS"
 
 		for x in ${INIT_BINS}; do	
-			if [ ! -f "${x}" ]; then
+			if [[ ! -f ${x} ]]; then
 				err_bin_dexi ${x}
 			fi
 		done
 	fi
 
-	if [ "${USE_LUKS}" == "1" ]; then
+	if [[ ${USE_LUKS} == "1" ]]; then
 		eflag "Using LUKS"
 
 		for x in ${LUKS_BINS}; do
-			if [ ! -f "${x}" ]; then
+			if [[ ! -f ${x} ]]; then
 				err_bin_dexi ${x}
 			fi
 		done
 
 		for x in ${GPG_BINS}; do
-			if [ ! -f "${x}" ]; then
+			if [[ ! -f ${x} ]]; then
 				err_bin_dexi ${x}
 			fi
 		done
@@ -50,26 +50,26 @@ copy_binaries()
 
 	# Copy base binaries (all initramfs have these)
 	for x in ${BASE_BINS}; do
-		if [ "${x##*/}" == "busybox" ]; then
-			ecp ${x} ${TMP_CORE}/bin
+		if [[ ${x##*/} == "busybox" ]]; then
+			ecp ${x} ${T}/bin
 		else
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		fi
 	done
 
-	if [ "${USE_ZFS}" == "1" ]; then
+	if [[ ${USE_ZFS} == "1" ]]; then
 		for x in ${ZFS_BINS}; do
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		done  
 	fi
 
-	if [ "${USE_LUKS}" == "1" ]; then
+	if [[ ${USE_LUKS} == "1" ]]; then
 		for x in ${LUKS_BINS}; do
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		done
 
 		for x in ${GPG_BINS}; do
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		done
 	fi
 }
@@ -79,7 +79,7 @@ get_modules()
 {
 	einfo "Gathering module dependencies..."
 
-	if [ "${USE_ADDON}" == "1" ]; then
+	if [[ ${USE_ADDON} == "1" ]]; then
 		get_moddeps "${ADDON_MODS}"
 	fi
 }
@@ -104,17 +104,9 @@ copy_modules()
 	# Making sure that the dependencies are up to date
 	depmod ${KERNEL}
 
-	if [ "${USE_ADDON}" == "1" ]; then
+	if [[ ${USE_ADDON}== "1" ]]; then
 		for i in $(seq 0 $((${#moddeps[@]} - 1))); do
-			ecp "--parents -r" ${moddeps[${i}]} ${TMP_CORE}
-		done
-	fi
-
-	if [ "${ZFS_SRM}" == "1" ]; then
-		get_moddeps zfs
-
-		for i in $(seq 0 $((${#moddeps[@]} - 1))); do
-			ecp "--parents -r" ${moddeps[${i}]} ${TMP_KMOD}
+			ecp "--parents -r" ${moddeps[${i}]} ${T}
 		done
 	fi
 }
@@ -124,10 +116,10 @@ copy_docs()
 {
         einfo "Copying documentation..."
 
-	if [ "${USE_ZFS}" == "1" ]; then
+	if [[ ${USE_ZFS} == "1" ]]; then
 		for x in ${ZFS_MAN}; do
-			mkdir -p "`dirname ${TMP_CORE}/${x}`"
-			ecp -r ${x} ${TMP_CORE}/${x}
+			mkdir -p "`dirname ${T}/${x}`"
+			ecp -r ${x} ${T}/${x}
 		done
 	fi
 }
@@ -137,22 +129,11 @@ copy_udev()
 {
 	einfo "Copying udev rules..."
 
-	if [ "${USE_ZFS}" == "1" ]; then
+	if [[ ${USE_ZFS} == "1" ]]; then
 		for x in ${ZFS_UDEV}; do
-			mkdir -p "`dirname ${TMP_CORE}/${x}`"
-			ecp -r ${x} ${TMP_CORE}/${x}
+			mkdir -p "`dirname ${T}/${x}`"
+			ecp -r ${x} ${T}/${x}
 		done
-
-		# If it's a SB, move it to the same directory that
-		# SLAX keeps its udev files.
-		if [ "${ZFS_SRM}" == "1" ]; then
-			mkdir ${TMP_CORE}/lib
-			mv ${TMP_CORE}/lib64/udev ${TMP_CORE}/lib
-
-			# Also do some substitions so that udev uses the correct udev_id file
-			sed -i -e 's:/lib64/:/lib/:' ${TMP_CORE}/lib/udev/rules.d/69-vdev.rules
-			sed -i -e 's:/lib64/:/lib/:' ${TMP_CORE}/lib/udev/rules.d/60-zvol.rules
-		fi
 	fi
 }
 
@@ -161,40 +142,39 @@ copy_other()
 {
 	einfo "Copying other files..."
 
-	if [ "${USE_BASE}" == "1" ]; then
+	if [[ ${USE_BASE} == "1" ]]; then
 		# Copy Bash Files
 		for x in ${BASH_FILES}; do
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		done
 
 		# Modify Bash Stuff
 
-		# This fixes the (no host) crap that will be shown when you go into rescue shell
-		sed -i -e '63d' ${LOCAL_ETC}/bash/bashrc
-		sed -i -e "62a \\\t\tPS1='\\\[\\\033[01;31m\\\]initrd\\\[\\\033[01;34m\\\] \\\\W \\\\$\\\[\\\033[00m\\\] '" ${LOCAL_ETC}/bash/bashrc
-		sed -i -e '73d' ${LOCAL_ETC}/bash/bashrc
-		sed -i -e "72a \\\t\tPS1='\\\u@initrd \\\W \\\\$ '" ${LOCAL_ETC}/bash/bashrc
-		sed -i -e '75d' ${LOCAL_ETC}/bash/bashrc
-		sed -i -e "74a \\\t\tPS1='\\\u@initrd \\\w \\\\$ '" ${LOCAL_ETC}/bash/bashrc
-		sed -i -e '69d' ${LOCAL_ETC}/bash/bashrc
+		# This fixes the (no host) stuff that will be shown when you go into rescue shell
+		sed -i -e '63d' ${LETC}/bash/bashrc
+		sed -i -e "62a \\\t\tPS1='\\\[\\\033[01;31m\\\]initrd\\\[\\\033[01;34m\\\] \\\\W \\\\$\\\[\\\033[00m\\\] '" ${LETC}/bash/bashrc
+		sed -i -e '73d' ${LETC}/bash/bashrc
+		sed -i -e "72a \\\t\tPS1='\\\u@initrd \\\W \\\\$ '" ${LETC}/bash/bashrc
+		sed -i -e '75d' ${LETC}/bash/bashrc
+		sed -i -e "74a \\\t\tPS1='\\\u@initrd \\\w \\\\$ '" ${LETC}/bash/bashrc
+		sed -i -e '69d' ${LETC}/bash/bashrc
 
 		# Copy Vim Files
 		for x in ${VIM_FILES}; do
-			ecp "--parents -r" ${x} ${TMP_CORE}
+			ecp "--parents -r" ${x} ${T}
 		done
 
 		# Copy other files
 		for x in ${OTHER_FILES}; do
-			ecp "--parents -r" ${x} ${TMP_CORE}
+			ecp "--parents -r" ${x} ${T}
 		done
 	fi
 
-	if [ "${USE_LUKS}" == "1" ]; then
+	if [[ ${USE_LUKS} == "1" ]]; then
 		for x in ${GPG_FILES}; do
-			ecp --parents ${x} ${TMP_CORE}
+			ecp --parents ${x} ${T}
 		done
 	fi
-
 }
 
 # Gets dependency list for parameter
@@ -217,13 +197,13 @@ do_deps()
 		deps="${deps} $(get_dlist ${x})"
 	done
 
-	if [ "${USE_ZFS}" = "1" ]; then
+	if [[ ${USE_ZFS} == "1" ]]; then
 		for x in ${ZFS_BINS}; do
 			deps="${deps} $(get_dlist ${x})"
 		done
 	fi
 
-	if [ "${USE_LUKS}" = "1" ]; then
+	if [[ ${USE_LUKS} == "1" ]]; then
 		for x in ${LUKS_BINS}; do
 			deps="${deps} $(get_dlist ${x})"
 		done
@@ -240,7 +220,6 @@ do_deps()
 	einfo "Copying dependencies..."
 
 	for y in ${deps}; do		
-                ecp --parents ${y} ${TMP_CORE} 
+                ecp --parents ${y} ${T} 
         done
 }
-

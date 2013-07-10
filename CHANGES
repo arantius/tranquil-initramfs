@@ -1,3 +1,11 @@
+2.0.0
+---------
+
+Major Changes:
+- Completely rewrote the code so that it's cleaner and smaller
+- Removed "Slax Bundle" creation option. This application will strictly be for creating
+  an initramfs.
+
 1.8.8
 ---------
 

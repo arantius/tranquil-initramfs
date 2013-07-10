@@ -9,7 +9,7 @@ USE_BASE="1"
 
 # Detect where the binaries are
 BASE_BINS="
-        ${BB}
+        ${PLUGINS}/busybox/busybox
         $(whereis bash | cut -d " " -f 2)
         $(whereis kmod | cut -d " " -f 2)"
 
@@ -18,5 +18,5 @@ BASH_FILES="
 	${ETC}/bash/bashrc
 	${ETC}/DIR_COLORS"
 
-# KMod Symlinks
+# kmod symlinks
 KMOD_SYM="depmod insmod lsmod modinfo modprobe rmmod"

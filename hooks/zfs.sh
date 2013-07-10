@@ -13,7 +13,7 @@ do_kernel
 
 # Required Binaries, Modules, and other files
 ZFS_BINS="
-	${USR_BIN}/hostid
+	${UBIN}/hostid
 	${SBIN}/fsck.zfs
 	${SBIN}/mount.zfs
 	${SBIN}/zdb
