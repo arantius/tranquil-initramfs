@@ -1,8 +1,6 @@
 # Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# Distributed under the GPLv2 which can be found in the COPYING file.
 
 # Message that will be displayed at the top of the screen
 print_header()
@@ -214,10 +212,10 @@ config_files()
 	# Any last substitions or additions/modifications should be done here
 	if [[ ${USE_ZFS} == "1" ]]; then
 		# Enable ZFS in the init if ZFS is being used.
-		sed -i -e "13s/0/1/" ${T}/init
+		sed -i -e "11s/0/1/" ${T}/init
 
 		# Sets initramfs script version number
-		sed -i -e "16s/0/${VERSION}/" ${T}/init
+		sed -i -e "14s/0/${VERSION}/" ${T}/init
 
 		# Copies zpool.cache if it exists
 		if [[ -f ${ZCACHE} ]]; then
@@ -239,12 +237,12 @@ config_files()
 
 	# Enable LUKS in the init if LUKS is being used.
 	if [[ ${USE_LUKS} == "1" ]]; then
-		sed -i -e "14s/0/1/" ${T}/init
+		sed -i -e "12s/0/1/" ${T}/init
 	fi
 
 	# Plug in the modules that the user wants to load
 	if [[ ${USE_ADDON} == "1" ]]; then
-		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${T}/libraries/common.sh
+		sed -i -e "16s/\"\"/\"${ADDON_MODS}\"/" ${T}/libraries/common.sh
 	fi
 }
 

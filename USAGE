@@ -1,73 +1,123 @@
 =======================================
 Usage
 =======================================
-The initramfs script is very easy to use.
 
-1. Creating the initramfs
+The initramfs script is very easy to use!
 
-Just clone it or extract it into a directory and cd into it.
+=======================================
+Creating the initramfs
+=======================================
 
 Run the script by running: ./createInit
 * It must be run as root since root is the only user that can run `depmod`.
 
-* If the script doesn't run and gives you a permission denied message,
+* If the script doesn't run and gives you a permission denied message, 
   give it execution permission: `chmod +x createInit` and then try again.
 
 Select the option that you want, and tell it which kernel you want to use.
 
 After that the required files will be gathered and packed into an initramfs.
 
-You will find the initramfs in the directory that you are currently in.
+You will also be asked if you want your zpool.cache to be included in the initramfs.
+Just press enter (No is the default). Only say yes if you know what you are doing since
+an old cache file can cause your system not to boot.
+
+You will then find the initramfs in the directory that you are currently in. 
 Copy the file to your boot directory and name it whatever you want.
 
-2. Setting it up in the bootloader
+=======================================
+Setting up the bootloader configuration (GRUB 2)
+=======================================
 
 If the following information is true:
-Kernel     = vmlinuz-3.8.7-ALL
-Initramfs  = initrd-3.8.7-ALL.img 
-Bootloader = GRUB 2
-Partition Layout is GPT
-and /boot is on /dev/sda1 formatted with the ext2 filesystem
 
-I would do the following:
+* Kernel     = vmlinuz-3.9.9-FB.02
+* Initramfs  = initrd-3.9.9-FB.02 
+* Partition Layout is GPT
+* /boot = /dev/sda1 (formatted with the ext2 filesystem)
 
-(open up the bootloader config (for GRUB 2 it's grub.cfg))
+Add a new entry to /boot/grub/grub.cfg 
 
-`vim /boot/grub/grub.cfg`
-
-and add a new entry:
+=======================================
+Normal ZFS
+=======================================
 
 # Funtoo
-menuentry "Funtoo - 3.8.13" {
+menuentry "Funtoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.8.13-ALL root=rpool/ROOT/funtoo quiet
-	initrd /initrd-3.8.13-ALL.img
+	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo quiet
+	initrd /initrd-3.9.9-FB.02
 }
 
-This would mount my `rpool/ROOT/funtoo` dataset. `root` is the kernel parameter you
-need to declare so that the initramfs knows which dataset you want to boot into.
-
-Example of an encrypted zfs pool on 4 drives with a gpg encrypted keyfile
+=======================================
+Encrypted ZFS with just a passphrase and four encrypted partitions
+=======================================
 
 # Funtoo
-menuentry "Funtoo - 3.8.13" {
+menuentry "Funtoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.8.13-ALL root=rpool/ROOT/funtoo enc_root=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=key_gpg quiet
-	initrd /initrd-3.8.13-ALL.img
+	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
+	initrd /initrd-3.9.9-FB.02
 }
+
+=======================================
+Encrypted ZFS with a gpg key and only one encrypted partition
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3 enc_type=key quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted ZFS with an encrypted gpg key and two encrypted partitions
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Summary:
+=======================================
+
+This would load the 'vmlinuz-3.9.9-FB.02' kernel and try to mount the 'rpool/ROOT/funtoo' dataset
+as the / of the filesystem. It will then chroot into it and load your system.
+
+If you are using Encrypted ZFS, then the 'enc_root' parameter will luksOpen each of your listed
+devices, and then it will continue as usual.
+
+* In order for you to unlock multiple devices, the passphrase/keyfile must be identical for all of them.
+  or if you are just using a passphrase (and no keyfile), you can have multiple passphrases and just enter
+  them all at boot (interactively).
 
 =======================================
 Kernel Options:
 =======================================
+
 ZFS:
+
 root - ZFS root name
 	example: linux <kernel> root=rpool/ROOT/funtoo
 
@@ -107,7 +157,6 @@ LUKS + ZFS:
 Follow the same instructions as above, but also add "enc_root=" and "enc_type" to your kernel line.
 
 enc_root - Encrypted root drive (You need the enc_type variable below as well)
-	example: linux <kernel> enc_root=/dev/sda2
 
 If you have your zpool on spread over multiple drives, you can pass them all
 to this variable as well:
@@ -117,8 +166,6 @@ enc_type - What type of method will are you using to decrypt?
 	Types: pass - passphrase
 	       key - plain keyfile
 	       key_gpg - keyfile encrypted with gpg
-
-	example: linux <kernel> enc_root=/dev/sda3 enc_type=key
 
 enc_key_drive - What drive the keyfile in?
 	example: linux <kernel> enc_root=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
@@ -155,6 +202,7 @@ recover - Use this if you want the initrd to throw you into a rescue shell.
 =======================================
 Modules Support:
 =======================================
+
 If you have compiled some critical stuff as modules rather than them being built into the kernel,
 you can now write which modules you need in the hooks/addon.sh "ADDON_MODS" variable. The initramfs
 will gather the module and it's dependencies and put them in the initramfs for you. Then the initramfs will

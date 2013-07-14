@@ -1,3 +1,12 @@
+2.0.1
+---------
+
+Major Changes:
+- Relicensed to the GPLv2 (Only the GPLv2, not v1, not v3, not v39232, only GPLv2)
+
+Minor Changes:
+- Made instructions more clearer in the USAGE file
+
 2.0.0
 ---------
 
