@@ -1,3 +1,13 @@
+2.0.2
+---------
+
+Major Changes:
+- Relicensed back to MPLv2
+- Removed ability to have zpool.cache inside the initramfs (Too many problems)
+
+Minor Changes:
+- UI changes were made. Spacing and some rewording
+
 2.0.1
 ---------
 

@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - v2.0.1
+Bliss Initramfs Creator - v2.0.2
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Funtoo Linux @ ZoL 0.6.1
 
-Distributed under the GPLv2 which can be found in the COPYING file.
+Distributed under the MPL 2.0 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
 dependencies needed to mount your zpool.
@@ -25,15 +25,6 @@ Please have the following installed:
   > Generic Driver Options --->
   >> [*] Maintain a devtmpfs filesystem to mount at /dev
   >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
-
-  # Only if you want to make an SLAX Bundle
-  > File systems --->
-  >> Miscellaneous filesystems --->
-  >>> <*> SquashFS 4.0 - Squashed file system support
-  >>> [*] Squashfs XATTR support
-  >>> [*] Include support for ZLIB compressed file systems
-  >>> [*] Include support for LZO compressed file systems
-  >>> [*] Include support for XZ compressed file systems
 
   * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
     or you can compile them as a module and declare them in the ADDON_MODS variable.

@@ -130,23 +130,6 @@ So a complete line could look like this:
  
  Which would mount the `rpool/ROOT/funtoo` ZFS dataset with the arc_max being 512 MB
 
-nocache - Ignores zpool.cache. Useful for booting if you have an old
-         cache file that is preventing you from booting. Make sure to regenerate a new
-	 initrd so you don't have to keep using this option.
-
-	 example: linux <kernel> root=rpool/ROOT/funtoo nocache
-
-refresh - Ignores the zpool.cache (if there is one in the initramfs),
-                Mounts the OS and deletes the old zpool.cache that it has,
-		Copies the new zpool.cache that the initramfs created into
-		the OS.
-
-		This is extremely useful if you had an old zfs pool and you
-		changed it in any way (Maybe you have a RAID1 and now have
-		a RAID10? or a RAIDZ2).
-
-	 	example: linux <kernel> root=rpool/ROOT/funtoo refresh_cache
-
 su - Single User Mode. This is a really crappy implementation of a single user,
      mode. But at least it will help you if you forgot to change your password,
      after installation.

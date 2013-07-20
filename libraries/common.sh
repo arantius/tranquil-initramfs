@@ -1,6 +1,8 @@
 # Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the COPYING file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Message that will be displayed at the top of the screen
 print_header()
@@ -18,26 +20,24 @@ print_menu()
 	# Check to see if a menu option was passed
 	if [[ -z ${CHOICE} ]]; then
 		einfo "Which initramfs would you like to generate:"
-		eline ; print_options
+		print_options
 		eqst "Current choice [1]: " && read CHOICE
 	fi
 
 	case ${CHOICE} in
 	1|"")
-		einfo "An initramfs for ZFS will be generated."
 		. hooks/base.sh
 		. hooks/zfs.sh
 		. hooks/addon.sh
 		;;
         2)
-		einfo "An initramfs for Encrypted ZFS will be generated."
 		. hooks/base.sh
 		. hooks/zfs.sh
                 . hooks/luks.sh
 		. hooks/addon.sh
                 ;;
 	*)
-		ewarn "Exiting." && exit
+		eline && ewarn "Exiting." && exit
 		;;
 	esac
 }
@@ -53,9 +53,11 @@ get_arch()
 # Prints the available options if the user passes an invalid number
 print_options()
 {
+	eline
 	eopt "1. ZFS"
 	eopt "2. Encrypted ZFS (LUKS + ZFS)"
 	eopt "3. Exit Program"
+	eline
 }
 
 # Ask the user if they want to use their current kernel, or another one
@@ -63,14 +65,14 @@ do_kernel()
 {
         # Check to see if a kernel was passed
         if [[ -z ${KERNEL} ]]; then
-                eqst "Do you want to use the current kernel: $(uname -r)? [Y/n]: " && read CHOICE
+                eline && eqst "Do you want to use the current kernel: $(uname -r)? [Y/n]: " && read CHOICE && eline
 
                 case ${CHOICE} in
                 y|Y|"")
                         KERNEL=$(uname -r)
                         ;;
                 n|N)
-                        eqst "Please enter the kernel name: " && read KERNEL
+                        eqst "Please enter the kernel name: " && read KERNEL && eline
 
                         if [[ -z ${KERNEL} ]]; then
                                 die "You didn't enter a kernel. Exiting..."
@@ -78,7 +80,7 @@ do_kernel()
 
                         ;;
                 *)
-                        die "Invalid option, re-open the application"
+                        die "Invalid option. Exiting..."
                         ;;
                 esac
         fi
@@ -87,11 +89,15 @@ do_kernel()
         MODULES="/lib/modules/${KERNEL}/"
         LMODULES="${T}/${MODULES}"
         INITRD="initrd-${KERNEL}"
+
+	# Check modules directory
+	check_mods_dir
 }
 
 # Message for displaying the generating event
 print_start()
 {
+	eline && einfo "[ Starting ]" && eline
 	einfo "Creating initramfs for ${KERNEL}..."
 }
 
@@ -115,7 +121,7 @@ clean()
 # Check to make sure kernel modules directory exists
 check_mods_dir()
 {
-        einfo "Checking to see if the modules directory exists for ${KERNEL}..."
+        einfo "Checking to see if ${MODULES} exists..."
 
         if [[ ! -d ${MODULES} ]]; then
                 die "The kernel modules directory for ${KERNEL} doesn't exist. Exiting..."
@@ -176,10 +182,9 @@ create_links()
 			cd ${LBIN}
 		fi
 		
+		# Remove the busybox equivalent
 		for i in ${KMOD_SYM}; do
-			# Remove the busybox equivalent
 			rm ${LBIN}/${i}
-
 			ln -s kmod ${i}
 		done
 	fi
@@ -212,37 +217,20 @@ config_files()
 	# Any last substitions or additions/modifications should be done here
 	if [[ ${USE_ZFS} == "1" ]]; then
 		# Enable ZFS in the init if ZFS is being used.
-		sed -i -e "11s/0/1/" ${T}/init
+		sed -i -e "13s/0/1/" ${T}/init
 
 		# Sets initramfs script version number
-		sed -i -e "14s/0/${VERSION}/" ${T}/init
-
-		# Copies zpool.cache if it exists
-		if [[ -f ${ZCACHE} ]]; then
-			eqst "Do you want to use the current zpool.cache? [y/N]: " && read CHOICE
-
-			case ${CHOICE} in
-			y|Y)
-				ewarn "Creating initramfs with zpool.cache"
-				cp ${ZCACHE} ${T}/etc/zfs
-				;;
-			n|N|*)
-				ewarn "Creating initramfs without zpool.cache"
-				;;
-			esac
-		else
-			ewarn "Creating initramfs without zpool.cache"
-		fi
+		sed -i -e "16s/0/${VERSION}/" ${T}/init
 	fi
 
 	# Enable LUKS in the init if LUKS is being used.
 	if [[ ${USE_LUKS} == "1" ]]; then
-		sed -i -e "12s/0/1/" ${T}/init
+		sed -i -e "14s/0/1/" ${T}/init
 	fi
 
 	# Plug in the modules that the user wants to load
 	if [[ ${USE_ADDON} == "1" ]]; then
-		sed -i -e "16s/\"\"/\"${ADDON_MODS}\"/" ${T}/libraries/common.sh
+		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${T}/libraries/common.sh
 	fi
 }
 
@@ -257,8 +245,7 @@ do_modules()
         
         einfo "Generating modprobe information..."
         
-        # Copy modules.order and modules.builtin just so depmod
-        # doesn't spit out warnings. -_-
+        # Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
         cp -a ${MODULES}/modules.{order,builtin} ${LMODULES}
 
         depmod -b ${T} ${KERNEL} || die "You don't have depmod? Something is seriously wrong!"
@@ -284,7 +271,7 @@ create()
 # Clean up and exit after a successful build
 clean_exit()
 {
-	clean && einfo "Complete :)"
+	eline && einfo "[ Ending ]" && eline && clean
 	einfo "Please copy the ${INITRD} to your /boot directory"
 	exit 0
 }
@@ -308,25 +295,25 @@ check_prelim_binaries()
 # Used for displaying information
 einfo()
 {
-        eline && echo -e "\e[1;32m>>>\e[0;m ${@}"
+        echo -e "\e[1;32m>>>\e[0;m ${@}"
 }
 
 # Used for input (questions)
 eqst()
 {
-        eline && echo -en "\e[1;37m>>>\e[0;m ${@}"
+        echo -en "\e[1;37m>>>\e[0;m ${@}"
 }
 
 # Used for warnings
 ewarn()
 {
-        eline && echo -e "\e[1;33m>>>\e[0;m ${@}"
+        echo -e "\e[1;33m>>>\e[0;m ${@}"
 }
 
 # Used for flags
 eflag()
 {
-        eline && echo -e "\e[1;34m>>>\e[0;m ${@}"
+        echo -e "\e[1;34m>>>\e[0;m ${@}"
 }
 
 # Used for options

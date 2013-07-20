@@ -1,6 +1,8 @@
 # Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the COPYING file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Function to start rescue shell
 rescue_shell()
@@ -70,14 +72,8 @@ parse_cmdline()
                 enc_key_drive\=*)
                         enc_key_drive=$(get_opt ${x})
                         ;;
-		nocache)
-			nocache="1"
-			;;
 		recover)
 			recover="1" 
-			;;
-		refresh)
-			refresh="1"
 			;;
 		su)
 			su="1"
@@ -195,11 +191,8 @@ zfs_trigger()
 
         eflag "Mounting ${pool_name}..."
 
-	local CACHE="/etc/zfs/zpool.cache"
-
-	if [[ ! -f ${CACHE} ]] || [[ ${nocache} == "1" ]] || [[ ${refresh} == "1" ]]; then
-                remount_pool
-	fi
+	# remount the pool since the pool isn't mounted but wasn't cleanly unmounted (Gentoo/Funtoo)
+        remount_pool
 
         mount -t zfs -o zfsutil ${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset"
 }
@@ -222,29 +215,6 @@ check_triggers()
         fi
 }
 
-# Regenerates a brand new zpool.cache file and installs it in the system
-refresh_cache()
-{
-        eflag "Refreshing zpool.cache..."
-	
-        local CACHE="/etc/zfs/zpool.cache"
-
-        check_triggers
-
-        # If there is an old cache in the rootfs, then delete it.
-        if [[ -f ${NEW_ROOT}/${CACHE} ]]; then
-                rm -f ${NEW_ROOT}/${CACHE}
-        fi
-
-        cp -f ${CACHE} ${NEW_ROOT}/${CACHE}
-
-        ewarn "Please recreate your initramfs so that it can use the new zpool.cache!"
-        sleep 3
-
-        # Now that we refreshed the cache, let's just continue into the OS
-	have_a_nice_day
-}
-
 # Single User Mode
 single_user()
 {
@@ -253,25 +223,11 @@ single_user()
 }
 
 # Cleanly exports and imports pool
-
-# I made this function since Gentoo/Funtoo doesn't cleanly umount the pool
-# during shutdown/restart. This is actually only used if we aren't going to
-# be using the zpool.cache.
+# I made this function since Gentoo/Funtoo doesn't cleanly unmount the pool during shutdown/restart. 
 remount_pool()
 {
-       	zpool export -f ${pool_name} > /dev/null 2>&1
+       	zpool export -f ${pool_name} > /dev/null 2>&1 || die "Failed to export your pool: ${pool_name}"
         zpool import -f -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
-}
-
-# Central exit point needed to cleanly exit from either the main function
-# or the refresh_cache function.
-have_a_nice_day()
-{
-	einfo "Unmounting kernel devices..."
-	umnt_kernel_devs || die "Failed to umount kernel devices"
-
-	einfo "Switching to your rootfs..." && eline
-	switch_to_new_root
 }
 
 ### Utility Functions ###

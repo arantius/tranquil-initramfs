@@ -1,14 +1,16 @@
 # Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Distributed under the GPLv2 which can be found in the COPYING file.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Application Info
 NAME="Bliss Initramfs Creator"
 AUTHOR="Jonathan Vasquez"
 EMAIL="jvasquez1011@gmail.com"
 CONTACT="${AUTHOR} <${EMAIL}>"
-VERSION="2.0.1"
-LICENSE="GPLv2"
+VERSION="2.0.2"
+LICENSE="MPL 2.0"
 
 # Parameters and Locations
 H="$(pwd)"                      # Home
@@ -61,6 +63,3 @@ CDIRS="
 	${T}/mnt/root \
 	${T}/libraries \
 	${T}/lib"
-
-# zpool.cache
-ZCACHE="/etc/zfs/zpool.cache"
