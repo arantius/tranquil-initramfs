@@ -65,7 +65,7 @@ parse_cmdline()
                         enc_key_drive=$(get_opt ${x})
                         ;;
 		recover)
-			recover="1" 
+			recover="1"
 			;;
 		su)
 			su="1"
