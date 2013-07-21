@@ -121,7 +121,7 @@ luks_trigger()
 					die "Error setting path to keyfile!"
 				fi
 			fi
-			
+
 			# What is the decryption key?
 			if [[ ${enc_type} == "key_gpg" ]]; then
 				eqst "Enter decryption code: " && read -s code && eline
@@ -147,7 +147,7 @@ luks_trigger()
 						echo "${code}" | cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
 					else
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
-					fi        
+					fi
 				elif [[ ${enc_type} == "key" ]]; then
 					if [[ -f ${keyfile} ]]; then
 						cryptsetup --key-file "${keyfile}" luksOpen ${drives[${i}]} vault_${i} || die "luksOpen failed to open: ${drives[${i}]}"
