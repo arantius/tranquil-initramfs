@@ -190,10 +190,7 @@ zfs_trigger()
         pool_name="${root%%/*}"
 
         eflag "Mounting ${pool_name}..."
-
-	# remount the pool since the pool isn't mounted but wasn't cleanly unmounted (Gentoo/Funtoo)
-        remount_pool
-
+        zpool import -f -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
         mount -t zfs -o zfsutil ${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset"
 }
 
@@ -220,14 +217,6 @@ single_user()
 {
         check_triggers
         chroot ${NEW_ROOT} /bin/bash --login
-}
-
-# Cleanly exports and imports pool
-# I made this function since Gentoo/Funtoo doesn't cleanly unmount the pool during shutdown/restart. 
-remount_pool()
-{
-       	zpool export -f ${pool_name} > /dev/null 2>&1 || die "Failed to export your pool: ${pool_name}"
-        zpool import -f -N -o cachefile= ${pool_name} || die "Failed to import your pool: ${pool_name}"
 }
 
 ### Utility Functions ###

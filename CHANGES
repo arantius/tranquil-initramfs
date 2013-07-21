@@ -1,3 +1,9 @@
+2.0.3
+---------
+
+Major Changes:
+- Fixed bug where the initrd kept failing because it couldn't export (a non existing) pool.
+
 2.0.2
 ---------
 
