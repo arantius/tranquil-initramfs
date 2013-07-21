@@ -1,3 +1,13 @@
+2.0.4
+---------
+
+Major Changes:
+- Added support to include your /etc/modprobe.d/zfs.conf file so that your zfs modules are
+  loaded with your desired options.
+
+Minor Changes:
+- Useless "INIT" variable removed.
+
 2.0.3
 ---------
 

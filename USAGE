@@ -121,15 +121,6 @@ ZFS:
 root - ZFS root name
 	example: linux <kernel> root=rpool/ROOT/funtoo
 
-arcmax - Sets the max ARC cache size (in bytes)
-	example: linux <kernel> arcmax=536870912
-	 this sets the arcmax to 512MB
-
-So a complete line could look like this:
- linux <kernel> arcmax=536870912 root=rpool/ROOT/funtoo
- 
- Which would mount the `rpool/ROOT/funtoo` ZFS dataset with the arc_max being 512 MB
-
 su - Single User Mode. This is a really crappy implementation of a single user,
      mode. But at least it will help you if you forgot to change your password,
      after installation.

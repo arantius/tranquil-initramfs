@@ -221,6 +221,12 @@ config_files()
 
 		# Sets initramfs script version number
 		sed -i -e "16s/0/${VERSION}/" ${T}/init
+
+		# Copy the /etc/modprobe.d/zfs.conf file if it exists
+		if [[ -f "/etc/modprobe.d/zfs.conf" ]]; then
+			mkdir ${T}/etc/modprobe.d/
+			cp /etc/modprobe.d/zfs.conf ${T}/etc/modprobe.d/
+		fi
 	fi
 
 	# Enable LUKS in the init if LUKS is being used.

@@ -18,12 +18,7 @@ load_modules()
 		modules=""
 
 		for x in ${modules}; do
-			# If it's the ZFS module, and there is a arcmax set, then set the arc max to it
-			if [[ ${x} == "zfs" ]] && [[ ! -z ${arcmax} ]]; then
-				modprobe ${x} zfs_arc_max="${arcmax}"
-			else
-				modprobe ${x}
-			fi
+			modprobe ${x}
 		done
         fi
 }
@@ -56,9 +51,6 @@ parse_cmdline()
 		case ${x} in
 		root\=*)
 			root=$(get_opt ${x})
-			;;
-		init\=*)
-			INIT=$(get_opt ${x})
 			;;
 		enc_root\=*)
 			enc_root=$(get_opt ${x})
