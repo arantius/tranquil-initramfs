@@ -21,7 +21,7 @@
 
 # This script must be ran as root
 if [[ $(whoami) != "root" ]]; then
-        die "This script must be ran as root"
+        die "This script must be run as root"
 fi
 
 # If an initrd option was passed, set the 'choice' variable
