@@ -1,10 +1,13 @@
 2.0.5
 ---------
 
+Major Changes:
 - The initramfs will now always copy it's zpool.cache to the rootfs. This prevents the rootfs
   from becoming out of sync with the stuff that the initramfs was working with.
 
+Minor Changes:
 - Fixed a bug where the initramfs would only get bz2 compressed man pages.
+- Worked a bit more on the tty job control stuff.
 
 2.0.4
 ---------
