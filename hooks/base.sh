@@ -13,10 +13,5 @@ BASE_BINS="
         $(whereis bash | cut -d " " -f 2)
         $(whereis kmod | cut -d " " -f 2)"
 
-# Files related to Bash
-BASH_FILES="
-	${ETC}/bash/bashrc
-	${ETC}/DIR_COLORS"
-
 # kmod symlinks
 KMOD_SYM="depmod insmod lsmod modinfo modprobe rmmod"

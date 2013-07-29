@@ -4,10 +4,14 @@
 Major Changes:
 - The initramfs will now always copy it's zpool.cache to the rootfs. This prevents the rootfs
   from becoming out of sync with the stuff that the initramfs was working with.
+- 'su' - single user mode performes a complete chroot with functional /dev, /proc, /sys
 
 Minor Changes:
 - Fixed a bug where the initramfs would only get bz2 compressed man pages.
 - Worked a bit more on the tty job control stuff.
+- Added checks to make sure that if the initramfs cannot find any module dependencies, then it will fail.
+- Worked on the /etc/bash/bashrc color format
+- Removed some old remnant code
 
 2.0.4
 ---------

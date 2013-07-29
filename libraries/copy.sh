@@ -94,6 +94,11 @@ get_moddeps()
 
 	# Remove Duplicates
 	moddeps=($(echo "${d[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+
+	# Checks to see if the dependency list is empty.
+	if [[ ${#moddeps[@]} == "0" ]]; then
+		die "Module dependencies list is empty! Something is wrong."
+	fi
 }
 
 # Copy modules and dependencies to the initramfs
@@ -143,31 +148,9 @@ copy_other()
 	einfo "Copying other files..."
 
 	if [[ ${USE_BASE} == "1" ]]; then
-		# Copy Bash Files
-		for x in ${BASH_FILES}; do
-			ecp --parents ${x} ${T}
-		done
-
-		# Modify Bash Stuff
-
-		# This fixes the (no host) stuff that will be shown when you go into rescue shell
-		sed -i -e '63d' ${LETC}/bash/bashrc
-		sed -i -e "62a \\\t\tPS1='\\\[\\\033[01;31m\\\]initrd\\\[\\\033[01;34m\\\] \\\\W \\\\$\\\[\\\033[00m\\\] '" ${LETC}/bash/bashrc
-		sed -i -e '73d' ${LETC}/bash/bashrc
-		sed -i -e "72a \\\t\tPS1='\\\u@initrd \\\W \\\\$ '" ${LETC}/bash/bashrc
-		sed -i -e '75d' ${LETC}/bash/bashrc
-		sed -i -e "74a \\\t\tPS1='\\\u@initrd \\\w \\\\$ '" ${LETC}/bash/bashrc
-		sed -i -e '69d' ${LETC}/bash/bashrc
-
-		# Copy Vim Files
-		for x in ${VIM_FILES}; do
-			ecp "--parents -r" ${x} ${T}
-		done
-
-		# Copy other files
-		for x in ${OTHER_FILES}; do
-			ecp "--parents -r" ${x} ${T}
-		done
+		# Copy bash files
+		mkdir -p ${T}/etc/bash && cp ${PLUGINS}/bash/bashrc ${T}/etc/bash/
+		cp /etc/DIR_COLORS ${T}/etc/
 	fi
 
 	if [[ ${USE_LUKS} == "1" ]]; then
