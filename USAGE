@@ -116,18 +116,17 @@ devices, and then it will continue as usual.
 Kernel Options:
 =======================================
 
-ZFS:
+=======
+ZFS
+=======
 
 root - ZFS root name
 	example: linux <kernel> root=rpool/ROOT/funtoo
 
-su - Single User Mode. This is a really crappy implementation of a single user,
-     mode. But at least it will help you if you forgot to change your password,
-     after installation.
+=======
+LUKS + ZFS
+=======
 
-     example: linux <kernel> root=rpool/ROOT/funtoo su
-
-LUKS + ZFS:
 Follow the same instructions as above, but also add "enc_root=" and "enc_type" to your kernel line.
 
 enc_root - Encrypted root drive (You need the enc_type variable below as well)
@@ -166,12 +165,20 @@ convenient for you. It would be annoying to have a zpool on 6 drives (Encrypted 
 and then you had to put the password for each one. If you still want to do this, then just leave
 the passphrase blank when the initramfs asks you for it.
 
-OTHER:
+=======
+OTHER
+=======
+
 recover - Use this if you want the initrd to throw you into a rescue shell.
 	  Useful for recovery purposes.
 
 	  example: linux <kernel> recover
 
+su - Single User Mode. This is a really crappy implementation of a single user,
+     mode. But at least it will help you if you forgot to change your password,
+     after installation.
+
+     example: linux <kernel> root=rpool/ROOT/funtoo su
 
 =======================================
 Modules Support:

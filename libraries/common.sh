@@ -277,7 +277,7 @@ create()
 # Clean up and exit after a successful build
 clean_exit()
 {
-	eline && einfo "[ Ending ]" && eline && clean
+	eline && einfo "[ Complete ]" && eline && clean
 	einfo "Please copy the ${INITRD} to your /boot directory"
 	exit 0
 }
