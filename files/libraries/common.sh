@@ -225,10 +225,10 @@ install_cache()
 single_user()
 {
 	ewarn "Booting into single user mode..." && eline
-	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login && rescue_shell"
+	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login"
 
 	# Throws the user into rescue mode to prevent the initramfs from booting the live system
-	#rescue_shell
+	rescue_shell
 }
 
 ### Utility Functions ###
