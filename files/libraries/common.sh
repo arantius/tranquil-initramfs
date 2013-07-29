@@ -8,7 +8,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..." && eline
-	exec /bin/bash </dev/tty1 >/dev/tty1 2>&1
+	setsid cttyhack /bin/bash
 }
 
 # Function to load ZFS modules
@@ -225,11 +225,10 @@ install_cache()
 single_user()
 {
 	ewarn "Booting into single user mode..." && eline
-	exec /bin/bash </dev/tty1 >/dev/tty1 2>&1
-	chroot ${NEW_ROOT} /bin/bash --login
+	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login && rescue_shell"
 
 	# Throws the user into rescue mode to prevent the initramfs from booting the live system
-	rescue_shell
+	#rescue_shell
 }
 
 ### Utility Functions ###

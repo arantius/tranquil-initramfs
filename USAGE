@@ -180,9 +180,6 @@ su - Single User Mode. This is a really crappy implementation of a single user,
 
      example: linux <kernel> root=rpool/ROOT/funtoo su
 
-instcache - Installs the zpool.cache that was created by the initramfs to your rootfs
-	example: linux <kernel> root=rpool/ROOT/funtoo instcache
-
 =======================================
 Modules Support:
 =======================================
