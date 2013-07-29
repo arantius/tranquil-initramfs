@@ -19,6 +19,10 @@ NEW_ROOT="/mnt/root"
 INIT="/sbin/init"
 KEY_DRIVE="/mnt/key"
 
+# Hostnames for initrd and rootfs
+HOSTN="initrd"
+RHOSTN="rootfs"
+
 ### Lasu la ludoj komenci ###
 
 welcome

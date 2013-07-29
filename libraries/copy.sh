@@ -149,7 +149,8 @@ copy_other()
 
 	if [[ ${USE_BASE} == "1" ]]; then
 		# Copy bash files
-		mkdir -p ${T}/etc/bash && cp ${PLUGINS}/bash/bashrc ${T}/etc/bash/
+		mkdir -p ${T}/etc/bash
+		cp /etc/bash/bashrc ${T}/etc/bash/
 		cp /etc/DIR_COLORS ${T}/etc/
 	fi
 
