@@ -47,11 +47,6 @@ if [[ ${su} == "1" ]]; then
         single_user
 fi
 
-# Install the zpool.cache to the rootfs if 'instcache' is passed
-if [[ ${instcache} == "1" ]]; then
-	install_cache
-fi
-
 # Let's clean up and go to the OS
 einfo "Unmounting kernel devices..."
 umnt_kernel_devs || die "Failed to umount kernel devices"
