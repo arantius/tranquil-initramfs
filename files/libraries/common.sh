@@ -224,7 +224,7 @@ install_cache()
 # Single User Mode
 single_user()
 {
-	exec setsid /bin/bash -c 'exec chroot ${NEW_ROOT} /bin/bash --login  </dev/tty1 >/dev/tty1 2>&1'
+	exec setsid /bin/bash -c "exec \"chroot ${NEW_ROOT} /bin/bash --login\"  </dev/tty1 >/dev/tty1 2>&1"
 }
 
 ### Utility Functions ###
@@ -232,31 +232,31 @@ single_user()
 # Used for displaying information
 einfo()
 {
-        eline && echo -e "\e[1;32m*\e[0;m ${@}"
+        echo -e "\e[1;32m*\e[0;m ${@}"
 }
 
 # Used for input (questions)
 eqst()
 {
-        eline && echo -en "\e[1;37m*\e[0;m ${@}"
+        echo -en "\e[1;37m*\e[0;m ${@}"
 }
 
 # Used for warnings
 ewarn()
 {
-        eline && echo -e "\e[1;33m*\e[0;m ${@}"
+        echo -e "\e[1;33m*\e[0;m ${@}"
 }
 
 # Used for flags
 eflag()
 {
-        eline && echo -e "\e[1;34m*\e[0;m ${@}"
+        echo -e "\e[1;34m*\e[0;m ${@}"
 }
 
 # Used for errors
 die()
 {
-        eline && echo -e "\e[1;31m*\e[0;m ${@}" && rescue_shell 
+        echo -e "\e[1;31m*\e[0;m ${@}" && rescue_shell 
 }
 
 # Prints empty line
