@@ -25,19 +25,19 @@ ZFS_BINS="
 	${SBIN}/ztest"
 
 ZFS_MAN="
-	${MAN}/man1/zhack.1.bz2
-	${MAN}/man1/zpios.1.bz2
-	${MAN}/man1/ztest.1.bz2
-	${MAN}/man5/vdev_id.conf.5.bz2
-	${MAN}/man5/zpool-features.5.bz2	
-	${MAN}/man8/fsck.zfs.8.bz2
-	${MAN}/man8/mount.zfs.8.bz2
-	${MAN}/man8/vdev_id.8.bz2
-	${MAN}/man8/zdb.8.bz2
-	${MAN}/man8/zfs.8.bz2
-	${MAN}/man8/zinject.8.bz2
-	${MAN}/man8/zpool.8.bz2 
-	${MAN}/man8/zstreamdump.8.bz2"
+	${MAN}/man1/zhack.1.*
+	${MAN}/man1/zpios.1.*
+	${MAN}/man1/ztest.1.*
+	${MAN}/man5/vdev_id.conf.5.*
+	${MAN}/man5/zpool-features.5.*	
+	${MAN}/man8/fsck.zfs.8.*
+	${MAN}/man8/mount.zfs.8.*
+	${MAN}/man8/vdev_id.8.*
+	${MAN}/man8/zdb.8.*
+	${MAN}/man8/zfs.8.*
+	${MAN}/man8/zinject.8.*
+	${MAN}/man8/zpool.8.* 
+	${MAN}/man8/zstreamdump.8.*"
 
 ZFS_UDEV="
 	${UDEV}/rules.d/60-zvol.rules
