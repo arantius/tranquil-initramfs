@@ -35,7 +35,6 @@ einfo "Loading modules..."
 load_modules || die "Failed to load kernel modules"
 
 if [[ ${recover} == "1" ]]; then
-	ewarn "Recovery Mode Enabled... Entering Rescue Environment"
 	rescue_shell
 fi
 
@@ -43,7 +42,6 @@ fi
 check_triggers
 
 if [[ ${su} == "1" ]]; then
-	ewarn "Single User Mode Enabled... Entering Rescue Environment"
         single_user
 fi
 

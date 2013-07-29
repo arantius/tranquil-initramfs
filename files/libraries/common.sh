@@ -224,7 +224,11 @@ install_cache()
 # Single User Mode
 single_user()
 {
+	ewarn "Booting into single user mode..." && eline
 	exec setsid /bin/bash -c "exec \"chroot ${NEW_ROOT} /bin/bash --login\"  </dev/tty1 >/dev/tty1 2>&1"
+
+	# Throws the user into rescue mode to prevent the initramfs from booting the live system
+	rescue_shell
 }
 
 ### Utility Functions ###
