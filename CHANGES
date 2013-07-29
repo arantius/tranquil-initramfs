@@ -10,8 +10,7 @@ Minor Changes:
 - Fixed a bug where the initramfs would only get bz2 compressed man pages.
 - Worked a bit more on the tty job control stuff.
 - Added checks to make sure that if the initramfs cannot find any module dependencies, then it will fail.
-- Worked on the /etc/bash/bashrc color format
-- Removed some old remnant code
+- Removed customized /etc/bash/bashrc and now setting hostname directly with 'hostname' command.
 
 2.0.4
 ---------
