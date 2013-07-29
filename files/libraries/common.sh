@@ -8,7 +8,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..." && eline
-	exec setsid /bin/bash -c 'exec /bin/bash </dev/tty1 >/dev/tty1 2>&1'
+	exec /bin/bash </dev/tty1 >/dev/tty1 2>&1
 }
 
 # Function to load ZFS modules
@@ -225,10 +225,7 @@ install_cache()
 single_user()
 {
 	ewarn "Booting into single user mode..." && eline
-
-	exec setsid bash
-    	exec </dev/tty1 >/dev/tty1 2>&1
-    	exec bash
+	exec /bin/bash </dev/tty1 >/dev/tty1 2>&1
 	chroot ${NEW_ROOT} /bin/bash --login
 
 	# Throws the user into rescue mode to prevent the initramfs from booting the live system
