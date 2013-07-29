@@ -226,21 +226,14 @@ single_user()
 {
 	ewarn "Booting into single user mode..." && eline
 
-	mount -v -t proc none ${NEW_ROOT}/proc
-	mount -v --rbind /dev ${NEW_ROOT}/dev
-	mount -v --rbind /sys ${NEW_ROOT}/sys
+	mount -t proc none ${NEW_ROOT}/proc
+	mount --rbind /dev ${NEW_ROOT}/dev
+	mount --rbind /sys ${NEW_ROOT}/sys
 
-	sleep 5
+	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login -c 'cat /proc/mounts > /etc/mtab && hostname rootfs' && chroot ${NEW_ROOT} /bin/bash --login"
 
-	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login -c 'cat /proc/mounts > /etc/mtab' && chroot ${NEW_ROOT} /bin/bash --login"
-
-	sleep 5
-
-	ewarn "Leaving single user mode stuff, unmounting devices..."
-
-	umount -v ${NEW_ROOT}/proc
-	umount -v -l ${NEW_ROOT}/dev ${NEW_ROOT}/sys
-	sleep 5
+	umount ${NEW_ROOT}/proc
+	umount -l ${NEW_ROOT}/dev ${NEW_ROOT}/sys
 }
 
 ### Utility Functions ###
