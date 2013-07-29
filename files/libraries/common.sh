@@ -230,12 +230,17 @@ single_user()
 	mount -v --rbind /dev ${NEW_ROOT}/dev
 	mount -v --rbind /sys ${NEW_ROOT}/sys
 
+	sleep 5
+
 	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login -c 'cat /proc/mounts > /etc/mtab' && chroot ${NEW_ROOT} /bin/bash --login"
+
+	sleep 5
 
 	ewarn "Leaving single user mode stuff, unmounting devices..."
 
 	umount -v ${NEW_ROOT}/proc
 	umount -v -l ${NEW_ROOT}/dev ${NEW_ROOT}/sys
+	sleep 5
 }
 
 ### Utility Functions ###
