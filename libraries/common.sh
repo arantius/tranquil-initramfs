@@ -30,12 +30,36 @@ print_menu()
 		. hooks/zfs.sh
 		. hooks/addon.sh
 		;;
-        2)
+	2)
+		. hooks/base.sh
+		. hooks/lvm.sh
+		. hooks/addon.sh
+		;;
+	3)
+		# RAID will go here
+		exit
+		;;
+        4)
 		. hooks/base.sh
 		. hooks/zfs.sh
                 . hooks/luks.sh
 		. hooks/addon.sh
                 ;;
+	5)
+		. hooks/base.sh
+		. hooks/lvm.sh
+		. hooks/luks.sh
+		. hooks/addon.sh
+		;;
+
+	6)
+		# Encrypted RAID will go here
+		exit
+		;;
+	7)
+		# Encrypted RAID + LVM will go here
+		exit
+		;;
 	*)
 		eline && ewarn "Exiting." && exit
 		;;
@@ -55,8 +79,13 @@ print_options()
 {
 	eline
 	eopt "1. ZFS"
-	eopt "2. Encrypted ZFS (LUKS + ZFS)"
-	eopt "3. Exit Program"
+	eopt "2. LVM"
+	eopt "3. RAID"
+	eopt "4. Encrypted ZFS"
+	eopt "5. Encrypted LVM"
+	eopt "6. Encrypted RAID"
+	eopt "7. Encrypted RAID + LVM"
+	eopt "8. Exit"
 	eline
 }
 
@@ -219,9 +248,6 @@ config_files()
 		# Enable ZFS in the init if ZFS is being used.
 		sed -i -e "13s/0/1/" ${T}/init
 
-		# Sets initramfs script version number
-		sed -i -e "16s/0/${VERSION}/" ${T}/init
-
 		# Copy the /etc/modprobe.d/zfs.conf file if it exists
 		if [[ -f "/etc/modprobe.d/zfs.conf" ]]; then
 			mkdir ${T}/etc/modprobe.d/
@@ -234,27 +260,42 @@ config_files()
 		sed -i -e "14s/0/1/" ${T}/init
 	fi
 
+	# Enable LVM in the init if LVM is being used.
+	if [[ ${USE_LVM} == "1" ]]; then
+		sed -i -e "15s/0/1/" ${T}/init
+	fi
+
+	# Enable RAID in the init if RAID is being used.
+	if [[ ${USE_RAID} == "1" ]]; then
+		sed -i -e "16s/0/1/" ${T}/init
+	fi
+
 	# Plug in the modules that the user wants to load
-	if [[ ${USE_ADDON} == "1" ]]; then
+	if [[ ${USE_ZFS} == "1" ]] || [[ ${USE_ADDON} == "1" ]]; then
 		sed -i -e "18s/\"\"/\"${ADDON_MODS}\"/" ${T}/libraries/common.sh
 	fi
+
+	# Sets initramfs script version number
+	sed -i -e "18s/0/${VERSION}/" ${T}/init
 }
 
 # Compresses the kernel modules and generates modprobe table
 do_modules()
 {
-        einfo "Compressing kernel modules..."
+	if [[ ${USE_ZFS} == "1" ]] || [[ ${USE_ADDON} == "1" ]]; then
+		einfo "Compressing kernel modules..."
 
-        for x in $(find ${LMODULES} -name "*.ko"); do
-                gzip ${x}
-        done
-        
-        einfo "Generating modprobe information..."
-        
-        # Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
-        cp -a ${MODULES}/modules.{order,builtin} ${LMODULES}
+		for x in $(find ${LMODULES} -name "*.ko"); do
+			gzip ${x}
+		done
+		
+		einfo "Generating modprobe information..."
 
-        depmod -b ${T} ${KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+		# Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
+		cp -a ${MODULES}/modules.{order,builtin} ${LMODULES}
+
+		depmod -b ${T} ${KERNEL} || die "You don't have depmod? Something is seriously wrong!"
+	fi
 }
 
 # Create the solution
@@ -270,7 +311,8 @@ create()
         find . -print0 | cpio -o --null --format=newc | gzip -9 > ${H}/${INITRD}
 
         if [[ ! -f ${H}/${INITRD} ]]; then
-                die "Error creating initramfs file.. exiting"
+		exit
+        #        die "Error creating initramfs file.. exiting"
         fi
 }
 

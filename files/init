@@ -12,6 +12,8 @@
 # Variables
 USE_ZFS="0"
 USE_LUKS="0"
+USE_LVM="0"
+USE_RAID="0"
 
 VERSION="0"
 

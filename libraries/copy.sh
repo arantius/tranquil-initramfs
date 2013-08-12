@@ -19,7 +19,7 @@ check_binaries()
 	if [[ ${USE_ZFS} == "1" ]]; then
 		eflag "Using ZFS"
 
-		for x in ${INIT_BINS}; do	
+		for x in ${ZFS_BINS}; do	
 			if [[ ! -f ${x} ]]; then
 				err_bin_dexi ${x}
 			fi
@@ -36,6 +36,16 @@ check_binaries()
 		done
 
 		for x in ${GPG_BINS}; do
+			if [[ ! -f ${x} ]]; then
+				err_bin_dexi ${x}
+			fi
+		done
+	fi
+
+	if [[ ${USE_LVM} == "1" ]]; then
+		eflag "Using LVM"
+
+		for x in ${LVM_BINS}; do	
 			if [[ ! -f ${x} ]]; then
 				err_bin_dexi ${x}
 			fi
@@ -72,12 +82,27 @@ copy_binaries()
 			ecp --parents ${x} ${T}
 		done
 	fi
+
+	if [[ ${USE_LVM} == "1" ]]; then
+		for x in ${LVM_BINS}; do
+			ecp --parents ${x} ${T}
+			
+			# Rename lvm.static to lvm if it exists
+			if [[ -f ${LSBIN}/lvm.static ]]; then
+				mv ${LSBIN}/lvm.static ${LSBIN}/lvm
+			fi
+		done  
+	fi
 }
 
 # Get module dependencies
 get_modules()
 {
 	einfo "Gathering module dependencies..."
+
+	if [[ ${USE_ZFS} == "1" ]]; then
+		get_moddeps "${ZFS_MODS}"
+	fi
 
 	if [[ ${USE_ADDON} == "1" ]]; then
 		get_moddeps "${ADDON_MODS}"
@@ -93,10 +118,10 @@ get_moddeps()
 	done
 
 	# Remove Duplicates
-	moddeps=($(echo "${d[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+	moddeps=("${moddeps[@]}" $(echo "${d[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
 	# Checks to see if the dependency list is empty.
-	if [[ ${#moddeps[@]} == "0" ]]; then
+	if [[ ${#moddeps[@]} == "0" ]] && [[ ${USE_ZFS} == "1" ]]; then
 		die "Module dependencies list is empty! Something is wrong."
 	fi
 }
@@ -109,7 +134,7 @@ copy_modules()
 	# Making sure that the dependencies are up to date
 	depmod ${KERNEL}
 
-	if [[ ${USE_ADDON} == "1" ]]; then
+	if [[ ${USE_ADDON} == "1" ]] || [[ ${USE_ZFS} == "1" ]]; then
 		for i in $(seq 0 $((${#moddeps[@]} - 1))); do
 			ecp "--parents -r" ${moddeps[${i}]} ${T}
 		done
@@ -123,6 +148,20 @@ copy_docs()
 
 	if [[ ${USE_ZFS} == "1" ]]; then
 		for x in ${ZFS_MAN}; do
+			mkdir -p "`dirname ${T}/${x}`"
+			ecp -r ${x} ${T}/${x}
+		done
+	fi
+
+	if [[ ${USE_LUKS} == "1" ]]; then
+		for x in ${LUKS_MAN}; do
+			mkdir -p "`dirname ${T}/${x}`"
+			ecp -r ${x} ${T}/${x}
+		done
+	fi
+
+	if [[ ${USE_LVM} == "1" ]]; then
+		for x in ${LVM_MAN}; do
 			mkdir -p "`dirname ${T}/${x}`"
 			ecp -r ${x} ${T}/${x}
 		done
@@ -156,6 +195,12 @@ copy_other()
 
 	if [[ ${USE_LUKS} == "1" ]]; then
 		for x in ${GPG_FILES}; do
+			ecp --parents ${x} ${T}
+		done
+	fi
+
+	if [[ ${USE_LVM} == "1" ]]; then
+		for x in ${LVM_FILES}; do
 			ecp --parents ${x} ${T}
 		done
 	fi
@@ -193,6 +238,12 @@ do_deps()
 		done
 
 		for x in ${GPG_BINS}; do
+			deps="${deps} $(get_dlist ${x})"
+		done
+	fi
+
+	if [[ ${USE_LVM} == "1" ]]; then
+		for x in ${LVM_BINS}; do
 			deps="${deps} $(get_dlist ${x})"
 		done
 	fi

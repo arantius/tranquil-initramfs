@@ -9,7 +9,7 @@ NAME="Bliss Initramfs Creator"
 AUTHOR="Jonathan Vasquez"
 EMAIL="jvasquez1011@gmail.com"
 CONTACT="${AUTHOR} <${EMAIL}>"
-VERSION="2.0.5"
+VERSION="2.1.0"
 LICENSE="MPL 2.0"
 
 # Parameters and Locations

@@ -10,6 +10,8 @@ USE_LUKS="1"
 # Required Binaries, Modules, and other files
 LUKS_BINS="${SBIN}/cryptsetup"
 
+LUKS_MAN="${MAN}/man8/cryptsetup.8.*"
+
 GPG_BINS="
 	${UBIN}/gpg
 	${UBIN}/gpg-agent"

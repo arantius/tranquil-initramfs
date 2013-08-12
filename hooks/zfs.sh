@@ -24,6 +24,8 @@ ZFS_BINS="
 	${SBIN}/zstreamdump
 	${SBIN}/ztest"
 
+ZFS_MODS="zfs"
+
 ZFS_MAN="
 	${MAN}/man1/zhack.1.*
 	${MAN}/man1/zpios.1.*
