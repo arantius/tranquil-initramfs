@@ -11,10 +11,11 @@ USE_LVM="1"
 do_kernel
 
 # Required Binaries, Modules, and other files
-if [[ -f "${SBIN}/lvm.static" ]]; then
-	LVM_BINS="${SBIN}/lvm.static"
+if [[ -f "$(whereis lvm.static | cut -d " " -f 3)" ]]; then
+	LVM_BINS="$(whereis lvm.static | cut -d " " -f 3)"
+
 else
-	LVM_BINS="${SBIN}/lvm"
+	LVM_BINS="$(whereis lvm | cut -d " " -f 2)"
 fi
 
 LVM_MAN="${MAN}/man8/lvm.8.*"

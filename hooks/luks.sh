@@ -8,12 +8,12 @@
 USE_LUKS="1"
 
 # Required Binaries, Modules, and other files
-LUKS_BINS="${SBIN}/cryptsetup"
+LUKS_BINS="$(whereis cryptsetup | cut -d " " -f 2)"
 
 LUKS_MAN="${MAN}/man8/cryptsetup.8.*"
 
 GPG_BINS="
-	${UBIN}/gpg
-	${UBIN}/gpg-agent"
+	$(whereis gpg | cut -d " " -f 2)
+	$(whereis gpg-agent | cut -d " " -f 2)"
 
 GPG_FILES="${USHARE}/gnupg/gpg-conf.skel"

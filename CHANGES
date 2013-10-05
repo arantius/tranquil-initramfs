@@ -4,6 +4,7 @@
 Major Changes:
 - Added support for LVM, MDADM, and Normal Booting 
   * In case you don't really need an initramfs but still would like to have one.
+- All binaries are found using the 'whereis' command rather than using the path prefix variables (USR, SBIN, etc)
 
 2.0.5
 ---------

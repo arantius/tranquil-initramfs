@@ -12,17 +12,17 @@ do_kernel
 
 # Required Binaries, Modules, and other files
 ZFS_BINS="
-	${UBIN}/hostid
-	${SBIN}/fsck.zfs
-	${SBIN}/mount.zfs
-	${SBIN}/zdb
-	${SBIN}/zfs
-	${SBIN}/zhack
-	${SBIN}/zinject
-	${SBIN}/zpios
-	${SBIN}/zpool
-	${SBIN}/zstreamdump
-	${SBIN}/ztest"
+	$(whereis hostid | cut -d " " -f 2)
+	$(whereis fsck.zfs | cut -d " " -f 2)
+	$(whereis mount.zfs | cut -d " " -f 2)
+	$(whereis zdb | cut -d " " -f 2)
+	$(whereis zfs | cut -d " " -f 2)
+	$(whereis zhack | cut -d " " -f 2)
+	$(whereis zinject | cut -d " " -f 2)
+	$(whereis zpios | cut -d " " -f 2)
+	$(whereis zpool | cut -d " " -f 2)
+	$(whereis zstreamdump | cut -d " " -f 2)
+	$(whereis ztest | cut -d " " -f 2)"
 
 ZFS_MODS="zfs"
 
