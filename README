@@ -1,14 +1,14 @@
-Bliss Initramfs Creator - v2.1.0
+Bliss Initramfs Creator - v3.0.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Funtoo Linux @ ZoL 0.6.1
+Funtoo Linux @ ZoL 0.6.2
 
 Distributed under the MPL 2.0 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
-dependencies needed to mount your zpool.
+dependencies needed to mount your filesystem.
 
 You will need a few programs already installed on your computer since this 
-script just automates the process of you actually going into your filesystem,
+program just automates the process of you actually going into your filesystem,
 and getting all those files.
 
 Please have the following installed:
@@ -25,29 +25,25 @@ Please have the following installed:
   > Generic Driver Options --->
   >> [*] Maintain a devtmpfs filesystem to mount at /dev
   >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
-
-  * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
-    or you can compile them as a module and declare them in the ADDON_MODS variable.
-
-- app-arch/cpio
-- app-shells/bash
-- sys-kernel/spl
-- sys-fs/zfs
-- sys-fs/zfs-kmod 
-- sys-apps/kmod
-
-For LUKS support:
-- sys-fs/cryptsetup
-- app-crypt/gnupg
-
-- Linux Kernel
-  Device Drivers --->
-  [*] Multiple devices driver support (RAID and LVM) --->
-  <*> Device mapper support
-  <*> Crypt target support
+     [*] Multiple devices driver support (RAID and LVM) --->
+         <*> Device mapper support
+         <*> Crypt target support
 
   Cryptographic API --->
   <*> XTS support
   -*- AES cipher algorithms
+
+  * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
+    or you can compile them as a module and declare them in the ADDON_MODS variable.
+
+- dev-lang/python 3.3 or greater
+- app-arch/cpio
+- app-shells/bash
+- sys-apps/kmod
+- sys-fs/zfs (ZFS support)
+- sys-fs/mdadm (RAID support)
+- sys-fs/lvm2 (LVM support)
+- sys-fs/cryptsetup (LUKS support)
+- app-crypt/gnupg (LUKS support)
 
 For more information/instructions check the USAGE file.

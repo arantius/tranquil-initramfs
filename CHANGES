@@ -1,10 +1,8 @@
-2.1.0
+3.0.0
 ---------
-
 Major Changes:
-- Added support for LVM, MDADM, and Normal Booting 
-  * In case you don't really need an initramfs but still would like to have one.
-- All binaries are found using the 'whereis' command rather than using the path prefix variables (USR, SBIN, etc)
+- The application has been rewritten from scratch in Python 3.3
+- There is now support for LVM, RAID, RAID + LVM, and their Encrypted counterparts.
 
 2.0.5
 ---------
@@ -12,7 +10,7 @@ Major Changes:
 Major Changes:
 - The initramfs will now always copy it's zpool.cache to the rootfs. This prevents the rootfs
   from becoming out of sync with the stuff that the initramfs was working with.
-- 'su' - single user mode performs a complete chroot with functional /dev, /proc, /sys
+- 'su' - single user mode performes a complete chroot with functional /dev, /proc, /sys
 
 Minor Changes:
 - Fixed a bug where the initramfs would only get bz2 compressed man pages.

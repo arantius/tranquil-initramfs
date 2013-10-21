@@ -11,9 +11,9 @@
 
 # Variables
 USE_ZFS="0"
-USE_LUKS="0"
-USE_LVM="0"
 USE_RAID="0"
+USE_LVM="0"
+USE_LUKS="0"
 
 VERSION="0"
 
@@ -44,7 +44,7 @@ if [[ ${recover} == "1" ]]; then
 	rescue_shell
 fi
 
-# Run all the triggers (Like LUKS, ZFS code)
+# Run all the triggers (Like LUKS, RAID, LVM, ZFS)
 check_triggers
 
 if [[ ${su} == "1" ]]; then

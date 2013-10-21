@@ -2,7 +2,7 @@
 Usage
 =======================================
 
-The initramfs script is very easy to use!
+The initramfs program is very easy to use!
 
 =======================================
 Creating the initramfs
@@ -16,14 +16,9 @@ Run the script by running: ./createInit
 
 Select the option that you want, and tell it which kernel you want to use.
 
-After that the required files will be gathered and packed into an initramfs.
-
-You will also be asked if you want your zpool.cache to be included in the initramfs.
-Just press enter (No is the default). Only say yes if you know what you are doing since
-an old cache file can cause your system not to boot.
-
-You will then find the initramfs in the directory that you are currently in. 
-Copy the file to your boot directory and name it whatever you want.
+After that the required files will be gathered and packed into an initramfs and you 
+will find the initramfs in the directory that you are currently in. Copy that file 
+to your boot directory and name it whatever you want.
 
 =======================================
 Setting up the bootloader configuration (GRUB 2)
@@ -39,6 +34,21 @@ If the following information is true:
 Add a new entry to /boot/grub/grub.cfg 
 
 =======================================
+Direct
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/sda3 quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
 Normal ZFS
 =======================================
 
@@ -50,6 +60,103 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 	set root=(hd0,gpt1)
 
 	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Normal RAID
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Normal LVM
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted LVM with just a passphrase and one encrypted drive
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted RAID with just a passphrase and two encrypted drives
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted RAID + LVM with just a passphrase and two encrypted drives
+=======================================
+
+** Note: The initramfs only supports LVM on RAID, which means that your disks will first be decrypted, assembled,
+         then the lvm will activate the logical volumes on that assembled raid array and then boot your system.
+	 Thus, the raid operations are actionally transparent.
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted Direct with one encrypted drive 
+=======================================
+
+** Note: The program will auto mount all your encrypted drives as follows: /dev/mapper/vault_0, /dev/mapper/vault_1,
+         /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/vault_0 enc_root=/dev/sda3 enc_type=pass quiet
 	initrd /initrd-3.9.9-FB.02
 }
 

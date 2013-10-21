@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 # Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
@@ -6,68 +6,58 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Description
-# ------------
-# This will be the entry point of the application.
-# It will display a menu, and depending on the options chosen,
-# It will ask for necessary information.
-# Once the information is gathered, it will pass that info to
-# the appropriate hook in which the initramfs will be created.
+import sys
+import pkg.libs.variables as variables
+import pkg.libs.common as common
+import pkg.libs.copy as copy
 
-# Source functions
-. libraries/variables.sh
-. libraries/common.sh
-. libraries/copy.sh
+from subprocess import call, check_output
 
-# This script must be ran as root
-if [[ $(whoami) != "root" ]]; then
-        die "This script must be run as root"
-fi
+# Get the arguments
+arguments = sys.argv[1:]
 
-# If an initrd option was passed, set the 'choice' variable
-if [[ ! -z ${1} ]]; then
-	case ${1} in
-        [1-2])
-                CHOICE="${1}"
+min_choices = 0
+max_choices = 3
 
-                if [[ ! -z ${2} ]]; then
-                        KERNEL="${2}"
-		fi
+# If not equal to exactly two parameters, we will just ignore all the arguments
+if len(arguments) == 2:
+	common.choice = arguments[0]
+	common.kernel = arguments[1]
 
-                ;;
-        *)
-		if [[ ${1} == "3" ]]; then
-			CHOICE="${1}"
-		else
-                	die "Incorrect parameters!"
-		fi
+user = check_output(["whoami"], universal_newlines=True).strip()
 
-                ;;
-        esac
-fi
+if user != "root":
+	die("This program must be ran as root")
 
-#######################################################################
+###############################################
 # The main entry point starts here
-#######################################################################
+###############################################
 
-clear
-print_header
-print_menu
-get_arch
-print_start
-clean
-create_dirs
-check_prelim_binaries
-check_binaries
-copy_binaries
-get_modules
-copy_modules
-copy_docs
-copy_udev
-copy_other
-do_modules
-do_deps
-create_links
-config_files
-create
-clean_exit
+call(["clear"])
+
+common.print_header()
+common.print_menu()
+common.do_kernel()
+common.get_arch()
+common.print_start()
+common.clean()
+common.create_dirs()
+common.check_prelim_binaries()
+
+# Bring some variables over from the common namespace to the copy namespace
+copy.kernel = common.kernel
+copy.lmodules = common.lmodules
+
+copy.check_binaries()
+copy.copy_binaries()
+copy.get_modules()
+copy.copy_modules()
+copy.copy_docs()
+copy.copy_udev()
+copy.copy_other()
+copy.do_deps()
+
+common.create_links()
+common.config_files()
+common.create()
+common.clean_exit()
