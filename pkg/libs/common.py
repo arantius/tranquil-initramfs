@@ -63,6 +63,9 @@ def print_menu():
 	elif choice == '5':
 		luks.use_luks = "1"
 		zfs.use_zfs = "1"
+
+		# Add the 'zfs' kernel module to the addon modules list
+		addon.addon_mods.append("zfs")
 	elif choice == "6":
 		luks.use_luks = "1"
 		lvm.use_lvm = "1"
