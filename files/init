@@ -55,5 +55,5 @@ fi
 einfo "Unmounting kernel devices..."
 umnt_kernel_devs || die "Failed to umount kernel devices"
 
-einfo "Switching to your rootfs..." && eline
-switch_to_new_root
+# Mounts the new root and switches into it
+mount_and_switch

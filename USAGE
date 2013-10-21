@@ -34,7 +34,7 @@ If the following information is true:
 Add a new entry to /boot/grub/grub.cfg 
 
 =======================================
-Direct
+Normal Boot
 =======================================
 
 # Funtoo
@@ -143,7 +143,7 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 }
 
 =======================================
-Encrypted Direct with one encrypted drive 
+Encrypted Normal with one encrypted drive 
 =======================================
 
 ** Note: The program will auto mount all your encrypted drives as follows: /dev/mapper/vault_0, /dev/mapper/vault_1,

@@ -59,26 +59,29 @@ def print_menu():
 	elif choice == "3":
 		raid.use_raid = "1"
 	elif choice == "4":
+		raid.use_raid = "1"
+		lvm.use_lvm = "1"
+	elif choice == "5":
 		pass
-	elif choice == '5':
+	elif choice == '6':
 		luks.use_luks = "1"
 		zfs.use_zfs = "1"
 
 		# Add the 'zfs' kernel module to the addon modules list
 		addon.addon_mods.append("zfs")
-	elif choice == "6":
-		luks.use_luks = "1"
-		lvm.use_lvm = "1"
 	elif choice == "7":
 		luks.use_luks = "1"
-		raid.use_raid = "1"
+		lvm.use_lvm = "1"
 	elif choice == "8":
 		luks.use_luks = "1"
 		raid.use_raid = "1"
-		lvm.use_lvm = "1"
 	elif choice == "9":
 		luks.use_luks = "1"
-	elif choice == '10':
+		raid.use_raid = "1"
+		lvm.use_lvm = "1"
+	elif choice == "10":
+		luks.use_luks = "1"
+	elif choice == '11':
 		ewarn("Exiting.")
 		quit()
 	else:
@@ -91,13 +94,14 @@ def print_options():
 	eopt("1. ZFS")
 	eopt("2. LVM")
 	eopt("3. RAID")
-	eopt("4. Direct")
-	eopt("5. Encrypted ZFS")
-	eopt("6. Encrypted LVM")
-	eopt("7. Encrypted RAID")
-	eopt("8. Encrypted RAID/LVM")
-	eopt("9. Encrypted Direct")
-	eopt("10. Exit Program")
+	eopt("4. LVM on RAID")
+	eopt("5. Normal Boot")
+	eopt("6. Encrypted ZFS")
+	eopt("7. Encrypted LVM")
+	eopt("8. Encrypted RAID")
+	eopt("9. Encrypted LVM on RAID")
+	eopt("10. Encrypted Normal")
+	eopt("11. Exit Program")
 	eline()
 
 # Ask the user if they want to use their current kernel, or another one
