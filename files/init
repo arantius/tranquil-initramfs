@@ -28,16 +28,9 @@ RHOSTN="rootfs"
 ### Lasu la ludoj komenci ###
 
 welcome
-
-einfo "Mounting kernel devices..."
 mnt_kernel_devs || die "Failed to mount kernel devices"
-
-einfo "Parsing command line values..."
 parse_cmdline
-
 prevent_printk
-
-einfo "Loading modules..."
 load_modules || die "Failed to load kernel modules"
 
 if [[ ${recover} == "1" ]]; then
@@ -52,7 +45,6 @@ if [[ ${su} == "1" ]]; then
 fi
 
 # Let's clean up and go to the OS
-einfo "Unmounting kernel devices..."
 umnt_kernel_devs || die "Failed to umount kernel devices"
 
 # Mounts the new root and switches into it
