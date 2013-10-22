@@ -18,3 +18,5 @@ if os.path.isfile(lvm + ".static"):
 	lvm_bins = [ lvm + ".static" ]
 elif os.path.isfile(lvm):
 	lvm_bins = [ lvm ]
+else:
+	lvm_bins = []

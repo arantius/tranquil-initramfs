@@ -44,8 +44,11 @@ if [[ ${su} == "1" ]]; then
         single_user
 fi
 
+# Mounts your root device
+mount_root
+
 # Let's clean up and go to the OS
 umnt_kernel_devs || die "Failed to umount kernel devices"
 
-# Mounts the new root and switches into it
-mount_and_switch
+# Switches into your root device
+switch_into_root

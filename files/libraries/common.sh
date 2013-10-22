@@ -212,9 +212,9 @@ zfs_trigger()
 }
 
 # Mounts your root device
-mount_and_switch()
+mount_root()
 {
-	einfo "Mounting and switching into your root device..." && eline
+	einfo "Mounting your root device..." && eline
 
 	if [[ ${USE_ZFS} == "1" ]]; then
         	mount -t zfs -o zfsutil ${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset!"
@@ -225,6 +225,13 @@ mount_and_switch()
 	else
 		mount ${root} ${NEW_ROOT} || die "Failed to import your root device!"
 	fi
+
+}
+
+# Switches into your root device
+switch_into_root()
+{
+	einfo "Switching into your root device..." && eline
 
         exec switch_root ${NEW_ROOT} ${INIT} || die "Failed to switch into your root device!"
 }

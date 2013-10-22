@@ -161,6 +161,10 @@ def copy_other():
 		shutil.copy("/etc/bash/bashrc", temp + "/etc/bash/")
 		shutil.copy("/etc/DIR_COLORS", temp + "/etc/")
 
+		# Remove incompatible stuff from bashrc (like --colour=auto)
+		cmd = "sed -i '69, 71d' " + temp + "/etc/bash/bashrc"
+		call(cmd, shell=True)
+
 	if luks.use_luks == "1":
 		for x in luks.gpg_files:
 			ecp("--parents", x, temp)
