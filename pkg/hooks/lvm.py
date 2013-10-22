@@ -7,6 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+from ..libs.variables import *
 
 # Enable/Disable Hook
 use_lvm = "0"

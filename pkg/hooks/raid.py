@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from subprocess import check_output
+from ..libs.variables import *
 
 # Enable/Disable Hook
 use_raid = "0"
