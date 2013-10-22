@@ -229,7 +229,7 @@ mount_root()
 }
 
 # Switches into your root device
-switch_into_root()
+switch_to_root()
 {
 	einfo "Switching into your root device..." && eline
 

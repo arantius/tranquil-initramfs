@@ -51,4 +51,4 @@ mount_root
 umnt_kernel_devs || die "Failed to umount kernel devices"
 
 # Switches into your root device
-switch_into_root
+switch_to_root

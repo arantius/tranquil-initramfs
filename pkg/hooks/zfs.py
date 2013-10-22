@@ -7,7 +7,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from ..libs.variables import *
-from ..libs.common import *
 
 # Enable/Disable Hook
 use_zfs = "0"
