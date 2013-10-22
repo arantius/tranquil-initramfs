@@ -40,9 +40,8 @@ def check_binaries():
 	if lvm.use_lvm == "1":
 		eflag("Using LVM")
 
-		for x in lvm.lvm_bins:
-			if not os.path.isfile(x):
-				err_bin_dexi(x)
+		if not lvm.lvm_bins:
+			err_bin_dexi("lvm", "sys-fs/lvm2")
 
 	# If using RAID, check the raid binaries
 	if raid.use_raid == "1":

@@ -11,4 +11,4 @@ from subprocess import check_output
 # Enable/Disable Hook
 use_raid = "0"
 
-raid_bins = [ check_output("whereis mdadm | cut -d ' ' -f 2", universal_newlines=True, shell=True).strip() ]
+raid_bins = [ sbin + "/mdadm" ]

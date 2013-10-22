@@ -7,16 +7,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-from subprocess import check_output
 
 # Enable/Disable Hook
 use_lvm = "0"
 
-lvm = check_output("whereis lvm | cut -d ' ' -f 2", universal_newlines=True, shell=True).strip()
-
-if os.path.isfile(lvm + ".static"):
-	lvm_bins = [ lvm + ".static" ]
-elif os.path.isfile(lvm):
-	lvm_bins = [ lvm ]
+if os.path.isfile(sbin + "/lvm.static"):
+	lvm_bins = [ sbin + "/lvm.static" ]
+elif os.path.isfile(sbin + "/lvm"):
+	lvm_bins = [ sbin + "/lvm" ]
 else:
 	lvm_bins = []
