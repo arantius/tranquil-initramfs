@@ -14,9 +14,10 @@ use_base = "0"
 # Required Binaries
 base_bins = [
 	plugins + "/busybox/busybox",
-	check_output("whereis bash | cut -d ' ' -f 2", universal_newlines=True, shell=True).strip(),
-	check_output("whereis kmod | cut -d ' ' -f 2", universal_newlines=True, shell=True).strip()
+	bin + "/bash", 
+	sbin + "/kmod"
 	]
+
 # Names of module related applications that will replace the busybox ones
 kmod_sym = [
 	"depmod",
