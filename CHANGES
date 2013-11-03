@@ -2,7 +2,10 @@
 ---------
 Major Changes:
 - The application has been rewritten from scratch in Python 3.3
-- There is now support for LVM, RAID, RAID + LVM, and their Encrypted counterparts.
+- There is now support for LVM, RAID, LVM on RAID, Normal Boot, and their Encrypted counterparts.
+
+Minor Changes:
+- Fixed a bug where the decryption variable wasn't being checked if it was null.
 
 2.0.5
 ---------
