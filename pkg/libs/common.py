@@ -343,7 +343,8 @@ def die(x):
 	eline()
 	call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x])
 	eline()
-	quit()
+	clean()
+	quit(1)
 
 # Prints empty line
 def eline():

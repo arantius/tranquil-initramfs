@@ -27,7 +27,7 @@ if len(arguments) == 2:
 user = check_output(["whoami"], universal_newlines=True).strip()
 
 if user != "root":
-	die("This program must be ran as root")
+	common.die("This program must be ran as root")
 
 ###############################################
 # The main entry point starts here
