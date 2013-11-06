@@ -14,7 +14,7 @@ name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "3.0.0"
+version = "3.0.1"
 license = "MPL 2.0"
 
 # Locations
@@ -42,6 +42,7 @@ uexec = "/usr/libexec"
 
 # Paths in Temp (Local)
 lbin = temp + bin
+lubin = temp + ubin
 lsbin = temp + sbin
 llib = temp + lib
 llib64 = temp + lib64

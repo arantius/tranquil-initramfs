@@ -97,9 +97,9 @@ def copy_binaries():
 		for x in luks.gpg_bins:
 			ecp("--parents", x, temp)
 
-# Get module dependencies
-def get_modules():
-	einfo("Gathering module dependencies...")
+# Copy modules and their dependencies
+def copy_modules():
+	einfo("Copying modules...")
 
 	global moddeps; moddeps = set()
 
@@ -110,10 +110,6 @@ def get_modules():
 
 			for i in cap.readlines():
 				moddeps.add(i.strip())
-
-# Copies the modules to the initramfs
-def copy_modules():
-	einfo("Copying modules...")
 
 	if moddeps:
 		# Making sure that the dependencies are up to date
@@ -136,6 +132,24 @@ def copy_docs():
 
 	if zfs.use_zfs == "1":
 		for x in zfs.zfs_man:
+			cmd = "mkdir -p `dirname " + temp + "/" + x + "`"
+			call(cmd, shell=True)
+			ecp("-r", glob.glob(x)[0], temp + "/" + glob.glob(x)[0])
+
+	if raid.use_raid == "1":
+		for x in raid.raid_man:
+			cmd = "mkdir -p `dirname " + temp + "/" + x + "`"
+			call(cmd, shell=True)
+			ecp("-r", glob.glob(x)[0], temp + "/" + glob.glob(x)[0])
+
+	if luks.use_luks == "1":
+		for x in luks.luks_man:
+			cmd = "mkdir -p `dirname " + temp + "/" + x + "`"
+			call(cmd, shell=True)
+			ecp("-r", glob.glob(x)[0], temp + "/" + glob.glob(x)[0])
+
+	if lvm.use_lvm == "1":
+		for x in lvm.lvm_man:
 			cmd = "mkdir -p `dirname " + temp + "/" + x + "`"
 			call(cmd, shell=True)
 			ecp("-r", glob.glob(x)[0], temp + "/" + glob.glob(x)[0])
@@ -164,8 +178,19 @@ def copy_other():
 		cmd = "sed -i '69, 71d' " + temp + "/etc/bash/bashrc"
 		call(cmd, shell=True)
 
+		# Add the reboot/poweroff aliases
+		cmd = "sed -i 68a'\\\talias reboot=\"reboot -f\"' " + temp + "/etc/bash/bashrc"
+		call(cmd, shell=True)
+
+		cmd = "sed -i 69a'\\\talias poweroff=\"poweroff -f\"' " + temp + "/etc/bash/bashrc"
+		call(cmd, shell=True)
+
 	if luks.use_luks == "1":
 		for x in luks.gpg_files:
+			ecp("--parents", x, temp)
+
+	if lvm.use_lvm == "1":
+		for x in lvm.lvm_files:
 			ecp("--parents", x, temp)
 
 # Gets dependency list for parameter
@@ -178,8 +203,8 @@ def get_dlist(f):
 	for i in cap.readlines():
 		filedeps.add(i.strip())
 	
-def do_deps():
-	einfo("Getting and copying dependencies...")
+def copy_deps():
+	einfo("Copying program dependencies...")
 
 	global filedeps; filedeps = set()
 

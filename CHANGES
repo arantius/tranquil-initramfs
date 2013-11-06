@@ -1,3 +1,19 @@
+3.0.1
+---------
+Minor Changes:
+- Aliases have been created to the 'shutdown -f' and 'reboot -f' commands in initrd. 
+  Now you can use their equivalents without -f directly.
+
+- The creator will no longer ask you to input the location of your kernel modules
+  directory if you don't specify any modules.
+
+- mdadm was outputting benign error messages about exclusive mapfile. This is now hidden.
+- All the documentation for lvm, mdadm, and luks are included
+- The luks 'veritysetup' program is now included.
+
+Current Bugs:
+- Busybox man doesn't find the man pages even though the pages are in /usr/share/man/man# correctly.
+
 3.0.0
 ---------
 Major Changes:

@@ -188,10 +188,10 @@ luks_trigger()
 raid_trigger()
 {
 	# Scan for raid arrays and save them in mdadm.conf
-	mdadm --examine --scan > /etc/mdadm.conf
+	mdadm --examine --scan > /etc/mdadm.conf || rescue_shell
 
 	# Assemble all raid devices
-	mdadm --assemble --scan
+	mdadm --assemble --scan 2> /dev/null || rescue_shell
 }
 
 # If USE_LVM is enabled, run this function

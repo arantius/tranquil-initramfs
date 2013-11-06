@@ -23,7 +23,7 @@ from ..hooks import addon
 kernel = ""
 modules = ""
 lmodules = ""
-initrd = ""
+initrd = "initrd"
 choice = ""
 
 # Prints the header of the application
@@ -150,7 +150,6 @@ def get_arch():
 # Message for displaying the starting generating event
 def print_start():
 	eline(); einfo("[ Starting ]"); eline()
-	einfo("Creating initramfs for " + kernel)
 
 # Check to see if the temporary directory exists, if it does, delete it for a fresh start
 def clean():
@@ -167,14 +166,15 @@ def clean():
 
 # Create the base directory structure for the initramfs
 def create_dirs():
-	einfo("Creating directory structure for the initramfs...")
+	einfo("Creating directory structure...")
 
 	# Make base directories
 	for x in cdirs:
 		os.makedirs(x)
 
-	# Make kernel modules directory
-	os.makedirs(lmodules)
+	# If we are using kernel modules, then make the kernel modules directory
+	if lmodules:
+		os.makedirs(lmodules)
 	
 	# Make ZFS specific directories
 	if zfs.use_zfs == "1":

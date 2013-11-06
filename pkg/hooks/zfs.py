@@ -40,6 +40,7 @@ zfs_man = [
         man + "/man8/zpool.8.*",
         man + "/man8/zstreamdump.8.*"]
 
+# Currently not being used
 zfs_udev = [
         udev + "/rules.d/60-zvol.rules",
         udev + "/rules.d/69-vdev.rules",

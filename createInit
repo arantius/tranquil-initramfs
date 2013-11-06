@@ -37,7 +37,12 @@ call(["clear"])
 
 common.print_header()
 common.print_menu()
-common.do_kernel()
+
+# If we have any modules to copy, then get the kernel modules directory
+# for these modules.
+if common.addon.addon_mods:
+	common.do_kernel()
+
 common.get_arch()
 common.print_start()
 common.clean()
@@ -50,12 +55,11 @@ copy.lmodules = common.lmodules
 
 copy.check_binaries()
 copy.copy_binaries()
-copy.get_modules()
 copy.copy_modules()
 copy.copy_docs()
 copy.copy_udev()
 copy.copy_other()
-copy.do_deps()
+copy.copy_deps()
 
 common.create_links()
 common.config_files()

@@ -15,8 +15,7 @@ use_base = "0"
 base_bins = [
 	plugins + "/busybox/busybox",
 	bin + "/bash", 
-	sbin + "/kmod"
-	]
+	sbin + "/kmod"]
 
 # Names of module related applications that will replace the busybox ones
 kmod_sym = [
