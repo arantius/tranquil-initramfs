@@ -220,13 +220,7 @@ def create_links():
 	os.chdir(lbin)
 
 	# Create 'sh' symlink to 'bash'
-	if os.path.islink("sh"):
-		os.remove("sh")
-
 	os.symlink("bash", "sh")
-
-	if not os.path.islink("sh"):
-		die("Error creating link from sh to bash")
 
 	# Create busybox links
 	call([lbin + "/busybox", "--install", "."])
@@ -237,7 +231,7 @@ def create_links():
 	elif os.path.isfile(lbin + "/kmod"):
 		os.chdir(lbin)
 
-	# Remove the busybox equivalent (from the lbin dir)
+	# Remove the busybox equivalents (from the lbin dir)
 	for i in base.kmod_sym:
 		os.remove(lbin + "/" + i)
 		os.symlink("kmod", i)
@@ -356,6 +350,10 @@ def err_bin_dexi(x, *y):
 		die("Binary: " + x + " doesn't exist. Please emerge " + y[0] + ". Exiting.")
 	else:
 		die("Binary: " + x + " doesn't exist. Exiting.")
+
+# Error Function: Module doesn't exist
+def err_mod_dexi(x):
+	die("Module: " + x + " doesn't exist. Exiting.")
 
 # Copies functions with specific flags
 def ecp(*x):

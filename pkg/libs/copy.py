@@ -9,15 +9,7 @@
 import re
 
 from .common import *
-
-def print_vals():
-	print("BASE: ", base.use_base)
-	print("ZFS: ", zfs.use_zfs)
-	print("LVM: ", lvm.use_lvm)
-	print("RAID: ", raid.use_raid)
-	print("LUKS: ", luks.use_luks)
-	print("ADDON: ", addon.use_addon)
-	print("KERNEL: ", kernel)	
+from subprocess import PIPE
 
 # Checks to see if the binaries exist
 def check_binaries():
@@ -104,6 +96,15 @@ def copy_modules():
 	global moddeps; moddeps = set()
 
 	if addon.use_addon == "1":
+		# Checks to see if all the modules in the list exist
+		for x in addon.addon_mods:
+			cmd = "find " + modules + " -iname " + x + " | grep " + x
+			result = call(cmd, shell=True, stdout=PIPE)
+
+			if result == 1:
+				err_mod_dexi(x)
+
+		# Build the list of module dependencies
 		for x in addon.addon_mods:
 			cmd = "modprobe -S " + kernel + " --show-depends " + x + " | awk -F ' ' '{print $2}'"
 			cap = os.popen(cmd)
@@ -171,19 +172,9 @@ def copy_other():
 	if base.use_base == "1":
 		os.makedirs(temp + "/etc/bash")
 
-		shutil.copy("/etc/bash/bashrc", temp + "/etc/bash/")
+		shutil.copy(plugins + "/singles/bashrc", temp + "/etc/bash/")
+		shutil.copy(plugins + "/singles/man_db.conf", temp + "/etc/man_db.conf")
 		shutil.copy("/etc/DIR_COLORS", temp + "/etc/")
-
-		# Remove incompatible stuff from bashrc (like --colour=auto)
-		cmd = "sed -i '69, 71d' " + temp + "/etc/bash/bashrc"
-		call(cmd, shell=True)
-
-		# Add the reboot/poweroff aliases
-		cmd = "sed -i 68a'\\\talias reboot=\"reboot -f\"' " + temp + "/etc/bash/bashrc"
-		call(cmd, shell=True)
-
-		cmd = "sed -i 69a'\\\talias poweroff=\"poweroff -f\"' " + temp + "/etc/bash/bashrc"
-		call(cmd, shell=True)
 
 	if luks.use_luks == "1":
 		for x in luks.gpg_files:

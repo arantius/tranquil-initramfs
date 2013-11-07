@@ -1,18 +1,24 @@
 3.0.1
 ---------
-Minor Changes:
+- The application checks to see if all the modules in the list exist
+  in the given kernel directory
+
 - Aliases have been created to the 'shutdown -f' and 'reboot -f' commands in initrd. 
   Now you can use their equivalents without -f directly.
 
 - The creator will no longer ask you to input the location of your kernel modules
-  directory if you don't specify any modules.
+  directory if you don't specify any modules. This also means that if you don't need any
+  kernel modules in your initramfs, you can do a: ./createInit <option> and directly create
+  an initramfs without mentioning a kernel at all.
 
 - mdadm was outputting benign error messages about exclusive mapfile. This is now hidden.
-- All the documentation for lvm, mdadm, and luks are included
+
+- All man pages have been removed from the initramfs
+
 - The luks 'veritysetup' program is now included.
 
-Current Bugs:
-- Busybox man doesn't find the man pages even though the pages are in /usr/share/man/man# correctly.
+- Since the initramfs isn't using any udev related stuff, the creator will
+  no longer copy udev files to the initramfs.
 
 3.0.0
 ---------

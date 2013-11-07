@@ -62,7 +62,6 @@ prel_bin = ["/bin/cpio"]
 cdirs = [
 	lbin, 
 	lsbin, 
-        temp + "/usr/bin",
         temp + "/proc",
         temp + "/sys",
         temp + "/dev",
