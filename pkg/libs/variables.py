@@ -14,7 +14,7 @@ name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "3.0.1"
+version = "3.0.2"
 license = "MPL 2.0"
 
 # Locations

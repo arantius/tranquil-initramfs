@@ -231,9 +231,8 @@ def create_links():
 	elif os.path.isfile(lbin + "/kmod"):
 		os.chdir(lbin)
 
-	# Remove the busybox equivalents (from the lbin dir)
+	# Create module loading links to 'kmod' (from the lbin dir)
 	for i in base.kmod_sym:
-		os.remove(lbin + "/" + i)
 		os.symlink("kmod", i)
 
 # This function copies and sets up any files needed. mtab, init, zpool.cache

@@ -14,7 +14,7 @@ use_base = "0"
 # Required Binaries
 base_bins = [
 	plugins + "/busybox/busybox",
-	bin + "/bash", 
+	bin + "/bash",
 	sbin + "/kmod"]
 
 # Names of module related applications that will replace the busybox ones

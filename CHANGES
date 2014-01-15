@@ -1,3 +1,10 @@
+3.0.2
+---------
+- Fixed an issue where using 'su' (single user) mode flag would not go into
+  single user mode but rather it would continue to boot into the rootfs.
+
+- Updated busybox from 1.21.1 to 1.22.0
+
 3.0.1
 ---------
 - The application checks to see if all the modules in the list exist

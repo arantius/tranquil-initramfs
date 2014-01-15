@@ -40,12 +40,12 @@ fi
 # Run all the triggers (Like LUKS, RAID, LVM, ZFS)
 check_triggers
 
+# Mounts your root device
+mount_root
+
 if [[ ${su} == "1" ]]; then
         single_user
 fi
-
-# Mounts your root device
-mount_root
 
 # Let's clean up and go to the OS
 umnt_kernel_devs || die "Failed to umount kernel devices"

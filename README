@@ -1,4 +1,4 @@
-Bliss Initramfs Creator - v3.0.1
+Bliss Initramfs Creator - v3.0.2
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Funtoo Linux @ ZoL 0.6.2
 
@@ -15,7 +15,7 @@ Please have the following installed:
 
 - Linux Kernel
   ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared 
-  in the ADDON_MODS variable in pkg/hooks/addon.py.
+  in the 'addon_mods' variable in pkg/hooks/addon.py.
   
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
@@ -34,7 +34,7 @@ Please have the following installed:
   -*- AES cipher algorithms
 
   * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
-    or you can compile them as a module and declare them in the ADDON_MODS variable.
+    or you can compile them as a module and declare them in the 'addon_mods' variable.
 
 - dev-lang/python 3.3 or greater
 - app-arch/cpio
