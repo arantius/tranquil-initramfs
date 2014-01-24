@@ -11,18 +11,6 @@ from ..libs.variables import *
 # Enable/Disable Hook
 use_luks = "0"
 
-# LUKS Binaries, Modules, and other files
-luks_bins = [
-	sbin + "/cryptsetup",
-	sbin + "/veritysetup"]
-
-luks_man = [
-	man + "/man8/cryptsetup.8.*",
-	man + "/man8/veritysetup.8.*"]
-
-gpg_bins = [
-	ubin + "/gpg",
-	ubin + "/gpg-agent"]
-
-gpg_files = [ ushare + "/gnupg/gpg-conf.skel" ]
-
+luks_packs = [
+        "sys-fs/cryptsetup"
+]

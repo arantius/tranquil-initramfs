@@ -1,3 +1,11 @@
+3.0.3
+---------
+- Added the ability to pass mount "options" for '/' via initramfs.
+- Re-enabled the "copy_udev" and "copy_docs" function. Udev rules and documentation
+  will be copied but are unusable at the moment. Busybox's man doesn't seem to be able
+  to read the man pages (groff not installed, but busybox as a swiss army knife should
+  be able to read these pages!).
+
 3.0.2
 ---------
 - Fixed an issue where using 'su' (single user) mode flag would not go into

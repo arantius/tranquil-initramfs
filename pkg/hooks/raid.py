@@ -13,8 +13,6 @@ use_raid = "0"
 
 raid_bins = [ sbin + "/mdadm" ]
 
-raid_man = [
-	man + "/man4/md.4.*",
-        man + "/man5/mdadm.conf.5.*",
-        man + "/man8/mdadm.8.*",
-        man + "/man8/mdmon.8.*"]
+raid_packs = [
+        "sys-fs/mdadm"
+]

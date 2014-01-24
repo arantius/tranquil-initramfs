@@ -14,7 +14,7 @@ name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "3.0.2"
+version = "3.1.0"
 license = "MPL 2.0"
 
 # Locations
@@ -59,12 +59,15 @@ arch = check_output(["uname", "-m"], universal_newlines=True).strip()
 prel_bin = ["/bin/cpio"]
 
 # Directories to create when generating the initramfs structure
-cdirs = [
-	lbin, 
-	lsbin, 
+baselayout = [
+	temp + "/bin", 
+	temp + "/sbin",
         temp + "/proc",
         temp + "/sys",
         temp + "/dev",
-        letc,
+        temp + "/etc/zfs",
+        temp + "/etc/modprobe.d/",
         temp + "/mnt/root",
-        temp + "/lib"]
+        temp + "/mnt/key",
+        temp + "/lib/modules"
+]

@@ -11,11 +11,21 @@ from ..libs.variables import *
 # Enable/Disable Hook
 use_base = "0"
 
-# Required Binaries
-base_bins = [
-	plugins + "/busybox/busybox",
-	bin + "/bash",
-	sbin + "/kmod"]
+# Required Packages
+base_packs = [
+    "sys-apps/baselayout",
+    "sys-apps/busybox",
+    "sys-libs/glibc",
+    "app-misc/editor-wrapper",
+    "sys-libs/ncurses",
+    "sys-apps/less",
+    "sys-apps/util-linux",
+    "sys-apps/kmod",
+    "sys-apps/openrc",
+    "app-shells/bash",
+    "sys-apps/groff",
+    "sys-apps/man-db"
+]
 
 # Names of module related applications that will replace the busybox ones
 kmod_sym = [
@@ -24,4 +34,5 @@ kmod_sym = [
 	"lsmod",
 	"modinfo",
 	"modprobe",
-	"rmmod"]
+	"rmmod"
+]

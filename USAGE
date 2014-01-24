@@ -1,10 +1,4 @@
 =======================================
-Usage
-=======================================
-
-The initramfs program is very easy to use!
-
-=======================================
 Creating the initramfs
 =======================================
 
@@ -45,6 +39,22 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 	set root=(hd0,gpt1)
 
 	linux /vmlinuz-3.9.9-FB.02 root=/dev/sda3 quiet
+	initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Normal Boot w/ Mount Options
+=======================================
+
+# Funtoo
+menuentry "Funtoo - 3.9.9-FB.02" {
+	insmod part_gpt
+	insmod ext2
+
+	set root=(hd0,gpt1)
+
+	# Mounts your root partition with 'acl'
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/sda3 options="acl" quiet
 	initrd /initrd-3.9.9-FB.02
 }
 

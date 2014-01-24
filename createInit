@@ -65,15 +65,17 @@ copy.kernel = common.kernel
 copy.modules = common.modules
 copy.lmodules = common.lmodules
 
-copy.check_binaries()
-copy.copy_binaries()
-copy.copy_modules()
+#common.install_packs()
+#copy.check_binaries()
+#copy.copy_binaries()
+#copy.copy_modules()
 #copy.copy_docs()
 #copy.copy_udev()
-copy.copy_other()
-copy.copy_deps()
+#copy.copy_other()
 
+copy.install_list()
 common.create_links()
+copy.copy_deps()
 common.config_files()
 common.create()
-common.clean_exit()
+#common.clean_exit()
