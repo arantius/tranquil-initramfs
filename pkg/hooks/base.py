@@ -15,16 +15,27 @@ use_base = "0"
 base_packs = [
     "sys-apps/baselayout",
     "sys-apps/busybox",
-    "sys-libs/glibc",
-    "app-misc/editor-wrapper",
-    "sys-libs/ncurses",
-    "sys-apps/less",
-    "sys-apps/util-linux",
+    "sys-apps/coreutils",
+    "sys-apps/grep",
     "sys-apps/kmod",
-    "sys-apps/openrc",
     "app-shells/bash",
+    "sys-apps/util-linux",
+
+    # Full man pages support
+    "sys-apps/openrc",
+    "app-misc/editor-wrapper",
+    "sys-apps/less",
     "sys-apps/groff",
-    "sys-apps/man-db"
+    "sys-apps/man-db",
+
+    # Other apps that will be filtered
+    "sys-libs/glibc",
+    "sys-libs/ncurses"
+]
+
+# Required Singles
+base_singles = [
+
 ]
 
 # Names of module related applications that will replace the busybox ones

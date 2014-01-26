@@ -14,3 +14,8 @@ use_luks = "0"
 luks_packs = [
         "sys-fs/cryptsetup"
 ]
+
+# Required Singles
+luks_singles = [
+
+]

@@ -8,14 +8,14 @@
 
 from ..libs.variables import *
 
-# Enable/Disable Hook
-use_raid = "0"
+# Keeps a list of files to filter
+packages = {
+    "sys-libs/ncurses" : 
+            "/usr/include " + 
+            "/usr/share/man",
 
-raid_packs = [
-        "sys-fs/mdadm"
-]
-
-# Required Singles
-raid_singles = [
-
-]
+    "sys-libs/glibc" :
+            "/usr/include " +
+            "/usr/share/doc " +
+            "/usr/share/info",
+}

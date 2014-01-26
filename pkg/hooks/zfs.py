@@ -13,7 +13,12 @@ use_zfs = "0"
 
 # Required Packages
 zfs_packs = [
-        "sys-kernel/spl"
-        "sys-fs/zfs"
+        "sys-kernel/spl",
+        "sys-fs/zfs",
         "sys-fs/zfs-kmod"
+]
+
+# Required Singles
+zfs_singles = [
+
 ]

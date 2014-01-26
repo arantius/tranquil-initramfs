@@ -8,7 +8,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..." && eline
-	hostname ${HOSTN} && setsid cttyhack /bin/bash
+	hostname ${HOSTN} && setsid cttyhack /bin/bash -l
 }
 
 # Function to load ZFS modules

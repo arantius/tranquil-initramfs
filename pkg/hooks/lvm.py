@@ -15,3 +15,8 @@ use_lvm = "0"
 lvm_packs = [
     "sys-fs/lvm2"
 ]
+
+# Required Singles
+lvm_singles = [
+
+]

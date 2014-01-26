@@ -19,6 +19,7 @@ from ..hooks import lvm
 from ..hooks import raid
 from ..hooks import luks
 from ..hooks import addon
+from ..hooks import filter
 
 kernel = ""
 modules = ""
@@ -164,12 +165,6 @@ def clean():
                         ewarn("Failed to delete the " + temp + " directory. Exiting.")
                         quit()
 
-# Create the base directory structure for the initramfs
-def create_dirs():
-        einfo("Creating directory structure...")
-
-        for x in baselayout: os.makedirs(x)
-
 # Checks to see if the preliminary binaries exist
 def check_prelim_binaries():
         einfo("Checking preliminary binaries...")
@@ -177,7 +172,14 @@ def check_prelim_binaries():
         # If the required binary doesn't exist, than install it
         for x in prel_bin:
                 if not os.path.isfile(x):
-                    emerge(prel_bin)
+                    emerges(x)
+
+        emerges(' '.join(base.base_packs))
+
+# Emerges a package into the host system
+def emerges(package):
+    #call(["emerge", "--noreplace", "-av", package])
+    call("emerge --noreplace -1vq " + package, shell=True)
 
 # Compresses the kernel modules and generates modprobe table
 def do_modules():
@@ -209,13 +211,10 @@ def create_links():
         # Create 'sh' symlink to 'bash'
         os.symlink("bash", "sh")
 
-        #shutil.copy(plugins + "/busybox/busybox", lbin)
 
         # Create busybox links
         cmd = "chroot " + temp + " /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
         call(cmd, shell=True)
-        #call(["./busybox", "--install", "-s", "."])
-
 
         # Go to the directory where kmod is in (different between Gentoo and Funtoo)
         # Funtoo = /sbin, Gentoo = /bin
@@ -237,21 +236,27 @@ def config_files():
         if not os.path.isfile(temp + "/etc/mtab"):
                 die("Error creating the mtab file. Exiting.")
 
-        cmd = "chroot " + temp + " /bin/bash -l -c \"locale-gen\""
-        call(cmd, shell=True)
+        #cmd = "chroot " + temp + " /bin/bash -l -c \"locale-gen\""
+        #call(cmd, shell=True)
+
+        # Create a few final directories
+        call("mkdir " + temp + "/{proc,sys} " + temp + "/mnt/{root,key}", shell=True)
 
         # Set library symlinks
-        pcmd = "find /usr/lib -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
-        cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
-        call(cmd, shell=True)
+        if os.path.isdir(temp + "/usr/lib") and os.path.isdir(temp + "/lib64"):
+            pcmd = "find /usr/lib -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
+            cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
+            call(cmd, shell=True)
 
-        pcmd = "find /usr/lib32 -iname \"*.so.*\" -exec ln -s \"{}\" /lib32 \;"
-        cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
-        call(cmd, shell=True)
+        if os.path.isdir(temp + "/usr/lib32") and os.path.isdir(temp + "/lib32"):
+            pcmd = "find /usr/lib32 -iname \"*.so.*\" -exec ln -s \"{}\" /lib32 \;"
+            cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
+            call(cmd, shell=True)
 
-        pcmd = "find /usr/lib64 -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
-        cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
-        call(cmd, shell=True)
+        if os.path.isdir(temp + "/usr/lib64") and os.path.isdir(temp + "/lib64"):
+            pcmd = "find /usr/lib64 -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
+            cmd = "chroot " + temp + " /bin/busybox sh -c \"" + pcmd + "\""
+            call(cmd, shell=True)
 
         # Copy init functions
         shutil.copytree(home + "/files/libraries/", temp + "/libraries")
