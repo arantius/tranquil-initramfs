@@ -11,4 +11,6 @@ use_addon = "0"
 
 # A list of kernel modules to include in the initramfs
 # (The list is in Python format: ["module1", "module2", ...]
-addon_mods = []
+addon_mods = [
+
+]

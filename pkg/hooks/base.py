@@ -22,28 +22,11 @@ base_packs = [
     "sys-apps/util-linux",
 
     # Full man pages support
-    "sys-apps/openrc",
-    "app-misc/editor-wrapper",
-    "sys-apps/less",
-    "sys-apps/groff",
-    "sys-apps/man-db",
-
-    # Other apps that will be filtered
-    "sys-libs/glibc",
-    "sys-libs/ncurses"
-]
-
-# Required Singles
-base_singles = [
-
-]
-
-# Names of module related applications that will replace the busybox ones
-kmod_sym = [
-	"depmod",
-	"insmod",
-	"lsmod",
-	"modinfo",
-	"modprobe",
-	"rmmod"
+    #"sys-apps/openrc",
+    #"app-misc/editor-wrapper",
+    #"sys-apps/less",
+    #"sys-apps/groff",
+    #"sys-apps/man-db",
+    #"sys-libs/glibc",
+    #"sys-libs/ncurses"
 ]

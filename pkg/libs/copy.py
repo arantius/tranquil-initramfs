@@ -9,54 +9,48 @@
 import re
 
 from .common import *
-from subprocess import PIPE, CalledProcessError
+from subprocess import CalledProcessError
 
 binset = set()     # List of binaries (That will be 'ldd'ed later)
 modset = set()     # List of modules that will be compressed
 
-# Checks to see if the binaries exist
+# Checks to see if the binaries exist, if not then emerge
 def check_binaries():
         einfo("Checking binaries...")
 
-        # Check base binaries (all initramfs have these)
-        for x in base.base_bins:
-                if not os.path.isfile(x):
-                        err_bin_dexi(x)
+        packs = set()
+
+        # Check base binaries
+        if base.use_base == "1":
+            for x in base.base_packs:
+                packs.add(x.strip())
 
         # If using ZFS, check the zfs binaries
         if zfs.use_zfs == "1":
-                eflag("Using ZFS")
-
-                for x in zfs.zfs_bins:
-                        if not os.path.isfile(x):
-                                err_bin_dexi(x)
+            eflag("Using ZFS")
+            for x in zfs.zfs_packs:
+                packs.add(x.strip())
 
         # If using LVM, check the lvm binaries
         if lvm.use_lvm == "1":
-                eflag("Using LVM")
-
-                if not lvm.lvm_bins:
-                        err_bin_dexi("lvm", "sys-fs/lvm2")
+            eflag("Using LVM")
+            for x in lvm.lvm_packs:
+                packs.add(x.strip())
 
         # If using RAID, check the raid binaries
         if raid.use_raid == "1":
-                eflag("Using RAID")
-
-                for x in raid.raid_bins:
-                        if not os.path.isfile(x):
-                                err_bin_dexi(x)
+            eflag("Using RAID")
+            for x in raid.raid_packs:
+                packs.add(x.strip())
 
         # If using LUKS, check the luks binaries
         if luks.use_luks == "1":
-                eflag("Using LUKS")
+            eflag("Using LUKS")
+            for x in luks.luks_packs:
+                packs.add(x.strip())
 
-                for x in luks.luks_bins:
-                        if not os.path.isfile(x):
-                                err_bin_dexi(x)
-
-                for x in luks.gpg_bins:
-                        if not os.path.isfile(x):
-                                err_bin_dexi(x)
+        # Installs missing applications
+        emerges(' '.join(packs))
 
 # Installs the packages
 def install():
@@ -82,7 +76,7 @@ def install():
 
 # Filters and installs a package into the initramfs
 def emerge(x):
-    eopt("Emerging " + x + "...")
+    eopt("Installing " + x + "...")
 
     global binset; global modset
 
@@ -152,31 +146,6 @@ def emerge(x):
         for f in filtered:
             ecopy(f)
 
-# Intelligently copies the file into the initramfs
-def ecopy(f):
-        # NOTE: shutil.copy will copy the program a symlink points to but not the link..
-
-        # Check to see if a file with this name exists before copying,
-        # if it exists, delete it, then copy. If a directory, create the directory
-        # before copying.
-        p = temp + "/" + f
-
-        if os.path.exists(p):
-            if os.path.isfile(p):
-                os.remove(p)
-                shutil.copy(f, p)
-        else:
-            if os.path.isdir(f):
-                os.makedirs(p)
-            elif os.path.isfile(f):
-                # Make sure that the directory that this file wants to be in exists,
-                # if not then create it.
-                if os.path.isdir(os.path.dirname(p)):
-                    shutil.copy(f, p)
-                else:
-                    os.makedirs(os.path.dirname(p))
-                    shutil.copy(f, p)
-
 # Copy modules and their dependencies
 def copy_modules():
         einfo("Copying modules...")
@@ -195,28 +164,34 @@ def copy_modules():
                         except CalledProcessError:
                                 err_mod_dexi(x)
 
-                for x in modset:
-                    # Get only the name of the module
-                    match = re.search('(?<=/)\w+.ko', x)
+        # If a kernel has been set, try to update the module dependencies
+        # database before searching it
+        if kernel:
+            result = call(["depmod", kernel])
 
-                    if match:
-                        sx = match.group().split(".")[0]
+            if result == 1:
+                die("Error updating module dependency database!")
 
-                        cmd = "modprobe -S " + kernel + " --show-depends " + sx + " | awk -F ' ' '{print $2}'"
-                        cap = os.popen(cmd)
+        # Get the dependencies for all the modules in our set
+        for x in modset:
+            # Get only the name of the module
+            match = re.search('(?<=/)\w+.ko', x)
 
-                        for i in cap.readlines():
-                                moddeps.add(i.strip())
+            if match:
+                sx = match.group().split(".")[0]
+                
+                cmd = "modprobe -S " + kernel + " --show-depends " + sx + " | awk -F ' ' '{print $2}'"
+                cap = os.popen(cmd)
 
+                for i in cap.readlines():
+                        moddeps.add(i.strip())
+
+        # Copy the modules/dependencies
         if moddeps:
-                # Making sure that the dependencies are up to date
-                call(["depmod", kernel])
+                for x in moddeps: ecopy(x)
 
-                if addon.use_addon == "1":
-                        for x in moddeps:
-                                ecopy(x)
-
-                # Compress the modules and update dependencies
+                # Compress the modules and update module dependency database
+                # inside the initramfs
                 do_modules()
 
 # Gets the library dependencies for all our binaries and copies them

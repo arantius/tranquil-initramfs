@@ -1,12 +1,14 @@
 4.0.0
 ---------
 - Added the ability to pass mount "options" for '/' via initramfs.
-- Re-enabled the "copy_udev" and "copy_docs" function. Udev rules and documentation
-  will be copied but are unusable at the moment. Busybox's man doesn't seem to be able
-  to read the man pages (groff not installed, but busybox as a swiss army knife should
-  be able to read these pages!).
-- Major redesign of application. New functions written for copying, filtering, ..
-- more to be written...............
+- Major redesign of application. New functions written for copying,
+  filtering and more.
+- Fixed a bug where modules in the "addon_mods" list weren't being loaded
+- The application now has full support for reading man pages
+  > If you want to enable this support, just uncomment the additional packages in
+  > the pkg/hooks/base.py file. This will make the initramfs at least 35 MB bigger
+- Fixed a bug where job control wasn't working properly
+- The application will automatically install applications that aren't on the system
 
 3.0.2
 ---------

@@ -14,8 +14,3 @@ use_raid = "0"
 raid_packs = [
         "sys-fs/mdadm"
 ]
-
-# Required Singles
-raid_singles = [
-
-]

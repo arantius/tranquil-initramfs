@@ -48,12 +48,16 @@ def print_menu():
 
         # All initramfs will have the base
         base.use_base = "1"
-        addon.use_addon = "1"
+
+        # Enable the addons if the addon_mods is not empty
+        if addon.addon_mods:
+            addon.use_addon = "1"
 
         if choice == "1" or choice == "":
                 zfs.use_zfs = "1"
 
                 # Add the 'zfs' kernel module to the addon modules list
+                addon.use_addon = "1"
                 addon.addon_mods.append("zfs")
         elif choice == "2":
                 lvm.use_lvm = "1"
@@ -69,6 +73,7 @@ def print_menu():
                 zfs.use_zfs = "1"
 
                 # Add the 'zfs' kernel module to the addon modules list
+                addon.use_addon = "1"
                 addon.addon_mods.append("zfs")
         elif choice == "7":
                 luks.use_luks = "1"
@@ -174,12 +179,17 @@ def check_prelim_binaries():
                 if not os.path.isfile(x):
                     emerges(x)
 
-        emerges(' '.join(base.base_packs))
-
 # Emerges a package into the host system
 def emerges(package):
-    #call(["emerge", "--noreplace", "-av", package])
-    call("emerge --noreplace -1vq " + package, shell=True)
+    # Binary Support <Disabled>
+    #result = call("export PKGDIR=\"" + home + "/packages\" && \
+    #               export FEATURES=\"buildpkg\" && emerge --noreplace -1vqk " +
+    #               package, shell=True)
+
+    result = call("emerge --noreplace -1vq " + package, shell=True)
+
+    if result == 130:
+        die("Don't want to emerge?! Then no initramfs for you!")
 
 # Compresses the kernel modules and generates modprobe table
 def do_modules():
@@ -189,13 +199,15 @@ def do_modules():
         cap = os.popen(cmd)
 
         for x in cap:
-                cmd = "gzip " + x.strip()
+                cmd = "gzip -9 " + x.strip()
                 call(cmd, shell=True)
         
         einfo("Generating modprobe information...")
 
         # Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
-        ecp(modules + "/modules.{order,builtin}", lmodules)
+        ecopy(modules + "/modules.order")
+        ecopy(modules + "/modules.builtin")
+
         result = call(["depmod", "-b", temp, kernel])
 
         if result != 0:
@@ -211,7 +223,6 @@ def create_links():
         # Create 'sh' symlink to 'bash'
         os.symlink("bash", "sh")
 
-
         # Create busybox links
         cmd = "chroot " + temp + " /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
         call(cmd, shell=True)
@@ -223,21 +234,16 @@ def create_links():
         elif os.path.isfile(lbin + "/kmod"):
                 os.chdir(lbin)
 
-        # Create module loading links to 'kmod' (from the lbin dir)
-        #for i in base.kmod_sym:
-        #       os.symlink("kmod", i)
+# This functions does any last minute steps like copying zfs.conf,
+# giving init execute permissions, setting up symlinks, etc
+def last_steps():
+        einfo("Performing finishing steps...")
 
-# This function copies and sets up any files needed. mtab, init, zpool.cache
-def config_files():
-        einfo("Configuring files...")
-
+        # Create empty mtab file
         call(["touch", temp + "/etc/mtab"])
 
         if not os.path.isfile(temp + "/etc/mtab"):
                 die("Error creating the mtab file. Exiting.")
-
-        #cmd = "chroot " + temp + " /bin/bash -l -c \"locale-gen\""
-        #call(cmd, shell=True)
 
         # Create a few final directories
         call("mkdir " + temp + "/{proc,sys} " + temp + "/mnt/{root,key}", shell=True)
@@ -270,8 +276,12 @@ def config_files():
         if not os.path.isfile(temp + "/init"):
                 die("Error creating the init file. Exiting.")
 
+        # Fix 'poweroff, reboot' commands
+        call("sed -i \"71a alias reboot='reboot -f' \" " + temp + "/etc/bash/bashrc", shell=True)
+        call("sed -i \"71a alias poweroff='poweroff -f' \" " + temp + "/etc/bash/bashrc", shell=True)
+
         # Sets initramfs script version number
-        call(["sed", "-i", "-e", "18s/0/" + version + "/", temp + "/init"])
+        call(["sed", "-i", "-e", "19s/0/" + version + "/", temp + "/init"])
 
         # Any last substitutions or additions/modifications should be done here
         if zfs.use_zfs == "1":
@@ -293,9 +303,12 @@ def config_files():
         # Enable LUKS in the init if LUKS is being used
         if luks.use_luks == "1":
                 call(["sed", "-i", "-e", "16s/0/1/", temp + "/init"])
-        
+       
+        # Enable ADDON in the init and add our modules to the initramfs
+        # if addon is being used
         if addon.use_addon == "1":
-                call(["sed", "-i", "-e", "18s/\"\"/\"" + 
+                call(["sed", "-i", "-e", "17s/0/1/", temp + "/init"])
+                call(["sed", "-i", "-e", "20s/\"\"/\"" + 
                 " ".join(addon.addon_mods) + "\"/", temp + "/libraries/common.sh"])
 
 # Create the solution
@@ -319,6 +332,31 @@ def clean_exit():
 
         einfo("Please copy the " + initrd + " to your /boot directory")
         quit()
+
+# Intelligently copies the file into the initramfs
+def ecopy(f):
+        # NOTE: shutil.copy will copy the program a symlink points to but not the link..
+
+        # Check to see if a file with this name exists before copying,
+        # if it exists, delete it, then copy. If a directory, create the directory
+        # before copying.
+        p = temp + "/" + f
+
+        if os.path.exists(p):
+            if os.path.isfile(p):
+                os.remove(p)
+                shutil.copy(f, p)
+        else:
+            if os.path.isdir(f):
+                os.makedirs(p)
+            elif os.path.isfile(f):
+                # Make sure that the directory that this file wants to be in exists,
+                # if not then create it.
+                if os.path.isdir(os.path.dirname(p)):
+                    shutil.copy(f, p)
+                else:
+                    os.makedirs(os.path.dirname(p))
+                    shutil.copy(f, p)
 
 ####### Message Functions #######
 
@@ -346,11 +384,8 @@ def eopt(x):
 
 # Used for errors
 def die(x):
-        eline()
-        call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x])
-        eline()
-        clean()
-        quit(1)
+        eline(); call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x]); eline()
+        clean(); quit(1)
 
 # Prints empty line
 def eline():
@@ -366,13 +401,3 @@ def err_bin_dexi(x, *y):
 # Error Function: Module doesn't exist
 def err_mod_dexi(x):
         die("Module: " + x + " doesn't exist. Exiting.")
-
-# Copies functions with specific flags
-def ecp(*x):
-        if x:
-                cmd = "cp -afL"
-
-                for i in x:
-                        cmd = cmd + " " + i
-                        
-                call(cmd, shell=True)

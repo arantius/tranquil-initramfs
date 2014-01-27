@@ -12,10 +12,10 @@ from ..libs.variables import *
 packages = {
     "sys-libs/ncurses" : 
             "/usr/include " + 
-            "/usr/share/man",
+            "/usr/share/man ",
 
     "sys-libs/glibc" :
             "/usr/include " +
             "/usr/share/doc " +
-            "/usr/share/info",
+            "/usr/share/info ",
 }

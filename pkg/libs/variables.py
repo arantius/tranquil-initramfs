@@ -21,9 +21,6 @@ license = "MPL 2.0"
 home = getcwd()
 temp = home + "/temp"
 
-# Plugins Directory
-plugins = home + "/plugins"
-
 # System Directories
 bin = "/bin"
 sbin = "/sbin"
@@ -56,18 +53,7 @@ arch = check_output(["uname", "-m"], universal_newlines=True).strip()
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
-prel_bin = ["/bin/cpio"]
-
-# Directories to create when generating the initramfs structure
-baselayout = [
-	temp + "/bin", 
-	temp + "/sbin",
-        temp + "/proc",
-        temp + "/sys",
-        temp + "/dev",
-        temp + "/etc/zfs",
-        temp + "/etc/modprobe.d/",
-        temp + "/mnt/root",
-        temp + "/mnt/key",
-        temp + "/lib/modules"
+prel_bin = [
+    "/bin/cpio", 
+    "app-portage/gentoolkit"
 ]

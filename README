@@ -1,15 +1,11 @@
 Bliss Initramfs Creator - v4.0.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Funtoo Linux @ ZoL 0.6.2
+Funtoo Linux
 
 Distributed under the MPL 2.0 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
 dependencies needed to mount your filesystem.
-
-You will need a few programs already installed on your computer since this 
-program just automates the process of you actually going into your filesystem,
-and getting all those files.
 
 Please have the following installed:
 
@@ -38,6 +34,7 @@ Please have the following installed:
 
 - dev-lang/python 3.3 or greater
 - app-arch/cpio
+- app-portage/gentoolkit
 - app-shells/bash
 - sys-apps/kmod
 - sys-fs/zfs (ZFS support)

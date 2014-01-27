@@ -14,9 +14,9 @@ rescue_shell()
 # Function to load ZFS modules
 load_modules()
 {
-	einfo "Loading modules..."
+        if [[ ${USE_ZFS} == "1" ]] || [[ ${USE_ADDON} == "1" ]]; then
+		einfo "Loading modules..."
 
-        if [[ ${USE_ZFS} == "1" ]]; then
 		modules=""
 
 		for x in ${modules}; do
@@ -217,7 +217,7 @@ zfs_trigger()
 # Mounts your root device
 mount_root()
 {
-	einfo "Mounting your root device..." && eline
+	einfo "Mounting your root device..."
 
 	# Using "" for the ${options} below so that if the user doesn't have any options,
 	# the variable ends up expanding back to empty quotes and allows the mount command
@@ -239,7 +239,7 @@ switch_to_root()
 {
 	einfo "Switching into your root device..." && eline
 
-        exec switch_root ${NEW_ROOT} ${INIT} || die "Failed to switch into your root device!"
+        exec switch_root ${NEW_ROOT} ${INIT} 2> /dev/null || die "Failed to switch into your root device!"
 }
 
 # Checks all triggers
@@ -280,14 +280,17 @@ single_user()
 {
 	ewarn "Booting into single user mode..." && eline
 
-	mount -t proc none ${NEW_ROOT}/proc
+	mount --rbind /proc ${NEW_ROOT}/proc
 	mount --rbind /dev ${NEW_ROOT}/dev
 	mount --rbind /sys ${NEW_ROOT}/sys
 
-	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash --login -c 'cat /proc/mounts > /etc/mtab && hostname ${RHOSTN}' && chroot ${NEW_ROOT} /bin/bash --login"
+	setsid cttyhack /bin/bash -l -c "chroot ${NEW_ROOT} /bin/bash -l -c \
+	'cat /proc/mounts > /etc/mtab && hostname ${RHOSTN}' && \
+	chroot ${NEW_ROOT} /bin/bash -l"
 
-	umount ${NEW_ROOT}/proc
-	umount -l ${NEW_ROOT}/dev ${NEW_ROOT}/sys
+	# Lazy unmount these devices from the rootfs since they will be fully 
+	# unmounted from the initramfs environment right after this function is over.
+	umount -l ${NEW_ROOT}/proc ${NEW_ROOT}/dev ${NEW_ROOT}/sys 
 }
 
 ### Utility Functions ###

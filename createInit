@@ -64,11 +64,11 @@ copy.kernel = common.kernel
 copy.modules = common.modules
 copy.lmodules = common.lmodules
 
-#copy.check_binaries()
+copy.check_binaries()
 copy.install()
 copy.copy_modules()
 common.create_links()
 copy.copy_deps()
-common.config_files()
+common.last_steps()
 common.create()
 common.clean_exit()

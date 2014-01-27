@@ -17,8 +17,3 @@ zfs_packs = [
         "sys-fs/zfs",
         "sys-fs/zfs-kmod"
 ]
-
-# Required Singles
-zfs_singles = [
-
-]

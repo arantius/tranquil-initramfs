@@ -12,10 +12,6 @@ from ..libs.variables import *
 use_luks = "0"
 
 luks_packs = [
-        "sys-fs/cryptsetup"
-]
-
-# Required Singles
-luks_singles = [
-
+        "sys-fs/cryptsetup",
+        "app-crypt/gnupg"
 ]
