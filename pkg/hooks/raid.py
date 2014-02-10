@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,9 @@
 from ..libs.variables import *
 
 # Enable/Disable Hook
-use_raid = "0"
+use = "0"
 
-raid_packs = [
-        "sys-fs/mdadm"
+# Requires Files
+files = [
+    "/sbin/mdadm",
 ]

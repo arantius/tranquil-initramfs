@@ -1,5 +1,5 @@
 Bliss Initramfs Creator - v4.0.0
-Jonathan Vasquez <jvasquez1011@gmail.com>
+Jonathan Vasquez <fearedbliss@funtoo.org>
 Funtoo Linux
 
 Distributed under the MPL 2.0 which can be found in the LICENSE file.
@@ -34,7 +34,6 @@ Please have the following installed:
 
 - dev-lang/python 3.3 or greater
 - app-arch/cpio
-- app-portage/gentoolkit
 - app-shells/bash
 - sys-apps/kmod
 - sys-fs/zfs (ZFS support)

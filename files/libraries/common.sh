@@ -8,7 +8,7 @@
 rescue_shell()
 {
 	ewarn "Booting into rescue shell..." && eline
-	hostname ${HOSTN} && setsid cttyhack /bin/bash -l
+	hostname ${HOSTN} && setsid cttyhack /bin/bash
 }
 
 # Function to load ZFS modules
@@ -284,7 +284,7 @@ single_user()
 	mount --rbind /dev ${NEW_ROOT}/dev
 	mount --rbind /sys ${NEW_ROOT}/sys
 
-	setsid cttyhack /bin/bash -l -c "chroot ${NEW_ROOT} /bin/bash -l -c \
+	setsid cttyhack /bin/bash -l -c "chroot ${NEW_ROOT} /bin/bash -c \
 	'cat /proc/mounts > /etc/mtab && hostname ${RHOSTN}' && \
 	chroot ${NEW_ROOT} /bin/bash -l"
 

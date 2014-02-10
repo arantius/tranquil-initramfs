@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ max_choices = 3
 # user know we need two parameters.
 if len(arguments) == 1:
 	if arguments[0] != "1" and arguments[0] != "6":
-		if not common.addon.addon_mods:
+		if not common.addon.modules:
 			common.choice = arguments[0]
 		else:
 			common.die("You must pass a kernel parameter")
@@ -51,13 +51,14 @@ common.print_menu()
 
 # If we have any modules to copy, then get the kernel modules directory
 # for these modules.
-if common.addon.addon_mods:
+if common.addon.modules:
 	common.do_kernel()
 
 common.get_arch()
 common.print_start()
 common.clean()
 common.check_prelim_binaries()
+common.create_baselayout()
 
 # Bring some variables over from the common namespace to the copy namespace
 copy.kernel = common.kernel

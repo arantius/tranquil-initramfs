@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,6 @@ from ..hooks import lvm
 from ..hooks import raid
 from ..hooks import luks
 from ..hooks import addon
-from ..hooks import filter
 
 kernel = ""
 modules = ""
@@ -46,47 +45,35 @@ def print_menu():
                 print_options()
                 choice = eqst("Current choice [1]: ")
 
-        # All initramfs will have the base
-        base.use_base = "1"
-
-        # Enable the addons if the addon_mods is not empty
-        if addon.addon_mods:
-            addon.use_addon = "1"
+        # Enable the addons if the addon.mods is not empty
+        if addon.modules: addon.use = "1"
 
         if choice == "1" or choice == "":
-                zfs.use_zfs = "1"
+                zfs.use = "1"; addon.use = "1"
 
                 # Add the 'zfs' kernel module to the addon modules list
-                addon.use_addon = "1"
-                addon.addon_mods.append("zfs")
+                addon.modules.append("zfs")
         elif choice == "2":
-                lvm.use_lvm = "1"
+                lvm.use = "1"
         elif choice == "3":
-                raid.use_raid = "1"
+                raid.use = "1"
         elif choice == "4":
-                raid.use_raid = "1"
-                lvm.use_lvm = "1"
+                raid.use = "1"; lvm.use = "1"
         elif choice == "5":
                 pass
         elif choice == '6':
-                luks.use_luks = "1"
-                zfs.use_zfs = "1"
+                luks.use = "1"; zfs.use = "1"; addon.use = "1"
 
                 # Add the 'zfs' kernel module to the addon modules list
-                addon.use_addon = "1"
-                addon.addon_mods.append("zfs")
+                addon.modules.append("zfs")
         elif choice == "7":
-                luks.use_luks = "1"
-                lvm.use_lvm = "1"
+                luks.use = "1"; lvm.use = "1"
         elif choice == "8":
-                luks.use_luks = "1"
-                raid.use_raid = "1"
+                luks.use = "1"; raid.use = "1"
         elif choice == "9":
-                luks.use_luks = "1"
-                raid.use_raid = "1"
-                lvm.use_lvm = "1"
+                luks.use = "1"; raid.use = "1"; lvm.use = "1"
         elif choice == "10":
-                luks.use_luks = "1"
+                luks.use = "1"
         elif choice == '11':
                 ewarn("Exiting.")
                 quit()
@@ -110,12 +97,15 @@ def print_options():
         eopt("11. Exit Program")
         eline()
 
+# Creates the baselayout
+def create_baselayout():
+    for b in baselayout:
+        call(["mkdir", "-p", b])
+
 # Ask the user if they want to use their current kernel, or another one
 def do_kernel():
-        global kernel
-        global modules
-        global lmodules
-        global initrd
+        global kernel; global initrd
+        global modules; global lmodules
 
         if not kernel:
                 currentKernel = check_output(["uname", "-r"], universal_newlines=True).strip()  
@@ -142,8 +132,7 @@ def do_kernel():
 
 # Check to make sure the kernel modules directory exists
 def check_mods_dir():
-        x = "Checking to see if " + modules + " exists..."
-        einfo(x)
+        einfo("Checking to see if " + modules + " exists...")
 
         if not os.path.exists(modules):
                 die("Modules directory doesn't exist.")
@@ -174,22 +163,10 @@ def clean():
 def check_prelim_binaries():
         einfo("Checking preliminary binaries...")
 
-        # If the required binary doesn't exist, than install it
+        # If the required binaries don't exist, then exit
         for x in prel_bin:
                 if not os.path.isfile(x):
-                    emerges(x)
-
-# Emerges a package into the host system
-def emerges(package):
-    # Binary Support <Disabled>
-    #result = call("export PKGDIR=\"" + home + "/packages\" && \
-    #               export FEATURES=\"buildpkg\" && emerge --noreplace -1vqk " +
-    #               package, shell=True)
-
-    result = call("emerge --noreplace -1vq " + package, shell=True)
-
-    if result == 130:
-        die("Don't want to emerge?! Then no initramfs for you!")
+                    err_bin_dexi(x)
 
 # Compresses the kernel modules and generates modprobe table
 def do_modules():
@@ -201,6 +178,8 @@ def do_modules():
         for x in cap:
                 cmd = "gzip -9 " + x.strip()
                 call(cmd, shell=True)
+
+        cap.close()
         
         einfo("Generating modprobe information...")
 
@@ -220,19 +199,25 @@ def create_links():
         # Needs to be from this directory so that the links are relative
         os.chdir(lbin)
 
-        # Create 'sh' symlink to 'bash'
-        os.symlink("bash", "sh")
-
         # Create busybox links
         cmd = "chroot " + temp + " /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
         call(cmd, shell=True)
 
-        # Go to the directory where kmod is in (different between Gentoo and Funtoo)
-        # Funtoo = /sbin, Gentoo = /bin
-        if os.path.isfile(lsbin + "/kmod"):
-                os.chdir(lsbin)
-        elif os.path.isfile(lbin + "/kmod"):
-                os.chdir(lbin)
+        # Create 'sh' symlink to 'bash'
+        os.remove(temp + "/bin/sh")
+        os.symlink("bash", "sh")
+        
+        # Switch to the kmod directory, delete the corresponding busybox
+        # symlink and create the symlinks pointing to kmod
+        os.chdir(lsbin)
+
+        for target in base.kmod_links:
+            os.remove(temp + "/bin/" + target)
+            os.symlink("kmod", target)
+
+        # If 'lvm.static' exists, then make a 'lvm' symlink to it
+        if os.path.isfile(lsbin + "/lvm.static"):
+            os.symlink("lvm.static", "lvm")
 
 # This functions does any last minute steps like copying zfs.conf,
 # giving init execute permissions, setting up symlinks, etc
@@ -244,9 +229,6 @@ def last_steps():
 
         if not os.path.isfile(temp + "/etc/mtab"):
                 die("Error creating the mtab file. Exiting.")
-
-        # Create a few final directories
-        call("mkdir " + temp + "/{proc,sys} " + temp + "/mnt/{root,key}", shell=True)
 
         # Set library symlinks
         if os.path.isdir(temp + "/usr/lib") and os.path.isdir(temp + "/lib64"):
@@ -284,7 +266,7 @@ def last_steps():
         call(["sed", "-i", "-e", "19s/0/" + version + "/", temp + "/init"])
 
         # Any last substitutions or additions/modifications should be done here
-        if zfs.use_zfs == "1":
+        if zfs.use == "1":
                 # Enable ZFS in the init if ZFS is being used
                 call(["sed", "-i", "-e", "13s/0/1/", temp + "/init"])
 
@@ -293,23 +275,23 @@ def last_steps():
                         shutil.copy("/etc/modprobe.d/zfs.conf", temp + "/etc/modprobe.d")
 
         # Enable RAID in the init if RAID is being used
-        if raid.use_raid == "1":
+        if raid.use == "1":
                 call(["sed", "-i", "-e", "14s/0/1/", temp + "/init"])
 
         # Enable LVM in the init if LVM is being used
-        if lvm.use_lvm == "1":
+        if lvm.use == "1":
                 call(["sed", "-i", "-e", "15s/0/1/", temp + "/init"])
 
         # Enable LUKS in the init if LUKS is being used
-        if luks.use_luks == "1":
+        if luks.use == "1":
                 call(["sed", "-i", "-e", "16s/0/1/", temp + "/init"])
        
         # Enable ADDON in the init and add our modules to the initramfs
         # if addon is being used
-        if addon.use_addon == "1":
+        if addon.use == "1":
                 call(["sed", "-i", "-e", "17s/0/1/", temp + "/init"])
                 call(["sed", "-i", "-e", "20s/\"\"/\"" + 
-                " ".join(addon.addon_mods) + "\"/", temp + "/libraries/common.sh"])
+                " ".join(addon.modules) + "\"/", temp + "/libraries/common.sh"])
 
 # Create the solution
 def create():
@@ -366,9 +348,7 @@ def einfo(x):
 
 # Used for input (questions)
 def eqst(x):
-        #choice = input(call(["echo", "-en", "\e[1;37m>>>\e[;0m " + x ]))
-        choice = input(x)
-        return choice
+        choice = input(x); return choice
 
 # Used for warnings
 def ewarn(x):

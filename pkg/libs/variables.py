@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@ from os import getcwd
 # Application Info
 name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
-email = "jvasquez1011@gmail.com"
+email = "fearedbliss@funtoo.org"
 contact = author + " <" + email + ">"
 version = "4.0.0"
 license = "MPL 2.0"
@@ -55,5 +55,21 @@ arch = check_output(["uname", "-m"], universal_newlines=True).strip()
 # but that are not needed to be placed inside the initrd
 prel_bin = [
     "/bin/cpio", 
-    "app-portage/gentoolkit"
+]
+
+# Layout of the initramfs
+baselayout = [
+    temp + "/etc",
+    temp + "/dev",
+    temp + "/proc",
+    temp + "/sys",
+    temp + "/mnt",
+    temp + "/mnt/root",
+    temp + "/mnt/key",
+    temp + "/lib",
+    temp + "/lib/modules",
+    temp + "/lib64",
+    temp + "/bin",
+    temp + "/sbin",
+    temp + "/usr"
 ]

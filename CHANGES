@@ -1,14 +1,9 @@
 4.0.0
 ---------
 - Added the ability to pass mount "options" for '/' via initramfs.
-- Major redesign of application. New functions written for copying,
-  filtering and more.
+- Major redesign of application. New functions written for copying, etc
 - Fixed a bug where modules in the "addon_mods" list weren't being loaded
-- The application now has full support for reading man pages
-  > If you want to enable this support, just uncomment the additional packages in
-  > the pkg/hooks/base.py file. This will make the initramfs at least 35 MB bigger
 - Fixed a bug where job control wasn't working properly
-- The application will automatically install applications that aren't on the system
 
 3.0.2
 ---------
