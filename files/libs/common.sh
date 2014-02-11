@@ -1,4 +1,4 @@
-# Copyright (C) 2012, 2013 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -85,7 +85,7 @@ parse_cmdline()
 	done
 
 	if [[ -z ${root} ]]; then
-		die "You must pass the root= variable. Example: root=rpool/ROOT/funtoo, /dev/mapper/lv-root, etc ..."
+		die "You must pass the root= variable. Example: root=rpool/ROOT/funtoo, /dev/sda3"
 	fi
 }
 
@@ -284,7 +284,7 @@ single_user()
 	mount --rbind /dev ${NEW_ROOT}/dev
 	mount --rbind /sys ${NEW_ROOT}/sys
 
-	setsid cttyhack /bin/bash -l -c "chroot ${NEW_ROOT} /bin/bash -c \
+	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash -c \
 	'cat /proc/mounts > /etc/mtab && hostname ${RHOSTN}' && \
 	chroot ${NEW_ROOT} /bin/bash -l"
 

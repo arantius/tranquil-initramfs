@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+import sys
+import subprocess
+
+import pkg.libs.common as common
+import pkg.libs.copy as copy
+
+def main(): 	
+	arguments = sys.argv[1:]
+
+	# Let the user directly create an initramfs if no modules are needed
+	if len(arguments) == 1:
+		if arguments[0] != "1" and arguments[0] != "6":
+			if not common.addon.modules:
+				common.choice = arguments[0]
+		else:
+			common.die("You must pass a kernel parameter")
+
+	# If there are two parameters then we will use them, else just ignore them
+	elif len(arguments) == 2:
+		common.choice = arguments[0]
+		common.kernel = arguments[1]
+
+	user = subprocess.check_output(["whoami"], universal_newlines=True).strip()
+
+	if user != "root":
+		common.die("This program must be ran as root")
+
+	###############################################
+	# The main entry point starts here
+	###############################################
+
+	subprocess.call(["clear"])
+
+	common.print_header()
+	common.print_menu()
+	
+	if common.addon.modules:
+		common.do_kernel()
+
+	common.get_arch()
+	common.print_start()
+	common.clean()
+	common.check_prelim_binaries()
+	common.create_baselayout()
+
+	copy.check_binaries()
+	copy.install()
+	copy.copy_modules()
+	common.create_links()
+	copy.copy_deps()
+	common.last_steps()
+	common.create()
+	common.clean_exit()
+
+if __name__ == '__main__':
+	main()

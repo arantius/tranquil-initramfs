@@ -6,8 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from subprocess import check_output
-from os import getcwd
+import os
+import subprocess
 
 # Application Info
 name = "Bliss Initramfs Creator"
@@ -18,7 +18,7 @@ version = "4.0.0"
 license = "MPL 2.0"
 
 # Locations
-home = getcwd()
+home = os.getcwd()
 temp = home + "/temp"
 
 # System Directories
@@ -49,27 +49,28 @@ letc = temp + etc
 lushare = temp + ushare
 
 # CPU Architecture
-arch = check_output(["uname", "-m"], universal_newlines=True).strip()
+arch = subprocess.check_output(["uname", "-m"], 
+			universal_newlines=True).strip()
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
 prel_bin = [
-    "/bin/cpio", 
+	"/bin/cpio", 
 ]
 
 # Layout of the initramfs
 baselayout = [
-    temp + "/etc",
-    temp + "/dev",
-    temp + "/proc",
-    temp + "/sys",
-    temp + "/mnt",
-    temp + "/mnt/root",
-    temp + "/mnt/key",
-    temp + "/lib",
-    temp + "/lib/modules",
-    temp + "/lib64",
-    temp + "/bin",
-    temp + "/sbin",
-    temp + "/usr"
+	temp + "/etc",
+	temp + "/dev",
+	temp + "/proc",
+	temp + "/sys",
+	temp + "/mnt",
+	temp + "/mnt/root",
+	temp + "/mnt/key",
+	temp + "/lib",
+	temp + "/lib/modules",
+	temp + "/lib64",
+	temp + "/bin",
+	temp + "/sbin",
+	temp + "/usr"
 ]

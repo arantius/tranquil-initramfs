@@ -2,11 +2,11 @@
 Creating the initramfs
 =======================================
 
-Run the script by running: ./createInit
+Run the script by running: ./mkinitrd
 * It must be run as root since root is the only user that can run `depmod`.
 
 * If the script doesn't run and gives you a permission denied message, 
-  give it execution permission: `chmod +x createInit` and then try again.
+  give it execution permission: `chmod +x mkinitrd` and then try again.
 
 Select the option that you want, and tell it which kernel you want to use.
 
