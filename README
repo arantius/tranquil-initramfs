@@ -11,7 +11,7 @@ Please have the following installed:
 
 - Linux Kernel
   ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared 
-  in the 'addon_mods' variable in pkg/hooks/addon.py.
+  in the 'mods' variable in pkg/hooks/addon.py.
   
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
@@ -29,13 +29,17 @@ Please have the following installed:
   <*> XTS support
   -*- AES cipher algorithms
 
-  * All other drivers required to see your PATA/SATA drives (or USB devices) need to be compiled in
-    or you can compile them as a module and declare them in the 'addon_mods' variable.
+  * All other drivers required to see your PATA/SATA drives (or USB devices)
+    need to be compiled in or you can compile them as a module and declare
+    them in the 'mods' variable in pkg/hooks/addon.py.
 
 - dev-lang/python 3.3 or greater
 - app-arch/cpio
 - app-shells/bash
 - sys-apps/kmod
+- sys-apps/grep
+- sys-apps/util-linux
+
 - sys-fs/zfs (ZFS support)
 - sys-fs/mdadm (RAID support)
 - sys-fs/lvm2 (LVM support)

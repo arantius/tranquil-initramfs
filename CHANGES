@@ -6,6 +6,9 @@
 - Fixed a bug where modules in the "addon_mods" list weren't being loaded
 - Fixed a bug where job control wasn't working properly
 - Application renamed from 'createInit' to 'mkinitrd'
+- Limit 80 columns on all files, switched to ts=4, bs=4 sts=4, noet for styling
+- Updated "USAGE" file a bit
+- Gentoo support has been removed. Only Funtoo will be supported.
 
 3.0.2
 ---------

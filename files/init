@@ -45,7 +45,7 @@ check_triggers
 mount_root
 
 if [[ ${su} == "1" ]]; then
-        single_user
+	single_user
 fi
 
 # Let's clean up and go to the OS

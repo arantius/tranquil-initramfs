@@ -276,11 +276,12 @@ enc_key - What is the path to the keyfile?
 	So if the initramfs mounts /dev/sdb1 at /mnt/key, it will look for the key at /mnt/key/keys/root.gpg.
 
 LUKS passphrase/key:
-The easiest way to pass the passphrase is just to wait till the initramfs asks you for it.
-When this happens, it will use the _same_ passphrase  (or same key) for all your pools. This is to make it
-convenient for you. It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's say),
-and then you had to put the password for each one. If you still want to do this, then just leave
-the passphrase blank when the initramfs asks you for it.
+The easiest way to pass the passphrase is just to wait till the initramfs
+asks you for it. When this happens, it will use the _same_ passphrase
+(or same key) for all your pools. This is to make it convenient for you.
+It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's say),
+and then you had to put the password for each one. If you still want to do this,
+then just leave the passphrase blank when the initramfs asks you for it.
 
 =======
 OTHER
@@ -301,15 +302,18 @@ su - Single User Mode. This is a really crappy implementation of a single user,
 Modules Support:
 =======================================
 
-If you have compiled some critical stuff as modules rather than them being built into the kernel,
-you can now write which modules you need in the hooks/addon.sh "ADDON_MODS" variable. The initramfs
-will gather the module and it's dependencies and put them in the initramfs for you. Then the initramfs will
+If you have compiled some critical stuff as modules rather than them being built
+into the kernel, you can now write which modules you need in the
+pkg/hooks/addon.sh "mods" variable. The initramfs will gather the module and
+it's dependencies and put them in the initramfs for you. Then the initramfs will 
 automatically load all those modules for you at boot.
 
 Example:
-	ADDON_MODS="i915 zfs ahci ext2 ext3 ext4 dm-crypt ohci-hcd ehci-hcd xhci-hcd usb-storage"
+	mods = [ "i915", "zfs", "ahci", "ext2", "ext3", "ext4", "dm-crypt",
+	      "ohci-hcd", "ehci-hcd", "xhci-hcd", "usb-storage" ]
 
-	That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4 filesystem hdd drivers,
-	dm-crypt for luks support driver, ohci/ehci/xhci usb 1.1,2.0,3.0 drivers and the usb-storage driver.
-	All the dependencies are automatically gathered and compressed by the initramfs, and automatically
-	loaded at boot in that order.
+That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4 
+filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci 
+usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies 
+are automatically gathered and compressed by the initramfs, and automatically
+loaded at boot in that order.

@@ -27,11 +27,20 @@ choice = ""
 
 # Prints the header of the application
 def print_header():
-	subprocess.call(["echo", "-e", "\e[1;33m-----------------------------------\e[0;m"])
-	subprocess.call(["echo", "-e", "\e[1;33m| " + variables.name + " - v" + variables.version + "\e[0;m"])
-	subprocess.call(["echo", "-e", "\e[1;33m| Author: " + variables.contact + "\e[0;m"])
-	subprocess.call(["echo", "-e", "\e[1;33m| Distributed under the " + variables.license + "\e[0;m"])
-	subprocess.call(["echo", "-e", "\e[1;33m-----------------------------------\e[0;m"])
+	subprocess.call(["echo", "-e", 
+		"\e[1;33m-----------------------------------\e[0;m"])
+	
+	subprocess.call(["echo", "-e", "\e[1;33m| " + variables.name + 
+		" - v" + variables.version + "\e[0;m"])
+
+	subprocess.call(["echo", "-e", "\e[1;33m| Author: " + variables.contact +
+		"\e[0;m"])
+	
+	subprocess.call(["echo", "-e", "\e[1;33m| Distributed under the " + 
+		variables.license + "\e[0;m"])
+	
+	subprocess.call(["echo", "-e", 
+		"\e[1;33m-----------------------------------\e[0;m"])
 
 # Prints the menu and accepts user choice
 def print_menu():
@@ -113,14 +122,18 @@ def do_kernel():
 	global initrd
 
 	if not kernel:
-		currentKernel = subprocess.check_output(["uname", "-r"], universal_newlines=True).strip()
+		currentKernel = subprocess.check_output(["uname", "-r"],
+			universal_newlines=True).strip()
 		eline()
-		x = "Do you want to use the current kernel: " + currentKernel + " [Y/n]: "
+
+		x = "Do you want to use the current kernel: " + currentKernel + \
+			" [Y/n]: "
+
 		choice = eqst(x)
 		eline()
 
 		if choice == 'y' or choice == 'Y' or choice == '':
-				kernel = currentKernel
+			kernel = currentKernel
 		elif choice == 'n' or choice == 'N':
 			kernel = eqst("Please enter the kernel name: ")
 			eline()
@@ -158,7 +171,8 @@ def print_start():
 	einfo("[ Starting ]")
 	eline()
 
-# Check to see if the temporary directory exists, if it does, delete it for a fresh start
+# Check to see if the temporary directory exists, if it does,
+# delete it for a fresh start
 def clean():
 	# Go back to the original working directory so that we are
 	# completely sure that there will be no inteference cleaning up.
@@ -168,7 +182,8 @@ def clean():
 		shutil.rmtree(variables.temp)
 
 		if os.path.exists(variables.temp):
-			ewarn("Failed to delete the " + variables.temp + " directory. Exiting.")
+			ewarn("Failed to delete the " + variables.temp + \
+				  " directory. Exiting.")
 			quit()
 
 # Checks to see if the preliminary binaries exist
@@ -213,7 +228,9 @@ def create_links():
 	os.chdir(variables.lbin)
 
 	# Create busybox links
-	cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
+	cmd = "chroot " + variables.temp + \
+	" /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
+	
 	subprocess.call(cmd, shell=True)
 
 	# Create 'sh' symlink to 'bash'
@@ -244,19 +261,31 @@ def last_steps():
 		die("Error creating the mtab file. Exiting.")
 
 	# Set library symlinks
-	if os.path.isdir(variables.temp + "/usr/lib") and os.path.isdir(variables.temp + "/lib64"):
+	if os.path.isdir(variables.temp + "/usr/lib") and \
+	   os.path.isdir(variables.temp + "/lib64"):
 		pcmd = "find /usr/lib -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
-		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + pcmd + "\""
+
+		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + \
+		pcmd + "\""
+		
 		subprocess.call(cmd, shell=True)
 
-	if os.path.isdir(variables.temp + "/usr/lib32") and os.path.isdir(variables.temp + "/lib32"):
+	if os.path.isdir(variables.temp + "/usr/lib32") and \
+	   os.path.isdir(variables.temp + "/lib32"):
 		pcmd = "find /usr/lib32 -iname \"*.so.*\" -exec ln -s \"{}\" /lib32 \;"
-		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + pcmd + "\""
+		
+		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + \
+		pcmd + "\""
+		
 		subprocess.call(cmd, shell=True)
 
-	if os.path.isdir(variables.temp + "/usr/lib64") and os.path.isdir(variables.temp + "/lib64"):
+	if os.path.isdir(variables.temp + "/usr/lib64") and \
+	   os.path.isdir(variables.temp + "/lib64"):
 		pcmd = "find /usr/lib64 -iname \"*.so.*\" -exec ln -s \"{}\" /lib64 \;"
-		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + pcmd + "\""
+		
+		cmd = "chroot " + variables.temp + " /bin/busybox sh -c \"" + \
+		pcmd + "\""
+		
 		subprocess.call(cmd, shell=True)
 
 	# Copy init functions
@@ -273,40 +302,53 @@ def last_steps():
 
 	# Fix 'poweroff, reboot' commands
 	subprocess.call("sed -i \"71a alias reboot='reboot -f' \" " +
-	variables.temp + "/etc/bash/bashrc", shell=True)
+		variables.temp + "/etc/bash/bashrc", shell=True)
 
 	subprocess.call("sed -i \"71a alias poweroff='poweroff -f' \" " +
-	variables.temp + "/etc/bash/bashrc", shell=True)
+		variables.temp + "/etc/bash/bashrc", shell=True)
 
 	# Sets initramfs script version number
 	subprocess.call(["sed", "-i", "-e", "19s/0/" + variables.version +
-					"/", variables.temp + "/init"])
+		"/", variables.temp + "/init"])
+
+	# Fix EDITOR/PAGER
+	subprocess.call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:",
+		variables.temp + "/etc/profile"])
+
+	subprocess.call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:",
+		variables.temp + "/etc/profile"])
 
 	# Any last substitutions or additions/modifications should be done here
 	if zfs.use == "1":
 		# Enable ZFS in the init if ZFS is being used
-		subprocess.call(["sed", "-i", "-e", "13s/0/1/", variables.temp + "/init"])
+		subprocess.call(["sed", "-i", "-e", "13s/0/1/",
+			variables.temp + "/init"])
 
 		# Copy the /etc/modprobe.d/zfs.conf file if it exists
 		if os.path.isfile("/etc/modprobe.d/zfs.conf"):
-			shutil.copy("/etc/modprobe.d/zfs.conf", variables.temp + "/etc/modprobe.d")
+			shutil.copy("/etc/modprobe.d/zfs.conf",
+				variables.temp + "/etc/modprobe.d")
 
 	# Enable RAID in the init if RAID is being used
 	if raid.use == "1":
-		subprocess.call(["sed", "-i", "-e", "14s/0/1/", variables.temp + "/init"])
+		subprocess.call(["sed", "-i", "-e", "14s/0/1/",
+			variables.temp + "/init"])
 
 	# Enable LVM in the init if LVM is being used
 	if lvm.use == "1":
-		subprocess.call(["sed", "-i", "-e", "15s/0/1/", variables.temp + "/init"])
+		subprocess.call(["sed", "-i", "-e", "15s/0/1/",
+			variables.temp + "/init"])
 
 	# Enable LUKS in the init if LUKS is being used
 	if luks.use == "1":
-		subprocess.call(["sed", "-i", "-e", "16s/0/1/", variables.temp + "/init"])
+		subprocess.call(["sed", "-i", "-e", "16s/0/1/",
+			variables.temp + "/init"])
    
 	# Enable ADDON in the init and add our modules to the initramfs
 	# if addon is being used
 	if addon.use == "1":
-		subprocess.call(["sed", "-i", "-e", "17s/0/1/", variables.temp + "/init"])
+		subprocess.call(["sed", "-i", "-e", "17s/0/1/", 
+			variables.temp + "/init"])
 		subprocess.call(["sed", "-i", "-e", "20s/\"\"/\"" + 
 		" ".join(addon.modules) + "\"/", variables.temp + "/libs/common.sh"])
 
@@ -320,16 +362,14 @@ def create():
 	os.chdir(variables.temp)
 
 	subprocess.call(["find . -print0 | cpio -o --null --format=newc | \
-					gzip -9 > " +  variables.home + "/" + initrd], shell=True)
+		gzip -9 > " +  variables.home + "/" + initrd], shell=True)
 
 	if not os.path.isfile(variables.home + "/" + initrd):
 		die("Error creating the initramfs. Exiting.")
 
 # Clean up and exit after a successful build
 def clean_exit():
-	eline()
-	einfo("[ Complete ]")
-	eline()
+	eline(); einfo("[ Complete ]"); eline()
 	clean()
 
 	einfo("Please copy the " + initrd + " to your /boot directory")
@@ -337,7 +377,8 @@ def clean_exit():
 
 # Intelligently copies the file into the initramfs
 def ecopy(f):
-	# NOTE: shutil.copy will copy the program a symlink points to but not the link..
+	# NOTE: shutil.copy will copy the program a symlink points
+	# to but not the link..
 
 	# Check to see if a file with this name exists before copying,
 	# if it exists, delete it, then copy. If a directory, create the directory
@@ -352,8 +393,8 @@ def ecopy(f):
 		if os.path.isdir(f):
 			os.makedirs(p)
 		elif os.path.isfile(f):
-			# Make sure that the directory that this file wants to be in exists,
-			# if not then create it.
+			# Make sure that the directory that this file wants to be in
+			# exists, if not then create it.
 			if os.path.isdir(os.path.dirname(p)):
 				shutil.copy(f, p)
 			else:
@@ -384,9 +425,7 @@ def eopt(x):
 
 # Used for errors
 def die(x):
-	eline()
-	subprocess.call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x])
-	eline()
+	eline(); subprocess.call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x]); eline()
 	clean()
 	quit(1)
 
@@ -395,11 +434,8 @@ def eline():
 	print("")
 
 # Error Function: Binary doesn't exist
-def err_bin_dexi(x, *y):
-	if y:
-		die("Binary: " + x + " doesn't exist. Please emerge " + y[0] + ". Exiting.")
-	else:
-		die("Binary: " + x + " doesn't exist. Exiting.")
+def err_bin_dexi(x):
+	die("Binary: " + x + " doesn't exist. Exiting.")
 
 # Error Function: Module doesn't exist
 def err_mod_dexi(x):

@@ -85,8 +85,9 @@ def emerge(file):
 
 	# If the application is a binary, add it to our binary set
 	try:
-		lcmd = subprocess.check_output("file " + file.strip() + " | grep \"linked\"",
-		universal_newlines=True, shell=True).strip()
+		lcmd = subprocess.check_output("file " + file.strip() +
+		" | grep \"linked\"", universal_newlines=True, shell=True).strip()
+
 		binset.add(file)
 	except subprocess.CalledProcessError:
 		pass
@@ -106,8 +107,12 @@ def copy_modules():
 		# Checks to see if all the modules in the list exist
 		for x in common.addon.modules:
 			try:
-				cmd = "find " + common.modules + " -iname \"" + x + ".ko\" | grep " + x + ".ko"
-				result = subprocess.check_output(cmd, universal_newlines=True, shell=True).strip()
+				cmd = "find " + common.modules + " -iname \"" + x + \
+				".ko\" | grep " + x + ".ko"
+				
+				result = subprocess.check_output(cmd, universal_newlines=True,
+					 shell=True).strip()
+
 				modset.add(result)
 			except subprocess.CalledProcessError:
 				err_mod_dexi(x)
@@ -128,7 +133,9 @@ def copy_modules():
 		if match:
 			sx = match.group().split(".")[0]
 			
-			cmd = "modprobe -S " + common.kernel + " --show-depends " + sx + " | awk -F ' ' '{print $2}'"
+			cmd = "modprobe -S " + common.kernel + " --show-depends " + sx + \
+				  " | awk -F ' ' '{print $2}'"
+			
 			cap = os.popen(cmd)
 
 			for i in cap.readlines():
@@ -153,8 +160,8 @@ def copy_deps():
 	bindeps = set()
 
 	# Get the interpreter name that is on this system
-	r = subprocess.check_output("ls " + common.variables.lib64 + "/ld-linux-x86-64.so*", 
-					 universal_newlines=True, shell=True).strip()
+	r = subprocess.check_output("ls " + common.variables.lib64 + 
+		"/ld-linux-x86-64.so*", universal_newlines=True, shell=True).strip()
 
 	# Add intepreter to deps since everything will depend on it
 	bindeps.add(r)
