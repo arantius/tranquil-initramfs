@@ -239,7 +239,10 @@ def create_links():
 	
 	# Switch to the kmod directory, delete the corresponding busybox
 	# symlink and create the symlinks pointing to kmod
-	os.chdir(variables.lsbin)
+	if os.path.isfile(variables.lsbin + "/kmod"):
+		os.chdir(variables.lsbin)
+	elif os.path.isfile(variables.lbin + "/kmod"):
+		os.chdir(variables.lbin)
 
 	for target in base.kmod_links:
 		os.remove(variables.temp + "/bin/" + target)
@@ -400,6 +403,7 @@ def ecopy(f):
 			else:
 				os.makedirs(os.path.dirname(p))
 				shutil.copy(f, p)
+
 
 ####### Message Functions #######
 

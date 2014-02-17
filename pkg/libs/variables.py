@@ -14,7 +14,7 @@ name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
 email = "fearedbliss@funtoo.org"
 contact = author + " <" + email + ">"
-version = "4.0.0"
+version = "4.0.1"
 license = "MPL 2.0"
 
 # Locations
@@ -61,6 +61,7 @@ prel_bin = [
 # Layout of the initramfs
 baselayout = [
 	temp + "/etc",
+	temp + "/etc/zfs",
 	temp + "/dev",
 	temp + "/proc",
 	temp + "/sys",

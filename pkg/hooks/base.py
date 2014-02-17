@@ -6,12 +6,38 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# Temporary fix for detecting location of kmod until I redesign the app.
+# The hooks/* files should stay away from performing logic
+import subprocess
+
+# Detect where kmod is (Gentoo = /bin, Funtoo = /sbin)
+def find_kmod():
+	p1 = subprocess.Popen(
+	["whereis", "kmod"],
+	stdout=subprocess.PIPE,
+	universal_newlines=True)
+
+	p2 = subprocess.Popen(
+	["cut", "-d", " ", "-f", "2"],
+	stdin=p1.stdout, stdout=subprocess.PIPE,
+	universal_newlines=True)
+
+	out = p2.stdout.readlines()
+
+	if out:
+		return out[0].strip()
+	else:
+		print("Unable to find kmod")
+		quit(1)
+
+kmod_path = find_kmod()
+
 files = [
 	# sys-apps/busybox
 	"/bin/busybox",
 
 	# sys-apps/kmod
-	"/sbin/kmod",
+	kmod_path,
 
 	# app-shells/bash
 	"/bin/bash",

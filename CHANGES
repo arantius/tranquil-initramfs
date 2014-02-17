@@ -1,3 +1,12 @@
+4.0.1
+---------
+- Fixed a minor bug where zpool.cache wasn't being copied into the rootfs
+  because the /etc/zfs directory didn't exist in the initramfs during import.
+- Implemented a temporary fix function to detect the location of kmod.
+  Once the program's structure is better designed this function can be placed
+  in a more appropriate location.
+- Gentoo will be supported again.
+
 4.0.0
 ---------
 - Added the ability to pass mount "options" for '/' via initramfs.

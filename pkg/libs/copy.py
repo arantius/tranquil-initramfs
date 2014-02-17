@@ -25,35 +25,35 @@ def check_binaries():
 	# Check required base files
 	for file in common.base.files:
 		if not os.path.exists(file):
-			err_bin_dexi(file)
+			common.err_bin_dexi(file)
 
 	# Check required zfs files
 	if common.zfs.use == "1":
 		common.eflag("Using ZFS")
 		for file in common.zfs.files:
 			if not os.path.exists(file):
-				err_bin_dexi(file)
+				common.err_bin_dexi(file)
 
 	# Check required lvm files
 	if common.lvm.use == "1":
 		common.eflag("Using LVM")
 		for file in common.lvm.files:
 			if not os.path.exists(file):
-				err_bin_dexi(file)
+				common.err_bin_dexi(file)
 
 	# Check required raid files
 	if common.raid.use == "1":
 		common.eflag("Using RAID")
 		for file in common.raid.files:
 			if not os.path.exists(file):
-				err_bin_dexi(file)
+				common.err_bin_dexi(file)
 
 	# Check required luks files
 	if common.luks.use == "1":
 		common.eflag("Using LUKS")
 		for file in common.luks.files:
 			if not os.path.exists(file):
-				err_bin_dexi(file)
+				common.err_bin_dexi(file)
 
 # Installs the packages
 def install():
