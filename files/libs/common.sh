@@ -45,10 +45,10 @@ umnt_kernel_devs()
 	umount /sys
 }
 
-# Function for parsing command line options with "=" in them
+# Function for parsing command line options
 get_opt()
 {
-	echo "${@}" | cut -d "=" -f 2
+	echo "${1#*=}"
 }
 
 # Process command line options

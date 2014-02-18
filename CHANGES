@@ -1,3 +1,8 @@
+4.0.2
+---------
+- Fixed a bug where parameters passed to the kernel including a "=" weren't
+  being parsed correctly (ex: options="subvol=root")
+
 4.0.1
 ---------
 - Fixed a minor bug where zpool.cache wasn't being copied into the rootfs
