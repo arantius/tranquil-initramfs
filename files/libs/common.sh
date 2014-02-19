@@ -186,35 +186,23 @@ decrypt_drives()
 		local lcount=1
 		local lmax=3
 
-		# Used to know if drive mounted successfully or not
-		# basically a boolean.. good/bad
-		local mstatus="bad"
-
 		for i in $(seq 0 $((${#drives[@]} - 1))); do
 			if [[ ${enc_type} == "pass" ]]; then
-				while [[ ${mstatus} == "bad" ]] &&
-				      [[ ${lcount} -lt ${lmax} ]]; do
-
+				while [[ ${lcount} -lt ${lmax} ]]; do
 					if [[ ! -z ${code} ]]; then
 						echo "${code}" | \
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || lcount=$((lcount + 1)) &&
+						break || lcount=$((lcount + 1)) &&
 						get_decrypt_key "pass"
 					else
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || lcount=$((lcount + 1))
-					fi
-
-					# No do-while natively in bash so I'll do this...
-					if [[ ${mstatus} == "good" ]]; then
-						break;
+						break || lcount=$((lcount + 1))
 					fi
 				done
 
 				# If the user kept failing and reached their max tries,
 				# then throw them into a rescue shell
-				if [[ ${mstatus} == "bad" ]] && 
-				   [[ ${lcount} -eq ${lmax} ]]; then
+				if [[ ${lcount} -eq ${lmax} ]]; then
 					die "luksOpen failed to open: ${drives[${i}]}"
 				fi
 
@@ -228,27 +216,17 @@ decrypt_drives()
 				fi
 			elif [[ ${enc_type} == "key_gpg" ]]; then
 				if [[ -f ${keyfile} ]]; then
-					while [[ ${mstatus} == "bad" ]] &&
-					      [[ ${lcount} -lt ${lmax} ]]; do
-
+					while [[ ${lcount} -lt ${lmax} ]]; do
 						echo "${code}" | \
 						gpg --batch --passphrase-fd 0 -q -d ${keyfile} \
 						2> /dev/null | cryptsetup --key-file=- \
-						luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || lcount=$((lcount + 1)) &&
-						get_decrypt_key "key_gpg"
-
+						luksOpen ${drives[${i}]} vault_${i} && break || \
+						lcount=$((lcount + 1)) && get_decrypt_key "key_gpg"
 					done
-
-					# No do-while natively in bash so I'll do this...
-					if [[ ${mstatus} == "good" ]]; then
-						break;
-					fi
 
 					# If the user kept failing and reached their max tries,
 					# then throw them into a rescue shell
-					if [[ ${mstatus} == "bad" ]] && 
-					   [[ ${lcount} -eq ${lmax} ]]; then
+					if [[ ${lcount} -eq ${lmax} ]]; then
 						die "luksOpen failed to open: ${drives[${i}]}"
 					fi
 				else
