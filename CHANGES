@@ -1,3 +1,8 @@
+4.0.3
+---------
+- The application will now ask you a max of three times to enter your
+  correct decryption password before throwing you into rescue shell.
+
 4.0.2
 ---------
 - Fixed a bug where parameters passed to the kernel including a "=" weren't

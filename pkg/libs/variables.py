@@ -14,7 +14,7 @@ name = "Bliss Initramfs Creator"
 author = "Jonathan Vasquez"
 email = "fearedbliss@funtoo.org"
 contact = author + " <" + email + ">"
-version = "4.0.2"
+version = "4.0.3"
 license = "MPL 2.0"
 
 # Locations
