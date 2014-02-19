@@ -204,6 +204,11 @@ decrypt_drives()
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
 						mstatus="good" || lcount=$((lcount + 1))
 					fi
+
+					# No do-while natively in bash so I'll do this...
+					if [[ ${mstatus} == "good" ]]; then
+						break;
+					fi
 				done
 
 				# If the user kept failing and reached their max tries,
@@ -234,6 +239,11 @@ decrypt_drives()
 						get_decrypt_key "key_gpg"
 
 					done
+
+					# No do-while natively in bash so I'll do this...
+					if [[ ${mstatus} == "good" ]]; then
+						break;
+					fi
 
 					# If the user kept failing and reached their max tries,
 					# then throw them into a rescue shell
