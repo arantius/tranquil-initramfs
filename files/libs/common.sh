@@ -102,11 +102,11 @@ get_decrypt_key()
 	unset code
 
 	if [[ $1 == "pass" ]]; then
-		eqst -n "Enter passphrase (Leave blank if more than 1): " \
+		eqst "Enter passphrase (Leave blank if more than 1): " \
 		&& read -s code && eline
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst -n "Enter decryption key: " && read -s code && eline
+			eqst "Enter decryption key: " && read -s code && eline
 		done
 	else
 		die "Either a decryption type wasn't passed or it's not supported!"
@@ -183,7 +183,7 @@ decrypt_drives()
 
 		# Set up a counter in case the user gave an incorrect
 		# passphrase/key_gpg decryption code
-		local lcount=0
+		local lcount=1
 		local lmax=3
 
 		# Used to know if drive mounted successfully or not
@@ -198,14 +198,11 @@ decrypt_drives()
 					if [[ ! -z ${code} ]]; then
 						echo "${code}" | \
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || \
-						echo "Incorrect password!" && lcount=$((lcount + 1)) &&
+						mstatus="good" || lcount=$((lcount + 1)) &&
 						get_decrypt_key "pass"
-						
 					else
 						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || \
-						echo "Incorrect password!" && lcount=$((lcount + 1))
+						mstatus="good" || lcount=$((lcount + 1))
 					fi
 				done
 
@@ -233,8 +230,7 @@ decrypt_drives()
 						gpg --batch --passphrase-fd 0 -q -d ${keyfile} \
 						2> /dev/null | cryptsetup --key-file=- \
 						luksOpen ${drives[${i}]} vault_${i} &&
-						mstatus="good" || \
-						echo "Incorrect password!" && lcount=$((lcount + 1)) &&
+						mstatus="good" || lcount=$((lcount + 1)) &&
 						get_decrypt_key "key_gpg"
 
 					done
