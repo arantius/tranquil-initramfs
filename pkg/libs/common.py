@@ -404,6 +404,25 @@ def ecopy(f):
 				os.makedirs(os.path.dirname(p))
 				shutil.copy(f, p)
 
+# Finds the path to a program on the system
+def find_prog(prog):
+	p1 = subprocess.Popen(
+	["whereis", prog],
+	stdout=subprocess.PIPE,
+	universal_newlines=True)
+
+	p2 = subprocess.Popen(
+	["cut", "-d", " ", "-f", "2"],
+	stdin=p1.stdout, stdout=subprocess.PIPE,
+	universal_newlines=True)
+
+	out = p2.stdout.readlines()
+
+	if out:
+		return out[0].strip()
+	else:
+		die("Unable to find: " + prog)
+		quit(1)
 
 ####### Message Functions #######
 
