@@ -22,7 +22,7 @@ class Variables(object):
 
 	# Locations
 	home = os.getcwd()
-	temp = home + "/" + str(random.randint(1000,2000)) + "-" + \
+	temp = "/tmp/" + str(random.randint(1000,2000)) + "-" + \
 						str(random.randint(2000,3000)) + "-" + \
 						str(random.randint(3000,4000)) + "-" + \
 						str(random.randint(4000,5000))
@@ -43,6 +43,13 @@ class Variables(object):
 	llib = temp + lib
 	llib64 = temp + lib64
 	letc = temp + etc
+
+	# Kernel and Module Information (Will be set later by core)
+	kernel = ""
+	modules = ""
+	lmodules = ""
+	initrd = "initrd"
+	choice = ""
 
 	# CPU Architecture
 	arch = subprocess.check_output(["uname", "-m"], 

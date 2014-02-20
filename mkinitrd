@@ -9,55 +9,45 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
 import sys
-import subprocess
 import os
 
-from pkg.libs import variables
-from pkg.libs import common
-from pkg.libs import copy
-from pkg.libs import toolkit
+from subprocess import call
+
+from pkg.libs.variables import Variables
+from pkg.libs.core import Core
+from pkg.libs.copy import Copy
+from pkg.libs.toolkit import Toolkit
 
 class Creator(object):
+	def __init__(self):
+		self.var = Variables()
+		self.tools = Toolkit(self.var)
+		self.core = Core(self.var, self.tools)
+		self.copy = Copy(self.core, self.var, self.tools)
+
 	def main(self):
-		arguments = sys.argv[1:]
-
-		# Let the user directly create an initramfs if no modules are needed
-		if len(arguments) == 1:
-			if arguments[0] != "1" and arguments[0] != "6":
-				if not common.addon.modules:
-					common.choice = arguments[0]
-			else:
-				common.die("You must pass a kernel parameter")
-
-		# If there are two parameters then we will use them, else just ignore them
-		elif len(arguments) == 2:
-			common.choice = arguments[0]
-			common.kernel = arguments[1]
-
-		user = subprocess.check_output(["whoami"], universal_newlines=True).strip()
-
-		if user != "root":
-			common.die("This program must be ran as root")
-
-		###############################################
-		# The main entry point starts here
-		###############################################
-
-		#subprocess.call(["clear"])
-
-		common.print_header()
-		common.print_menu()
 		"""
-		if common.addon.modules:
-			common.do_kernel()
+		Let the games begin!
+		"""
 
-		common.get_arch()
-		common.print_start()
-		common.clean()
-		common.check_prelim_binaries()
-		common.create_baselayout()
+		self.tools.welcome(self.core)
 
-		copy.check_binaries()
+		#call(["clear"])
+
+		self.core.print_header()
+		self.core.print_menu()
+		
+		if self.core.addon.modules:
+			self.core.do_kernel()
+
+		self.core.get_arch()
+		self.tools.print_start()
+		self.tools.clean()
+		self.core.check_prelim_binaries()
+		self.core.create_baselayout()
+
+		self.copy.check_binaries()
+		"""
 		copy.install()
 		copy.copy_modules()
 		common.create_links()
@@ -66,6 +56,7 @@ class Creator(object):
 		common.create()
 		common.clean_exit()
 		"""
+
 if __name__ == '__main__':
 	init = Creator()
 	init.main()
