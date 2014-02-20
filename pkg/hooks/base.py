@@ -7,15 +7,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Detect where kmod is (Gentoo = /bin, Funtoo = /sbin)
+from pkg.libs import toolkit
 
-kmod_path = find_kmod()
+#print("Path: " + toolkit.kmod_path)
 
 files = [
 	# sys-apps/busybox
 	"/bin/busybox",
 
 	# sys-apps/kmod
-	kmod_path,
+	#kmod_path,
+	"/sbin/kmod",
 
 	# app-shells/bash
 	"/bin/bash",

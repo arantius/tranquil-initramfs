@@ -1,3 +1,12 @@
+4.1.0
+---------
+- The application can now be ran from any directory
+- The application has been redesigned so that it's execution is cleaner
+- Fixed a bug where 'lmodules' wasn't being set correctly
+- The application will generate a 16 digit random number temporary directory,
+  to minimize folder collisions (Example: <DIRECTORY>/1786-2475-3902-4380/)
+- The application has been changed from procedural to object oriented.
+
 4.0.3
 ---------
 - The application will now ask you a max of three times to enter your

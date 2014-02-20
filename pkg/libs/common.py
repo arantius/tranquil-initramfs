@@ -10,7 +10,8 @@ import subprocess
 import os
 import shutil
 
-from . import variables
+from pkg.libs.variables import Variables
+from pkg.libs.toolkit import Toolkit
 
 from pkg.hooks import base
 from pkg.hooks import zfs
@@ -25,19 +26,22 @@ lmodules = ""
 initrd = "initrd"
 choice = ""
 
+tools = Toolkit()
+var = Variables()
+
 # Prints the header of the application
 def print_header():
 	subprocess.call(["echo", "-e", 
 		"\e[1;33m-----------------------------------\e[0;m"])
 	
-	subprocess.call(["echo", "-e", "\e[1;33m| " + variables.name + 
-		" - v" + variables.version + "\e[0;m"])
+	subprocess.call(["echo", "-e", "\e[1;33m| " + var.name + 
+		" - v" + var.version + "\e[0;m"])
 
-	subprocess.call(["echo", "-e", "\e[1;33m| Author: " + variables.contact +
+	subprocess.call(["echo", "-e", "\e[1;33m| Author: " + var.contact +
 		"\e[0;m"])
 	
 	subprocess.call(["echo", "-e", "\e[1;33m| Distributed under the " + 
-		variables.license + "\e[0;m"])
+		var.license + "\e[0;m"])
 	
 	subprocess.call(["echo", "-e", 
 		"\e[1;33m-----------------------------------\e[0;m"])
@@ -49,9 +53,9 @@ def print_menu():
 	global choice
 
 	if not choice:
-		einfo("Which initramfs would you like to generate:")
+		tools.einfo("Which initramfs would you like to generate:")
 		print_options()
-		choice = eqst("Current choice [1]: ")
+		choice = tools.eqst("Current choice [1]: ")
 
 	# Enable the addons if the addon.mods is not empty
 	if addon.modules:
@@ -88,27 +92,27 @@ def print_menu():
 	elif choice == "10":
 		luks.use = "1"
 	elif choice == '11':
-		ewarn("Exiting.")
+		tools.ewarn("Exiting.")
 		quit()
 	else:
-		ewarn("Invalid Option. Exiting.")
+		tools.ewarn("Invalid Option. Exiting.")
 		quit()
 
 # Prints the available options
 def print_options():
-	eline()
-	eopt("1. ZFS")
-	eopt("2. LVM")
-	eopt("3. RAID")
-	eopt("4. LVM on RAID")
-	eopt("5. Normal Boot")
-	eopt("6. Encrypted ZFS")
-	eopt("7. Encrypted LVM")
-	eopt("8. Encrypted RAID")
-	eopt("9. Encrypted LVM on RAID")
-	eopt("10. Encrypted Normal")
-	eopt("11. Exit Program")
-	eline()
+	tools.eline()
+	tools.eopt("1. ZFS")
+	tools.eopt("2. LVM")
+	tools.eopt("3. RAID")
+	tools.eopt("4. LVM on RAID")
+	tools.eopt("5. Normal Boot")
+	tools.eopt("6. Encrypted ZFS")
+	tools.eopt("7. Encrypted LVM")
+	tools.eopt("8. Encrypted RAID")
+	tools.eopt("9. Encrypted LVM on RAID")
+	tools.eopt("10. Encrypted Normal")
+	tools.eopt("11. Exit Program")
+	tools.eline()
 
 # Creates the baselayout
 def create_baselayout():
@@ -119,6 +123,7 @@ def create_baselayout():
 def do_kernel():
 	global kernel
 	global modules
+	global lmodules
 	global initrd
 
 	if not kernel:
@@ -164,27 +169,6 @@ def check_mods_dir():
 def get_arch():
 	if variables.arch != "x86_64":
 		die("Your architecture isn't supported. Exiting.")
-
-# Message for displaying the starting generating event
-def print_start():
-	eline()
-	einfo("[ Starting ]")
-	eline()
-
-# Check to see if the temporary directory exists, if it does,
-# delete it for a fresh start
-def clean():
-	# Go back to the original working directory so that we are
-	# completely sure that there will be no inteference cleaning up.
-	os.chdir(variables.home)
-
-	if os.path.exists(variables.temp):
-		shutil.rmtree(variables.temp)
-
-		if os.path.exists(variables.temp):
-			ewarn("Failed to delete the " + variables.temp + \
-				  " directory. Exiting.")
-			quit()
 
 # Checks to see if the preliminary binaries exist
 def check_prelim_binaries():
@@ -292,10 +276,10 @@ def last_steps():
 		subprocess.call(cmd, shell=True)
 
 	# Copy init functions
-	shutil.copytree(variables.home + "/files/libs/", variables.temp + "/libs")
+	shutil.copytree(variables.phome + "/files/libs/", variables.temp + "/libs")
 
 	# Copy the init script
-	shutil.copy(variables.home + "/files/init", variables.temp)
+	shutil.copy(variables.phome + "/files/init", variables.temp)
 
 	# Give execute permissions to the script
 	subprocess.call(["chmod", "u+x", variables.temp + "/init"])
@@ -424,42 +408,3 @@ def find_prog(prog):
 		die("Unable to find: " + prog)
 		quit(1)
 
-####### Message Functions #######
-
-# Used for displaying information
-def einfo(x):
-	subprocess.call(["echo", "-e", "\e[1;32m>>>\e[0;m " + x ])
-
-# Used for input (questions)
-def eqst(x):
-	choice = input(x); return choice
-
-# Used for warnings
-def ewarn(x):
-	subprocess.call(["echo", "-e", "\e[1;33m>>>\e[0;m " + x])
-
-# Used for flags (aka using zfs, luks, etc)
-def eflag(x):
-	subprocess.call(["echo", "-e", "\e[1;34m>>>\e[0;m " + x])
-
-# Used for options
-def eopt(x):
-	subprocess.call(["echo", "-e", "\e[1;36m>>>\e[0;m " + x])
-
-# Used for errors
-def die(x):
-	eline(); subprocess.call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x]); eline()
-	clean()
-	quit(1)
-
-# Prints empty line
-def eline():
-	print("")
-
-# Error Function: Binary doesn't exist
-def err_bin_dexi(x):
-	die("Binary: " + x + " doesn't exist. Exiting.")
-
-# Error Function: Module doesn't exist
-def err_mod_dexi(x):
-	die("Module: " + x + " doesn't exist. Exiting.")

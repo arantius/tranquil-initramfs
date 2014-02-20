@@ -8,70 +8,66 @@
 
 import os
 import subprocess
+import sys
+import random
 
-# Application Info
-name = "Bliss Initramfs Creator"
-author = "Jonathan Vasquez"
-email = "fearedbliss@funtoo.org"
-contact = author + " <" + email + ">"
-version = "4.0.3"
-license = "MPL 2.0"
+class Variables(object):
+	# Application Info
+	name = "Bliss Initramfs Creator"
+	author = "Jonathan Vasquez"
+	email = "fearedbliss@funtoo.org"
+	contact = author + " <" + email + ">"
+	version = "4.1.0"
+	license = "MPL 2.0"
 
-# Locations
-home = os.getcwd()
-temp = home + "/temp"
+	# Locations
+	home = os.getcwd()
+	temp = home + "/" + str(random.randint(1000,2000)) + "-" + \
+						str(random.randint(2000,3000)) + "-" + \
+						str(random.randint(3000,4000)) + "-" + \
+						str(random.randint(4000,5000))
 
-# System Directories
-bin = "/bin"
-sbin = "/sbin"
-lib = "/lib"
-lib64 = "/lib64"
-man = "/usr/share/man"
-udev = lib64 + "/udev"
-etc = "/etc"
+	# Directory of Program
+	phome = os.path.dirname(os.path.realpath(sys.argv[0]))
 
-# Directories in /usr
-ubin = "/usr/bin"
-usbin = "/usr/sbin"
-ulib = "/usr/lib"
-ushare = "/usr/share"
-uexec = "/usr/libexec"
+	# System Directories
+	bin = "/bin"
+	sbin = "/sbin"
+	lib = "/lib"
+	lib64 = "/lib64"
+	etc = "/etc"
 
-# Paths in Temp (Local)
-lbin = temp + bin
-lubin = temp + ubin
-lsbin = temp + sbin
-llib = temp + lib
-llib64 = temp + lib64
-lman = temp + man
-ludev = temp + udev
-letc = temp + etc
-lushare = temp + ushare
+	# Paths in Temp (Local)
+	lbin = temp + bin
+	lsbin = temp + sbin
+	llib = temp + lib
+	llib64 = temp + lib64
+	letc = temp + etc
 
-# CPU Architecture
-arch = subprocess.check_output(["uname", "-m"], 
-			universal_newlines=True).strip()
+	# CPU Architecture
+	arch = subprocess.check_output(["uname", "-m"], 
+		   universal_newlines=True).strip()
 
-# Preliminary binaries needed for the success of creating the initrd
-# but that are not needed to be placed inside the initrd
-prel_bin = [
-	"/bin/cpio", 
-]
+	# Preliminary binaries needed for the success of creating the initrd
+	# but that are not needed to be placed inside the initrd
+	prel_bin = [
+		"/bin/cpio", 
+	]
 
-# Layout of the initramfs
-baselayout = [
-	temp + "/etc",
-	temp + "/etc/zfs",
-	temp + "/dev",
-	temp + "/proc",
-	temp + "/sys",
-	temp + "/mnt",
-	temp + "/mnt/root",
-	temp + "/mnt/key",
-	temp + "/lib",
-	temp + "/lib/modules",
-	temp + "/lib64",
-	temp + "/bin",
-	temp + "/sbin",
-	temp + "/usr"
-]
+	# Layout of the initramfs
+	baselayout = [
+		temp + "/etc",
+		temp + "/etc/zfs",
+		temp + "/dev",
+		temp + "/proc",
+		temp + "/sys",
+		temp + "/mnt",
+		temp + "/mnt/root",
+		temp + "/mnt/key",
+		temp + "/lib",
+		temp + "/lib/modules",
+		temp + "/lib64",
+		temp + "/bin",
+		temp + "/sbin",
+		temp + "/usr",
+	]
