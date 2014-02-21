@@ -12,6 +12,7 @@ from subprocess import call
 from subprocess import check_output
 from subprocess import Popen
 from subprocess import PIPE
+from subprocess import CalledProcessError
 
 from pkg.libs.toolkit import Toolkit
 from pkg.libs.variables import Variables
@@ -19,21 +20,19 @@ from pkg.libs.variables import Variables
 import os
 import re
 
-""" Globally Available Tools """
+""" Globally Available Resources """
 tools = Toolkit()
+var = Variables()
 
 class Copy(object):
-	# List of binaries (That will be 'ldd'ed later)
-	binset = set()
-
-	# List of modules that will be compressed
-	modset = set()
-
-	def __init__(self, core, var):
-		#print("Kernel: " + var.kernel)
+	def __init__(self, core):
 		self.core = core
-		self.var = var
-		#print("CKernel: " + self.core.var.kernel)
+
+		# List of binaries (That will be 'ldd'ed later)
+		self.binset = set()
+
+		# List of modules that will be compressed
+		self.modset = set()
 
 	# Checks to see if the binaries exist, if not then emerge
 	def check_binaries(self):
@@ -43,8 +42,6 @@ class Copy(object):
 		for f in self.core.base.files:
 			if not os.path.exists(f):
 				tools.err_bin_dexi(f)
-			else:
-				print("Exists: " + f)
 
 		# Check required zfs files
 		if self.core.zfs.use == "1":
@@ -52,8 +49,6 @@ class Copy(object):
 			for f in self.core.zfs.files:
 				if not os.path.exists(f):
 					tools.err_bin_dexi(f)
-				else:
-					print("Exists: " + f)
 
 		# Check required lvm files
 		if self.core.lvm.use == "1":
@@ -61,8 +56,6 @@ class Copy(object):
 			for f in self.core.lvm.files:
 				if not os.path.exists(f):
 					tools.err_bin_dexi(f)
-				else:
-					print("Exists: " + f)
 
 		# Check required raid files
 		if self.core.raid.use == "1":
@@ -70,8 +63,6 @@ class Copy(object):
 			for f in self.core.raid.files:
 				if not os.path.exists(f):
 					tools.err_bin_dexi(f)
-				else:
-					print("Exists: " + f)
 
 		# Check required luks files
 		if self.core.luks.use == "1":
@@ -79,54 +70,48 @@ class Copy(object):
 			for f in self.core.luks.files:
 				if not os.path.exists(f):
 					tools.err_bin_dexi(f)
-				else:
-					print("Exists: " + f)
 
 	# Installs the packages
-	def install():
-		tools.einfo("Copying required files...")
+	def install(self):
+		tools.einfo("Copying required files ...")
 
-		for file in self.core.base.files:
-			emerge(file)
+		for f in self.core.base.files:
+			self.emerge(f)
 
 		if self.core.zfs.use == "1":
-			for file in self.core.zfs.files:
-				emerge(file)
+			for f in self.core.zfs.files:
+				self.emerge(f)
 
 		if self.core.lvm.use == "1":
-			for file in self.core.lvm.files:
-				emerge(file)
+			for f in self.core.lvm.files:
+				self.emerge(f)
 		
 		if self.core.raid.use == "1":
-			for file in self.core.raid.files:
-				emerge(file)
+			for f in self.core.raid.files:
+				self.emerge(f)
 
 		if self.core.luks.use == "1":
-			for file in self.core.luks.files:
-				emerge(file)
+			for f in self.core.luks.files:
+				self.emerge(f)
 
 	# Filters and installs a package into the initramfs
-	def emerge(file):
-		global binset
-		global modset
-
+	def emerge(self, afile):
 		# If the application is a binary, add it to our binary set
 		try:
-			lcmd = subprocess.check_output("file " + file.strip() +
+			lcmd = check_output("file " + afile.strip() +
 			" | grep \"linked\"", universal_newlines=True, shell=True).strip()
 
-			binset.add(file)
-		except subprocess.CalledProcessError:
+			self.binset.add(afile)
+		except CalledProcessError:
 			pass
 
 		# Copy the file into the initramfs
-		tools.ecopy(file)
+		tools.ecopy(afile)
 
 	# Copy modules and their dependencies
-	def copy_modules():
-		tools.einfo("Copying modules...")
+	def copy_modules(self):
+		tools.einfo("Copying modules ...")
 
-		global modset
 		moddeps = set()
 
 		# Build the list of module dependencies
@@ -134,34 +119,34 @@ class Copy(object):
 			# Checks to see if all the modules in the list exist
 			for x in self.core.addon.modules:
 				try:
-					cmd = "find " + common.modules + " -iname \"" + x + \
+					cmd = "find " + self.core.modules + " -iname \"" + x + \
 					".ko\" | grep " + x + ".ko"
 					
-					result = subprocess.check_output(cmd, universal_newlines=True,
-						 shell=True).strip()
+					result = check_output(cmd, universal_newlines=True,
+					         shell=True).strip()
 
-					modset.add(result)
-				except subprocess.CalledProcessError:
-					err_mod_dexi(x)
+					self.modset.add(result)
+				except CalledProcessError:
+					tools.err_mod_dexi(x)
 
 		# If a kernel has been set, try to update the module dependencies
 		# database before searching it
-		if common.kernel:
-			result = subprocess.call(["depmod", common.kernel])
+		if self.core.kernel:
+			result = call(["depmod", self.core.kernel])
 
 			if result == 1:
-				die("Error updating module dependency database!")
+				tools.die("Error updating module dependency database!")
 
 		# Get the dependencies for all the modules in our set
-		for x in modset:
+		for x in self.modset:
 			# Get only the name of the module
 			match = re.search('(?<=/)\w+.ko', x)
 
 			if match:
 				sx = match.group().split(".")[0]
 				
-				cmd = "modprobe -S " + common.kernel + " --show-depends " + sx + \
-					  " | awk -F ' ' '{print $2}'"
+				cmd = "modprobe -S " + self.core.kernel + " --show-depends " + \
+				sx + " | awk -F ' ' '{print $2}'"
 				
 				cap = os.popen(cmd)
 
@@ -181,23 +166,24 @@ class Copy(object):
 
 	# Gets the library dependencies for all our binaries and copies them
 	# into our initramfs.
-	def copy_deps():
-		tools.einfo("Copying library dependencies...")
+	def copy_deps(self):
+		tools.einfo("Copying library dependencies ...")
 
 		bindeps = set()
 
 		# Get the interpreter name that is on this system
-		r = subprocess.check_output("ls " + common.variables.lib64 + 
-			"/ld-linux-x86-64.so*", universal_newlines=True, shell=True).strip()
+		r = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*",
+		    universal_newlines=True, shell=True).strip()
 
 		# Add intepreter to deps since everything will depend on it
 		bindeps.add(r)
 
 		# Get the dependencies for the binaries we've collected and add them to
 		# our bindeps set. These will all be copied into the initramfs later.
-		for b in binset:
+		for b in self.binset:
 			cmd = "ldd " + b.strip() + " | awk -F '=>' '{print $2}' \
 			| sed '/^ *$/d' | awk -F '(' '{print $1}'"
+
 			cap = os.popen(cmd)
 
 			for j in cap.readlines():

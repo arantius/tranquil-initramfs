@@ -6,6 +6,7 @@
 - The application will generate a 16 digit random number temporary directory,
   in /tmp to minimize folder/file collisions (i.e: /tmp/1786-2475-3902-4380/)
 - The application has been changed from procedural to object oriented.
+- Other nice improvements that I can't remember...
 
 4.0.3
 ---------

@@ -8,27 +8,23 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
+import os
+import shutil
+import sys
 
 from subprocess import call
 from subprocess import check_output
 from subprocess import Popen
 from subprocess import PIPE
 
-import os
-import shutil
-import sys
-
 from pkg.libs.variables import Variables
 
+""" Globally Available Resources """
+var = Variables()
+
 class Toolkit(object):
-	def __init__(self, var):
-		self.var = var
-
+	# Checks parameters and running user
 	def welcome(self, core):
-		"""
-		Checks parameters and running user
-		"""
-
 		arguments = sys.argv[1:]
 
 		# Let the user directly create an initramfs if no modules are needed
@@ -42,22 +38,21 @@ class Toolkit(object):
 		# If there are two parameters then we will use them, else just ignore them
 		elif len(arguments) == 2:
 			core.choice = arguments[0]
-
-			print("arg2: " + arguments[1])
-			print("vark: " + var.kernel)
-			var.kernel = arguments[1]
-			print("vark: " + var.kernel)
+			core.kernel = arguments[1]
 
 		user = check_output(["whoami"], universal_newlines=True).strip()
 
 		if user != "root":
 			self.die("This program must be ran as root")
 
-	def find_prog(self, prog):
-		"""
-		Finds the path to a program on the system
-		"""
+	# Message for displaying the starting generating event
+	def print_start(self):
+		self.eline()
+		self.einfo("[ Starting ]")
+		self.eline()
 
+	# Finds the path to a program on the system
+	def find_prog(self, prog):
 		p1 = Popen(["whereis", prog], stdout=PIPE, universal_newlines=True)
 
 		p2 = Popen(["cut", "-d", " ", "-f", "2"], stdin=p1.stdout, stdout=PIPE,
@@ -68,23 +63,69 @@ class Toolkit(object):
 		if out:
 			return out[0].strip()
 		else:
-			self.die("Unable to find: " + prog)
-			quit(1)
+			self.die("The " + prog + " program could not be found!")
 
 	# Check to see if the temporary directory exists, if it does,
 	# delete it for a fresh start
 	def clean(self):
 		# Go back to the original working directory so that we are
 		# completely sure that there will be no inteference cleaning up.
-		os.chdir(self.var.home)
+		os.chdir(var.home)
 
-		if os.path.exists(self.var.temp):
-			shutil.rmtree(self.var.temp)
+		# Removes the temporary link created at the start of the app
+		if os.path.exists(var.tlink):
+			os.remove(var.tlink)
 
-			if os.path.exists(self.var.temp):
-				self.ewarn("Failed to delete the " + self.var.temp + \
+			if os.path.exists(var.tlink):
+				self.ewarn("Failed to delete the temporary link at: " +
+				tlink + ". Exiting.")
+				quit(9)
+
+		if os.path.exists(var.temp):
+			shutil.rmtree(var.temp)
+
+			if os.path.exists(var.temp):
+				self.ewarn("Failed to delete the " + var.temp +
 				" directory. Exiting.")
-				quit()
+				quit(9)
+
+	# Clean up and exit after a successful build
+	def clean_exit(self, initrd):
+		self.eline()
+		self.einfo("[ Complete ]")
+		self.eline()
+		self.clean()
+
+		self.einfo("Please copy the " + initrd + " to your " + 
+		"/boot directory")
+
+		quit()
+
+	# Intelligently copies the file into the initramfs
+	def ecopy(self, afile):
+		# NOTE: shutil.copy will copy the program a symlink points
+		# to but not the link..
+
+		# Check to see if a file with this name exists before copying,
+		# if it exists, delete it, then copy. If a directory, create the directory
+		# before copying.
+		path = var.temp + "/" + afile
+
+		if os.path.exists(path):
+			if os.path.isfile(path):
+				os.remove(path)
+				shutil.copy(afile, path)
+		else:
+			if os.path.isdir(afile):
+				os.makedirs(path)
+			elif os.path.isfile(afile):
+				# Make sure that the directory that this file wants to be in
+				# exists, if not then create it.
+				if os.path.isdir(os.path.dirname(path)):
+					shutil.copy(afile, path)
+				else:
+					os.makedirs(os.path.dirname(path))
+					shutil.copy(afile, path)
 
 	####### Message Functions #######
 
@@ -127,9 +168,3 @@ class Toolkit(object):
 	# Error Function: Module doesn't exist
 	def err_mod_dexi(self, x):
 		self.die("Module: " + x + " doesn't exist. Exiting.")
-
-	# Message for displaying the starting generating event
-	def print_start(self):
-		self.eline()
-		self.einfo("[ Starting ]")
-		self.eline()

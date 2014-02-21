@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""
+Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""
 
 import os
 import subprocess
@@ -22,10 +24,17 @@ class Variables(object):
 
 	# Locations
 	home = os.getcwd()
-	temp = "/tmp/" + str(random.randint(1000,2000)) + "-" + \
-						str(random.randint(2000,3000)) + "-" + \
-						str(random.randint(3000,4000)) + "-" + \
-						str(random.randint(4000,5000))
+
+	rstring = str(random.randint(1000,2000)) + "-" + \
+			  str(random.randint(2000,3000)) + "-" + \
+			  str(random.randint(3000,4000)) + "-" + \
+			  str(random.randint(4000,5000))
+
+	temp = "/tmp/" + rstring
+
+	# Temporary symlink created at home in order to easily find the random
+	# directory created. Gets deleted when program finishes successfully.
+	tlink = home + "/" + rstring
 
 	# Directory of Program
 	phome = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -43,13 +52,6 @@ class Variables(object):
 	llib = temp + lib
 	llib64 = temp + lib64
 	letc = temp + etc
-
-	# Kernel and Module Information (Will be set later by core)
-	kernel = ""
-	modules = ""
-	lmodules = ""
-	initrd = "initrd"
-	choice = ""
 
 	# CPU Architecture
 	arch = subprocess.check_output(["uname", "-m"], 

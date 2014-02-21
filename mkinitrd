@@ -18,21 +18,23 @@ from pkg.libs.core import Core
 from pkg.libs.copy import Copy
 from pkg.libs.toolkit import Toolkit
 
+""" Globally Available Resources """
+tools = Toolkit()
+var = Variables()
+
 class Creator(object):
 	def __init__(self):
-		self.var = Variables()
-		self.tools = Toolkit(self.var)
-		self.core = Core(self.var, self.tools)
-		self.copy = Copy(self.core, self.var, self.tools)
+		self.core = Core()
+		self.copy = Copy(self.core)
 
 	def main(self):
 		"""
 		Let the games begin!
 		"""
 
-		self.tools.welcome(self.core)
+		tools.welcome(self.core)
 
-		#call(["clear"])
+		call(["clear"])
 
 		self.core.print_header()
 		self.core.print_menu()
@@ -41,21 +43,18 @@ class Creator(object):
 			self.core.do_kernel()
 
 		self.core.get_arch()
-		self.tools.print_start()
-		self.tools.clean()
+		tools.print_start()
+		tools.clean()
 		self.core.check_prelim_binaries()
 		self.core.create_baselayout()
-
 		self.copy.check_binaries()
-		"""
-		copy.install()
-		copy.copy_modules()
-		common.create_links()
-		copy.copy_deps()
-		common.last_steps()
-		common.create()
-		common.clean_exit()
-		"""
+		self.copy.install()
+		self.copy.copy_modules()
+		self.core.create_links()
+		self.copy.copy_deps()
+		self.core.last_steps()
+		self.core.create()
+		tools.clean_exit(self.core.get_initrd())
 
 if __name__ == '__main__':
 	init = Creator()
