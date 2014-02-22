@@ -298,7 +298,7 @@ class Core(object):
 		shutil.copytree(var.phome + "/files/libs/", var.temp + "/libs")
 
 		# Copy the init script
-		tools.ecopy(var.phome + "/files/init", var.temp)
+		shutil.copy(var.phome + "/files/init", var.temp)
 
 		# Give execute permissions to the script
 		call(["chmod", "u+x", var.temp + "/init"])
