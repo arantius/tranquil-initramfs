@@ -20,7 +20,6 @@ from pkg.libs.variables import Variables
 import os
 import re
 
-""" Globally Available Resources """
 tools = Toolkit()
 var = Variables()
 

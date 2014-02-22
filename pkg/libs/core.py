@@ -26,7 +26,6 @@ from pkg.hooks.raid import RAID
 from pkg.hooks.luks import LUKS
 from pkg.hooks.addon import Addon
 
-""" Globally Available Resources """
 tools = Toolkit()
 var = Variables()
 
@@ -299,7 +298,7 @@ class Core(object):
 		shutil.copytree(var.phome + "/files/libs/", var.temp + "/libs")
 
 		# Copy the init script
-		shutil.copy(var.phome + "/files/init", var.temp)
+		tools.ecopy(var.phome + "/files/init", var.temp)
 
 		# Give execute permissions to the script
 		call(["chmod", "u+x", var.temp + "/init"])
@@ -332,8 +331,7 @@ class Core(object):
 
 			# Copy the /etc/modprobe.d/zfs.conf file if it exists
 			if os.path.isfile("/etc/modprobe.d/zfs.conf"):
-				shutil.copy("/etc/modprobe.d/zfs.conf",
-				            var.temp + "/etc/modprobe.d")
+				tools.ecopy("/etc/modprobe.d/zfs.conf")
 
 		# Enable RAID in the init if RAID is being used
 		if self.raid.use == "1":

@@ -19,7 +19,6 @@ from subprocess import PIPE
 
 from pkg.libs.variables import Variables
 
-""" Globally Available Resources """
 var = Variables()
 
 class Toolkit(object):

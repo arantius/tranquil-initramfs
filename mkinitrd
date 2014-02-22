@@ -18,7 +18,6 @@ from pkg.libs.core import Core
 from pkg.libs.copy import Copy
 from pkg.libs.toolkit import Toolkit
 
-""" Globally Available Resources """
 tools = Toolkit()
 var = Variables()
 
