@@ -41,6 +41,9 @@ class Base(object):
 		"/bin/dmesg",
 		"/sbin/blkid",
 		"/sbin/switch_root",
+
+		# other
+		"/usr/bin/hostid",
 	]
 
 	kmod_links = [ "depmod", "insmod", "lsmod",

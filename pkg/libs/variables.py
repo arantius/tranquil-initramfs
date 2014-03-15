@@ -19,7 +19,7 @@ class Variables(object):
 	author = "Jonathan Vasquez"
 	email = "fearedbliss@funtoo.org"
 	contact = author + " <" + email + ">"
-	version = "4.1.0"
+	version = "4.1.1"
 	license = "MPL 2.0"
 
 	# Locations

@@ -1,3 +1,7 @@
+4.1.1
+---------
+- The application now copies /usr/bin/hostid into the initramfs
+
 4.1.0
 ---------
 - The application can now be ran from any directory
