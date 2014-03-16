@@ -333,6 +333,13 @@ class Core(object):
 			if os.path.isfile("/etc/modprobe.d/zfs.conf"):
 				tools.ecopy("/etc/modprobe.d/zfs.conf")
 
+			# copy hostid into initramfs
+			call("hostid > " + var.temp + "/etc/hostid", shell=True)
+			
+			# copy zpool.cache into initramfs
+			if os.path.isfile("/etc/zfs/zpool.cache"):
+				tools.ecopy("/etc/zfs/zpool.cache")
+
 		# Enable RAID in the init if RAID is being used
 		if self.raid.use == "1":
 			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])

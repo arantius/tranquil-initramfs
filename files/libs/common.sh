@@ -268,8 +268,13 @@ zfs_trigger()
 	pool_name="${root%%/*}"
 
 	eflag "Importing ${pool_name}..."
-	zpool import -f -N -o cachefile= ${pool_name} || \
-	die "Failed to import your pool: ${pool_name}"
+
+	local CACHE="/etc/zfs/zpool.cache"
+
+	if [[ ! -f "${CACHE}" ]]; then
+		zpool import -f -N -o cachefile= ${pool_name} || \
+		die "Failed to import your pool: ${pool_name}"
+	fi
 }
 
 # Mounts your root device
