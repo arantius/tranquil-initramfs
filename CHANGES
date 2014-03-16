@@ -11,8 +11,6 @@
   have been removed.
 - mtab in the initramfs is now a symlink to /proc/mounts
 - Fixed a bug with single user mode
-- Initramfs will attempt to remount pool if failed to mount data :
-  there most likely was a cache issue.
 
 4.1.0
 ---------
