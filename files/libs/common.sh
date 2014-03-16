@@ -292,6 +292,9 @@ zfs_trigger()
 
 		zpool import -f -N -o cachefile= ${pool_name} || \
 		die "Failed to import your pool: ${pool_name}"
+	else
+		zpool import -c ${CACHE} -N ${pool_name} || \
+		die "Failed to import your pool: ${pool_name}"
 	fi
 }
 
