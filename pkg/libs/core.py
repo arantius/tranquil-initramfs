@@ -260,7 +260,7 @@ class Core(object):
 		# Create mtab file
 		call(["touch", var.temp + "/etc/mtab"])
 
-		if not os.path.islink(var.temp + "/etc/mtab"):
+		if not os.path.isfile(var.temp + "/etc/mtab"):
 			tools.die("Error creating the mtab file. Exiting.")
 
 		# Set library symlinks
