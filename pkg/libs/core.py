@@ -258,7 +258,7 @@ class Core(object):
 		tools.einfo("Performing finishing steps ...")
 
 		# Create mtab file
-		call(["ln", "-sf", "/proc/mounts", var.temp + "/etc/mtab"])
+		call(["touch", var.temp + "/etc/mtab"])
 
 		if not os.path.islink(var.temp + "/etc/mtab"):
 			tools.die("Error creating the mtab file. Exiting.")

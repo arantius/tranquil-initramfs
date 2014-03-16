@@ -285,12 +285,10 @@ zfs_trigger()
 
 		sleep 2
 
-		# Remove the local cache file (Just to make sure; paranoid O_O ...)
+		# Remove old cache file
 		rm -f ${CACHE}
 
 		zpool import -f -N -o cachefile= ${POOL_NAME}
-	else
-		ewarn "Using zpool.cache ..."
 	fi
 }
 
