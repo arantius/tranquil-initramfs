@@ -285,9 +285,7 @@ zfs_trigger()
 
 		sleep 2
 
-		# Remove old cache file
-		rm -f ${CACHE}
-
+		zpool export -f ${POOL_NAME} 2> /dev/null
 		zpool import -f -N -o cachefile= ${POOL_NAME}
 	fi
 }
