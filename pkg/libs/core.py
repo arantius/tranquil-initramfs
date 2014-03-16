@@ -343,8 +343,6 @@ class Core(object):
 			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
 			"> " + var.temp + "/etc/hostid"
 
-			print(cmd)
-
 			call(cmd, shell=True)
 			
 			# Copy zpool.cache into initramfs
