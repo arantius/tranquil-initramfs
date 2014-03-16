@@ -276,7 +276,6 @@ zfs_trigger()
 
 	if [[ ! -f "${CACHE}" ]]; then
 		ewarn "No cache file exists, importing your pool without it ..."
-
 		remount_pool
 	elif [[ -f "${CACHE}" ]] && [[ "${refresh}" == "1" ]]; then
 		ewarn "Ignoring cache file and importing your pool ..."
@@ -306,7 +305,7 @@ mount_root()
 		# a problem with the cache, so try to remount the pool and then try
 		# again before failing.
 		mount -t zfs -o zfsutil,"${options}" ${root} ${NEW_ROOT} || \
-		ewarn "Failed to mount your dataset ... Attempting a remount ..." \
+		ewarn "Failed to mount root dataset ... Attempting a remount ..." && \
 		remount_pool && mount -t zfs -o zfsutil,"${options}" \
 		${root} ${NEW_ROOT} || die "Failed to import your zfs root dataset!"
 
@@ -334,7 +333,7 @@ switch_to_root()
 {
 	einfo "Switching into your root device..." && eline
 
-	exec switch_root ${NEW_ROOT} ${INIT} 2> /dev/null || \
+	exec switch_root ${NEW_ROOT} ${INIT} || \
 	die "Failed to switch into your root device!"
 }
 
