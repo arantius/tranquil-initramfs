@@ -335,16 +335,16 @@ class Core(object):
 
 			# Get the system's hostid now since it will default to 0
 			# within the initramfs environment
+
+			# source: https://bbs.archlinux.org/viewtopic.php?id=153868
 			hostid = check_output(["hostid"], universal_newlines=True)
 
-			# Converts the hostid into binary format
-			cmd = "echo 'obase=2; ibase=16; " + hostid.upper() + "' | bc"
-			bhostid = check_output(cmd, shell=True, universal_newlines=True)
+			cmd = "printf $(echo -n " + hostid.strip().upper() + " | " + \
+			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
+			"> " + var.temp + "/etc/hostid"
 
-			# Copy hostid into initramfs in binary format
-			cmd = "echo \"" + bhostid.strip() + "\" > " + \
-			var.temp + "/etc/hostid"
-			
+			print(cmd)
+
 			call(cmd, shell=True)
 			
 			# Copy zpool.cache into initramfs

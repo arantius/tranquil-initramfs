@@ -14,15 +14,8 @@ class ZFS(object):
 
 	# Required Files
 	files = [
-		"/sbin/splat",
-		"/sbin/fsck.zfs",
 		"/sbin/mount.zfs",
 		"/sbin/zdb",
 		"/sbin/zfs",
-		"/sbin/zhack",
-		"/sbin/zinject",
-		"/sbin/zpios",
 		"/sbin/zpool",
-		"/sbin/zstreamdump",
-		"/sbin/ztest",
 	]

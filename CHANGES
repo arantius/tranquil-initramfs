@@ -1,6 +1,5 @@
 4.1.1
 ---------
-- The application now copies /usr/bin/hostid into the initramfs
 - The application will now use the zpool.cache file that's on the system
   at the time of creation if it finds one.
 - The hostid of the generating system will be stored in /etc/hostid on the
@@ -8,6 +7,8 @@
 - 'refresh' option has been added so that if your initramfs has a stale
   zpool.cache and you need to boot, you can use it to ignore that cachefile
   and automatically install a clean zpool.cache into your system.
+- util-linux programs, zsplat, ztest, zstreamdump, zpios, zinject, zhack
+  have been removed.
 
 4.1.0
 ---------

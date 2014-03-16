@@ -34,16 +34,6 @@ class Base(object):
 		"/bin/egrep",
 		"/bin/fgrep",
 		"/bin/grep",
-
-		# sys-apps/util-linux
-		"/bin/mount",
-		"/bin/umount",
-		"/bin/dmesg",
-		"/sbin/blkid",
-		"/sbin/switch_root",
-
-		# other
-		"/usr/bin/hostid",
 	]
 
 	kmod_links = [ "depmod", "insmod", "lsmod",
