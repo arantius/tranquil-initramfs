@@ -9,6 +9,7 @@
   and automatically install a clean zpool.cache into your system.
 - util-linux programs, zsplat, ztest, zstreamdump, zpios, zinject, zhack
   have been removed.
+- mtab in the initramfs is now a symlink to /proc/mounts
 
 4.1.0
 ---------

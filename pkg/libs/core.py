@@ -257,10 +257,10 @@ class Core(object):
 	def last_steps(self):
 		tools.einfo("Performing finishing steps ...")
 
-		# Create empty mtab file
-		call(["touch", var.temp + "/etc/mtab"])
+		# Create mtab file
+		call(["ln", "-sf", "/proc/mounts", var.temp + "/etc/mtab"])
 
-		if not os.path.isfile(var.temp + "/etc/mtab"):
+		if not os.path.islink(var.temp + "/etc/mtab"):
 			tools.die("Error creating the mtab file. Exiting.")
 
 		# Set library symlinks
