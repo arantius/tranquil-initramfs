@@ -333,10 +333,21 @@ class Core(object):
 			if os.path.isfile("/etc/modprobe.d/zfs.conf"):
 				tools.ecopy("/etc/modprobe.d/zfs.conf")
 
-			# copy hostid into initramfs
-			call("hostid > " + var.temp + "/etc/hostid", shell=True)
+			# Get the system's hostid now since it will default to 0
+			# within the initramfs environment
+			hostid = check_output(["hostid"], universal_newlines=True)
+
+			# Converts the hostid into binary format
+			cmd = "echo 'obase=2; ibase=16; " + hostid.upper() + "' | bc"
+			bhostid = check_output(cmd, shell=True, universal_newlines=True)
+
+			# Copy hostid into initramfs in binary format
+			cmd = "echo \"" + bhostid.strip() + "\" > " + \
+			var.temp + "/etc/hostid"
 			
-			# copy zpool.cache into initramfs
+			call(cmd, shell=True)
+			
+			# Copy zpool.cache into initramfs
 			if os.path.isfile("/etc/zfs/zpool.cache"):
 				tools.ecopy("/etc/zfs/zpool.cache")
 

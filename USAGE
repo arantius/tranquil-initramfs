@@ -240,6 +240,11 @@ ZFS
 root - ZFS root name
 	example: linux <kernel> root=rpool/ROOT/funtoo
 
+refresh - ignores the zpool.cache in the initramfs, creates a new one
+          at import and then copies it into the rootfs. You should recreate
+		  your initramfs afterwards so that your initramfs has the new cache.
+	example: linux <kernel> root=rpool/ROOT/funtoo refresh
+
 =======
 LUKS + ZFS
 =======

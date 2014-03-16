@@ -76,6 +76,9 @@ parse_cmdline()
 		options\=*)
 			options="$(get_opt ${x})"
 			;;
+		refresh)
+			refresh="1"
+			;;
 		recover)
 			recover="1"
 			;;
@@ -272,6 +275,21 @@ zfs_trigger()
 	local CACHE="/etc/zfs/zpool.cache"
 
 	if [[ ! -f "${CACHE}" ]]; then
+		eflag "Ignoring cache file and importing your pool ..."
+
+		zpool import -f -N -o cachefile= ${pool_name} || \
+		die "Failed to import your pool: ${pool_name}"
+	elif [[ -f "${CACHE}" ]] && [[ "${refresh}" == "1" ]]; then
+		eflag "Ignoring cache file and importing your pool ..."
+
+		eflag "Please recreate your initramfs so that " \
+		      "it can use your new zpool.cache!"
+
+		sleep 1
+
+		# Remove the local cache file (Just to make sure; paranoid O_O ...)
+		rm -f ${CACHE}
+
 		zpool import -f -N -o cachefile= ${pool_name} || \
 		die "Failed to import your pool: ${pool_name}"
 	fi

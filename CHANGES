@@ -5,6 +5,9 @@
   at the time of creation if it finds one.
 - The hostid of the generating system will be stored in /etc/hostid on the
   initramfs.
+- 'refresh' option has been added so that if your initramfs has a stale
+  zpool.cache and you need to boot, you can use it to ignore that cachefile
+  and automatically install a clean zpool.cache into your system.
 
 4.1.0
 ---------
