@@ -347,7 +347,10 @@ class Core(object):
 			
 			# Copy zpool.cache into initramfs
 			if os.path.isfile("/etc/zfs/zpool.cache"):
+				tools.ewarn("Using your zpool.cache file ...")
 				tools.ecopy("/etc/zfs/zpool.cache")
+			else:
+				tools.ewarn("No zpool.cache was found. It will not be used ...")
 
 		# Enable RAID in the init if RAID is being used
 		if self.raid.use == "1":

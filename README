@@ -38,7 +38,6 @@ Please have the following installed:
 - app-shells/bash
 - sys-apps/kmod
 - sys-apps/grep
-- sys-apps/util-linux
 
 - sys-fs/zfs (ZFS support)
 - sys-fs/mdadm (RAID support)
