@@ -280,7 +280,7 @@ zfs_trigger()
 	elif [[ -f "${CACHE}" ]] && [[ "${refresh}" == "1" ]]; then
 		ewarn "Ignoring cache file and importing your pool ..."
 
-		ewarn "Please recreate your initramfs so that " \
+		ewarn "Please recreate your initramfs so that" \
 		      "it can use your new zpool.cache!"
 
 		sleep 2
@@ -308,8 +308,8 @@ mount_root()
 		# again before failing.
 		mount -t zfs -o zfsutil,"${options}" ${root} ${NEW_ROOT} || \
 		ewarn "Failed to mount root dataset ... Attempting a remount ..." && \
-		zpool export -f ${POOL_NAME} 2> /dev/null && \
-		zpool import -f -N -o cachefile= ${POOL_NAME} && \
+		zpool export -f ${POOL_NAME} 2> /dev/null; \
+		zpool import -f -N -o cachefile= ${POOL_NAME}; \
 		mount -t zfs -o zfsutil,"${options}" ${root} ${NEW_ROOT} && exit \
 		|| die "Failed to import your zfs root dataset!"
 
