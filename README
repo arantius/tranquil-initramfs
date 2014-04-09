@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - v4.1.1
-Jonathan Vasquez <fearedbliss@funtoo.org>
+Bliss Initramfs Creator - v4.1.2
+Jonathan Vasquez <jvasquez1011@gmail.com>
 Gentoo/Funtoo Linux
 
-Distributed under the MPL 2.0 which can be found in the LICENSE file.
+Licensed under the Apache License 2.0 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and 
 dependencies needed to mount your filesystem.

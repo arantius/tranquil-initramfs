@@ -1,11 +1,17 @@
-#!/usr/bin/env python
-
 """
-Copyright (C) 2012-2014 Jonathan Vasquez <fearedbliss@funtoo.org>
+Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
 
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import os
@@ -58,7 +64,7 @@ class Core(object):
 
 		call(["echo", "-e", "\e[1;33m| " + var.contact + "\e[0;m"])
 		
-		call(["echo", "-e", "\e[1;33m| Distributed under the " +
+		call(["echo", "-e", "\e[1;33m| Licensed under the " +
 		var.license + "\e[0;m"])
 		
 		call(["echo", "-e", "\e[1;33m----------------------------------\e[0;m"])
@@ -314,7 +320,7 @@ class Core(object):
 			var.temp + "/etc/bash/bashrc", shell=True)
 
 		# Sets initramfs script version number
-		call(["sed", "-i", "-e", "19s/0/" + var.version +
+		call(["sed", "-i", "-e", "27s/0/" + var.version +
 			"/", var.temp + "/init"])
 
 		# Fix EDITOR/PAGER
@@ -327,7 +333,7 @@ class Core(object):
 		# Any last substitutions or additions/modifications should be done here
 		if self.zfs.use == "1":
 			# Enable ZFS in the init if ZFS is being used
-			call(["sed", "-i", "-e", "13s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "21s/0/1/", var.temp + "/init"])
 
 			# Copy the /etc/modprobe.d/zfs.conf file if it exists
 			if os.path.isfile("/etc/modprobe.d/zfs.conf"):
@@ -354,21 +360,21 @@ class Core(object):
 
 		# Enable RAID in the init if RAID is being used
 		if self.raid.use == "1":
-			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "22s/0/1/", var.temp + "/init"])
 
 		# Enable LVM in the init if LVM is being used
 		if self.lvm.use == "1":
-			call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "23s/0/1/", var.temp + "/init"])
 
 		# Enable LUKS in the init if LUKS is being used
 		if self.luks.use == "1":
-			call(["sed", "-i", "-e", "16s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "24s/0/1/", var.temp + "/init"])
 	   
 		# Enable ADDON in the init and add our modules to the initramfs
 		# if addon is being used
 		if self.addon.use == "1":
-			call(["sed", "-i", "-e", "17s/0/1/", var.temp + "/init"])
-			call(["sed", "-i", "-e", "20s/\"\"/\"" +
+			call(["sed", "-i", "-e", "25s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "28s/\"\"/\"" +
 			" ".join(self.addon.modules) + "\"/", var.temp + "/libs/common.sh"])
 
 	# Create the solution
