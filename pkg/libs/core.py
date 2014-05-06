@@ -1,18 +1,8 @@
-"""
-Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at:
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
 import shutil
@@ -35,7 +25,7 @@ from pkg.hooks.addon import Addon
 tools = Toolkit()
 var = Variables()
 
-class Core(object):
+class Core:
 	"""
 	Contains the core of the application
 	"""
@@ -58,15 +48,15 @@ class Core(object):
 		""" Prints the header of the application """
 
 		call(["echo", "-e", "\e[1;33m----------------------------------\e[0;m"])
-		
+
 		call(["echo", "-e", "\e[1;33m| " + var.name + " - v" +
 		var.version + "\e[0;m"])
 
 		call(["echo", "-e", "\e[1;33m| " + var.contact + "\e[0;m"])
-		
+
 		call(["echo", "-e", "\e[1;33m| Licensed under the " +
 		var.license + "\e[0;m"])
-		
+
 		call(["echo", "-e", "\e[1;33m----------------------------------\e[0;m"])
 
 	# Prints the menu and accepts user choice
@@ -212,7 +202,7 @@ class Core(object):
 			call(cmd, shell=True)
 
 		cap.close()
-		
+
 		tools.einfo("Generating modprobe information ...")
 
 		# Copy modules.order and modules.builtin just so depmod
@@ -236,13 +226,13 @@ class Core(object):
 		# Create busybox links
 		cmd = "chroot " + var.temp + \
 		" /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
-		
+
 		call(cmd, shell=True)
 
 		# Create 'sh' symlink to 'bash'
 		os.remove(var.temp + "/bin/sh")
 		os.symlink("bash", "sh")
-		
+
 		# Switch to the kmod directory, delete the corresponding busybox
 		# symlink and create the symlinks pointing to kmod
 		if os.path.isfile(var.lsbin + "/kmod"):
@@ -277,27 +267,27 @@ class Core(object):
 
 			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
 			pcmd + "\""
-			
+
 			call(cmd, shell=True)
 
 		if os.path.isdir(var.temp + "/usr/lib32") and \
 		   os.path.isdir(var.temp + "/lib32"):
 			pcmd = "find /usr/lib32 -iname \"*.so.*\" " + \
 			       "-exec ln -s \"{}\" /lib32 \;"
-			
+
 			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
 			pcmd + "\""
-			
+
 			call(cmd, shell=True)
 
 		if os.path.isdir(var.temp + "/usr/lib64") and \
 		   os.path.isdir(var.temp + "/lib64"):
 			pcmd = "find /usr/lib64 -iname \"*.so.*\" " + \
 			       "-exec ln -s \"{}\" /lib64 \;"
-			
+
 			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
 			pcmd + "\""
-			
+
 			call(cmd, shell=True)
 
 		# Copy init functions
@@ -333,7 +323,7 @@ class Core(object):
 		# Any last substitutions or additions/modifications should be done here
 		if self.zfs.use == "1":
 			# Enable ZFS in the init if ZFS is being used
-			call(["sed", "-i", "-e", "21s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "13s/0/1/", var.temp + "/init"])
 
 			# Copy the /etc/modprobe.d/zfs.conf file if it exists
 			if os.path.isfile("/etc/modprobe.d/zfs.conf"):
@@ -343,14 +333,14 @@ class Core(object):
 			# within the initramfs environment
 
 			# source: https://bbs.archlinux.org/viewtopic.php?id=153868
-			hostid = check_output(["hostid"], universal_newlines=True)
+			hostid = check_output(["hostid"], universal_newlines=True).strip()
 
-			cmd = "printf $(echo -n " + hostid.strip().upper() + " | " + \
+			cmd = "printf $(echo -n " + hostid.upper() + " | " + \
 			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
 			"> " + var.temp + "/etc/hostid"
 
 			call(cmd, shell=True)
-			
+
 			# Copy zpool.cache into initramfs
 			if os.path.isfile("/etc/zfs/zpool.cache"):
 				tools.ewarn("Using your zpool.cache file ...")
@@ -360,21 +350,21 @@ class Core(object):
 
 		# Enable RAID in the init if RAID is being used
 		if self.raid.use == "1":
-			call(["sed", "-i", "-e", "22s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
 
 		# Enable LVM in the init if LVM is being used
 		if self.lvm.use == "1":
-			call(["sed", "-i", "-e", "23s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
 
 		# Enable LUKS in the init if LUKS is being used
 		if self.luks.use == "1":
-			call(["sed", "-i", "-e", "24s/0/1/", var.temp + "/init"])
-	   
+			call(["sed", "-i", "-e", "16s/0/1/", var.temp + "/init"])
+
 		# Enable ADDON in the init and add our modules to the initramfs
 		# if addon is being used
 		if self.addon.use == "1":
-			call(["sed", "-i", "-e", "25s/0/1/", var.temp + "/init"])
-			call(["sed", "-i", "-e", "28s/\"\"/\"" +
+			call(["sed", "-i", "-e", "17s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "18s/\"\"/\"" +
 			" ".join(self.addon.modules) + "\"/", var.temp + "/libs/common.sh"])
 
 	# Create the solution

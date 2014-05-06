@@ -1,18 +1,18 @@
-Bliss Initramfs Creator - v4.1.2
+Bliss Initramfs Creator - v5.0.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
-Gentoo/Funtoo Linux
+Gentoo Linux
 
-Licensed under the Apache License 2.0 which can be found in the LICENSE file.
+Distributed under the MPL 2.0 which can be found in the LICENSE file.
 
-This script generates an initramfs image with all the included files and 
+This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
 
 Please have the following installed:
 
 - Linux Kernel
-  ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared 
+  ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared
   in the 'mods' variable in pkg/hooks/addon.py.
-  
+
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
   > () Initramfs source file(s)

@@ -1,16 +1,8 @@
 # Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at:
-#
-#	http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Function to start rescue shell
 rescue_shell()
@@ -140,7 +132,7 @@ luks_trigger()
 	if [[ -z ${enc_type} ]]; then
 		die "You didn't pass the 'enc_type' variable to the kernel."
 	elif [[ ${enc_type} != "pass" ]] &&
-		 [[ ${enc_type} != "key" ]] && 
+		 [[ ${enc_type} != "key" ]] &&
 		 [[ ${enc_type} != "key_gpg" ]]; then
 		die "Invalid 'enc_type' option. Only pass, key, key_gpg are supported."
 	else
@@ -268,7 +260,7 @@ raid_trigger()
 # Run this function if USE_LVM is enabled
 lvm_trigger()
 {
-	# Make LVM Volume Group/Pools available 
+	# Make LVM Volume Group/Pools available
 	lvm vgchange -a y || rescue_shell
 	lvm vgscan --mknodes || rescue_shell
 }
@@ -303,9 +295,9 @@ mount_root()
 {
 	einfo "Mounting your root device..."
 
-	# Using "" for the ${options} below so that if the user doesn't have any 
+	# Using "" for the ${options} below so that if the user doesn't have any
 	# options, the variable ends up expanding back to empty quotes and allows
-	# the mount command to keep going. 
+	# the mount command to keep going.
 	if [[ ${USE_ZFS} == "1" ]]; then
 		# Try to mount the pool now, if it fails then there might have been
 		# a problem with the cache, so try to remount the pool and then try
@@ -375,10 +367,10 @@ single_user()
 	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash -c \
 	'hostname ${RHOSTN}' && chroot ${NEW_ROOT} /bin/bash -l"
 
-	# Lazy unmount these devices from the rootfs since they will be fully 
+	# Lazy unmount these devices from the rootfs since they will be fully
 	# unmounted from the initramfs environment right after this function
 	# is over.
-	umount -l ${NEW_ROOT}/proc ${NEW_ROOT}/dev ${NEW_ROOT}/sys 
+	umount -l ${NEW_ROOT}/proc ${NEW_ROOT}/dev ${NEW_ROOT}/sys
 }
 
 ### Utility Functions ###

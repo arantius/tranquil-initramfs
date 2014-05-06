@@ -1,3 +1,8 @@
+5.0.0
+---------
+- The application has been refactored. Smaller, faster, and cleaner.
+- The application has been relicensed back to the Mozilla Public License 2.0.
+
 4.1.2
 ---------
 - Relicensed to the more permissive, Apache License 2.0
@@ -72,7 +77,7 @@
 - The application checks to see if all the modules in the list exist
   in the given kernel directory
 
-- Aliases have been created to the 'shutdown -f' and 'reboot -f' commands in initrd. 
+- Aliases have been created to the 'shutdown -f' and 'reboot -f' commands in initrd.
   Now you can use their equivalents without -f directly.
 
 - The creator will no longer ask you to input the location of your kernel modules
@@ -207,7 +212,7 @@ Major Changes:
 - Kernel loading mechanism has been switched from busybox's kernel stuff to kmod
 - Added ability to use keyfile with luks (enc_type=pass, key, or key_gpg)
 - Added nano, kmod, and gpg to the initramfs
-- Modules can now be added automatically with full dependencies. This means that 
+- Modules can now be added automatically with full dependencies. This means that
   you can say "I want to use nouveau, zfs, and another driver" and the creator will
   automagically get every module that that module needs in order for it to work.
 
@@ -260,8 +265,8 @@ Minor Changes:
 
 1.7.2
 ---------
-- Now copies the modules.order and modules.builtin files into the initramfs 
-  so the depmod program doesn't complain. These files don't have any affect 
+- Now copies the modules.order and modules.builtin files into the initramfs
+  so the depmod program doesn't complain. These files don't have any affect
   on the functionality of the initramfs. The initramfs will work fine without
   them.
 
@@ -272,9 +277,9 @@ Minor Changes:
 1.7.0
 ---------
 - Adds support for single user mode (via 'su' boot parameter).
-  This is a really bad su mode though. Use it if you forgot to 
+  This is a really bad su mode though. Use it if you forgot to
   change your password after installation.
-- Adds support to recreate the zpool.cache from within the initramfs 
+- Adds support to recreate the zpool.cache from within the initramfs
   (via 'refresh' boot parameter)
 - Removed some old code that wasn't being used anymore.
 - Added a few more functions to consolidate stuff.
@@ -366,7 +371,7 @@ Minor Changes:
 - Renamed most variables and changed the prefix "JV" to "_".
 - Added LUKS + ZFS support
 - New application structure. The program now uses flags in order to determine
-  what features were enabled. The check/copy functions are now streamlined. 
+  what features were enabled. The check/copy functions are now streamlined.
   There is also only 1 init script now and the init script also uses flags in order
   to determine what to do and what kernel modules to load.
 - Init has now been modularized. Functions that init uses have moved to another
@@ -401,7 +406,7 @@ Minor Changes:
 
 1.4.4
 ----------
-- Added checks for 'cpio'. 
+- Added checks for 'cpio'.
 - Added ability to pass the option and kernel version you want directly
   on the command line. This will help you if you want to make a script.
 - The creator now outputs the initramfs with a generic name of "initrd.img".

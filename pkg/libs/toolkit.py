@@ -1,18 +1,8 @@
-"""
-Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at:
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
 import shutil
@@ -20,16 +10,18 @@ import sys
 
 from subprocess import call
 from subprocess import check_output
-from subprocess import Popen
-from subprocess import PIPE
 
-from pkg.libs.variables import Variables
+import pkg.libs.variables as var
 
-var = Variables()
-
-class Toolkit(object):
+class Toolkit:
 	# Checks parameters and running user
-	def welcome(self, core):
+	@classmethod
+	def welcome(cls, core):
+		user = check_output(["whoami"], universal_newlines=True).strip()
+
+		if user != "root":
+			cls.die("This program must be ran as root")
+
 		arguments = sys.argv[1:]
 
 		# Let the user directly create an initramfs if no modules are needed
@@ -38,41 +30,35 @@ class Toolkit(object):
 				if not core.addon.modules:
 					core.choice = arguments[0]
 			else:
-				self.die("You must pass a kernel parameter")
+				cls.die("You must pass a kernel parameter")
 
 		# If there are two parameters then we will use them, else just ignore them
 		elif len(arguments) == 2:
 			core.choice = arguments[0]
 			core.kernel = arguments[1]
 
-		user = check_output(["whoami"], universal_newlines=True).strip()
-
-		if user != "root":
-			self.die("This program must be ran as root")
-
 	# Message for displaying the starting generating event
-	def print_start(self):
-		self.eline()
-		self.einfo("[ Starting ]")
-		self.eline()
+	@classmethod
+	def print_start(cls):
+		cls.eline()
+		cls.einfo("[ Starting ]")
+		cls.eline()
 
 	# Finds the path to a program on the system
-	def find_prog(self, prog):
-		p1 = Popen(["whereis", prog], stdout=PIPE, universal_newlines=True)
+	@classmethod
+	def find_prog(cls, prog):
+		cmd = 'whereis ' + prog + ' | cut -d " " -f 2'
+		results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
-		p2 = Popen(["cut", "-d", " ", "-f", "2"], stdin=p1.stdout, stdout=PIPE,
-		     universal_newlines=True)
-
-		out = p2.stdout.readlines()
-
-		if out:
-			return out[0].strip()
+		if results:
+			return results
 		else:
-			self.die("The " + prog + " program could not be found!")
+			cls.die("The " + prog + " program could not be found!")
 
 	# Check to see if the temporary directory exists, if it does,
 	# delete it for a fresh start
-	def clean(self):
+	@classmethod
+	def clean(cls):
 		# Go back to the original working directory so that we are
 		# completely sure that there will be no inteference cleaning up.
 		os.chdir(var.home)
@@ -82,34 +68,33 @@ class Toolkit(object):
 			os.remove(var.tlink)
 
 			if os.path.exists(var.tlink):
-				self.ewarn("Failed to delete the temporary link at: " +
-				tlink + ". Exiting.")
-				quit(9)
+				cls.ewarn("Failed to delete the temporary link at: " + tlink + ". Exiting.")
+				quit(1)
 
+		# Removes the temporary directory
 		if os.path.exists(var.temp):
 			shutil.rmtree(var.temp)
 
 			if os.path.exists(var.temp):
-				self.ewarn("Failed to delete the " + var.temp +
-				" directory. Exiting.")
-				quit(9)
+				cls.ewarn("Failed to delete the " + var.temp + " directory. Exiting.")
+				quit(1)
 
-	# Clean up and exit after a successful build
-	def clean_exit(self, initrd):
-		self.eline()
-		self.einfo("[ Complete ]")
-		self.eline()
-		self.clean()
+	# Clean up and exit after a successfull build
+	@classmethod
+	def clean_exit(cls, initrd):
+		cls.eline()
+		cls.einfo("[ Complete ]")
+		cls.eline()
+		cls.clean()
 
-		self.einfo("Please copy the " + initrd + " to your " + 
-		"/boot directory")
+		cls.einfo("Please copy the " + initrd + " to your " + "/boot directory")
 
 		quit()
 
 	# Intelligently copies the file into the initramfs
-	def ecopy(self, afile):
-		# NOTE: shutil.copy will copy the program a symlink points
-		# to but not the link..
+	@classmethod
+	def ecopy(cls, afile):
+		# NOTE: shutil.copy will dereference all symlinks before copying.
 
 		# Check to see if a file with this name exists before copying,
 		# if it exists, delete it, then copy. If a directory, create the directory
@@ -121,9 +106,7 @@ class Toolkit(object):
 				os.remove(path)
 				shutil.copy(afile, path)
 		else:
-			if os.path.isdir(afile):
-				os.makedirs(path)
-			elif os.path.isfile(afile):
+			if os.path.isfile(afile):
 				# Make sure that the directory that this file wants to be in
 				# exists, if not then create it.
 				if os.path.isdir(os.path.dirname(path)):
@@ -131,45 +114,74 @@ class Toolkit(object):
 				else:
 					os.makedirs(os.path.dirname(path))
 					shutil.copy(afile, path)
+			elif os.path.isdir(afile):
+				os.makedirs(path)
 
 	####### Message Functions #######
 
+	# Returns the string with a color to be used in bash
+	@staticmethod
+	def colorize(color, message):
+		if color == "red":
+			colored_message = "\e[1;31m" + message + "\e[0;m"
+		elif color == "yellow":
+			colored_message = "\e[1;33m" + message + "\e[0;m"
+		elif color == "green":
+			colored_message = "\e[1;32m" + message + "\e[0;m"
+		elif color == "cyan":
+			colored_message = "\e[1;36m" + message + "\e[0;m"
+		elif color == "purple":
+			colored_message = "\e[1;34m" + message + "\e[0;m"
+		elif color == "none":
+			colored_message = message
+
+		return colored_message
+
 	# Used for displaying information
-	def einfo(self, x):
-		call(["echo", "-e", "\e[1;32m>>>\e[0;m " + x ])
+	@classmethod
+	def einfo(cls, message):
+		call(["echo", "-e", cls.colorize("green", message)])
 
 	# Used for input (questions)
-	def eqst(self, x):
-		return input(x)
+	@classmethod
+	def eqst(cls, question):
+		return input(question)
 
 	# Used for warnings
-	def ewarn(self, x):
-		call(["echo", "-e", "\e[1;33m>>>\e[0;m " + x])
+	@classmethod
+	def ewarn(cls, message):
+		call(["echo", "-e", cls.colorize("yellow", message)])
 
 	# Used for flags (aka using zfs, luks, etc)
-	def eflag(self, x):
-		call(["echo", "-e", "\e[1;34m>>>\e[0;m " + x])
+	@classmethod
+	def eflag(cls, flag):
+		call(["echo", "-e", cls.colorize("purple", flag)])
 
 	# Used for options
-	def eopt(self, x):
-		call(["echo", "-e", "\e[1;36m>>>\e[0;m " + x])
+	@classmethod
+	def eopt(cls, opt):
+		call(["echo", "-e", cls.colorize("cyan", opt)])
 
 	# Used for errors
-	def die(self, x):
-		self.eline()
-		call(["echo", "-e", "\e[1;31m>>>\e[0;m " + x])
-		self.eline()
-		self.clean()
+	@classmethod
+	def die(cls, message):
+		cls.eline()
+		call(["echo", "-e", cls.colorize("red", message)])
+		cls.eline()
+		cls.clean()
 		quit(1)
 
 	# Prints empty line
-	def eline(self):
+	@classmethod
+	def eline(cls):
 		print("")
 
 	# Error Function: Binary doesn't exist
-	def err_bin_dexi(self, x):
-		self.die("Binary: " + x + " doesn't exist. Exiting.")
+	@classmethod
+	def err_bin_dexi(cls, message):
+		cls.die("Binary: " + message + " doesn't exist. Exiting.")
 
 	# Error Function: Module doesn't exist
-	def err_mod_dexi(self, x):
-		self.die("Module: " + x + " doesn't exist. Exiting.")
+	@classmethod
+	def err_mod_dexi(cls, message):
+		cls.die("Module: " + message + " doesn't exist. Exiting.")

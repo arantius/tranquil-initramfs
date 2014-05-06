@@ -5,13 +5,13 @@ Creating the initramfs
 Run the script by running: ./mkinitrd
 * It must be run as root since root is the only user that can run `depmod`.
 
-* If the script doesn't run and gives you a permission denied message, 
+* If the script doesn't run and gives you a permission denied message,
   give it execution permission: `chmod +x mkinitrd` and then try again.
 
 Select the option that you want, and tell it which kernel you want to use.
 
-After that the required files will be gathered and packed into an initramfs and you 
-will find the initramfs in the directory that you are currently in. Copy that file 
+After that the required files will be gathered and packed into an initramfs and you
+will find the initramfs in the directory that you are currently in. Copy that file
 to your boot directory and name it whatever you want.
 
 =======================================
@@ -21,18 +21,18 @@ Setting up the bootloader configuration (GRUB 2)
 If the following information is true:
 
 * Kernel     = vmlinuz-3.9.9-FB.02
-* Initramfs  = initrd-3.9.9-FB.02 
+* Initramfs  = initrd-3.9.9-FB.02
 * Partition Layout is GPT
 * /boot = /dev/sda1 (formatted with the ext2 filesystem)
 
-Add a new entry to /boot/grub/grub.cfg 
+Add a new entry to /boot/grub/grub.cfg
 
 =======================================
 Normal Boot
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -46,8 +46,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Normal Boot w/ Mount Options
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -62,8 +62,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Normal ZFS
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -77,8 +77,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Normal RAID
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -92,8 +92,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Normal LVM
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -107,8 +107,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Encrypted LVM with just a passphrase and one encrypted drive
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -122,8 +122,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Encrypted RAID with just a passphrase and two encrypted drives
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -141,8 +141,8 @@ Encrypted RAID + LVM with just a passphrase and two encrypted drives
          then the lvm will activate the logical volumes on that assembled raid array and then boot your system.
 	 Thus, the raid operations are actionally transparent.
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -153,14 +153,14 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 }
 
 =======================================
-Encrypted Normal with one encrypted drive 
+Encrypted Normal with one encrypted drive
 =======================================
 
 ** Note: The program will auto mount all your encrypted drives as follows: /dev/mapper/vault_0, /dev/mapper/vault_1,
          /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -174,8 +174,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Encrypted ZFS with just a passphrase and four encrypted partitions
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -189,8 +189,8 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Encrypted ZFS with a gpg key and only one encrypted partition
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
@@ -204,14 +204,14 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Encrypted ZFS with an encrypted gpg key and two encrypted partitions
 =======================================
 
-# Funtoo
-menuentry "Funtoo - 3.9.9-FB.02" {
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
 	insmod part_gpt
 	insmod ext2
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
+	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/gentoo enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -219,7 +219,7 @@ menuentry "Funtoo - 3.9.9-FB.02" {
 Summary:
 =======================================
 
-This would load the 'vmlinuz-3.9.9-FB.02' kernel and try to mount the 'rpool/ROOT/funtoo' dataset
+This would load the 'vmlinuz-3.9.9-FB.02' kernel and try to mount the 'rpool/ROOT/gentoo' dataset
 as the / of the filesystem. It will then chroot into it and load your system.
 
 If you are using Encrypted ZFS, then the 'enc_root' parameter will luksOpen each of your listed
@@ -238,12 +238,12 @@ ZFS
 =======
 
 root - ZFS root name
-	example: linux <kernel> root=rpool/ROOT/funtoo
+	example: linux <kernel> root=rpool/ROOT/gentoo
 
 refresh - ignores the zpool.cache in the initramfs, creates a new one
           at import and then copies it into the rootfs. You should recreate
 		  your initramfs afterwards so that your initramfs has the new cache.
-	example: linux <kernel> root=rpool/ROOT/funtoo refresh
+	example: linux <kernel> root=rpool/ROOT/gentoo refresh
 
 =======
 LUKS + ZFS
@@ -265,14 +265,14 @@ enc_type - What type of method will are you using to decrypt?
 enc_key_drive - What drive the keyfile in?
 	example: linux <kernel> enc_root=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
 
-	In the above example, we use /dev/sdb1 because we will assume that every time we turn on the machine, 
+	In the above example, we use /dev/sdb1 because we will assume that every time we turn on the machine,
 	the encryption key will be in /dev/sdb1. We also assume that if you have your key in a removable media,
 	each time you plug that media in, the kernel will detect that device as /dev/sdb1. Using UUIDs would be a better
 	solution, but that would require bringing udev or some type of mechanism for automatically getting UUIDs and all
 	that stuff.
 
-enc_key - What is the path to the keyfile? 
-	You basically pass to grub where in the drive the file is located 
+enc_key - What is the path to the keyfile?
+	You basically pass to grub where in the drive the file is located
 	(After the initramfs mounts the drive that you have the key in).
 
 	example: linux <kernel> enc_root=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1 enc_key=/keys/root.gpg
@@ -301,7 +301,7 @@ su - Single User Mode. This is a really crappy implementation of a single user,
      mode. But at least it will help you if you forgot to change your password,
      after installation.
 
-     example: linux <kernel> root=rpool/ROOT/funtoo su
+     example: linux <kernel> root=rpool/ROOT/gentoo su
 
 =======================================
 Modules Support:
@@ -310,15 +310,15 @@ Modules Support:
 If you have compiled some critical stuff as modules rather than them being built
 into the kernel, you can now write which modules you need in the
 pkg/hooks/addon.sh "mods" variable. The initramfs will gather the module and
-it's dependencies and put them in the initramfs for you. Then the initramfs will 
+it's dependencies and put them in the initramfs for you. Then the initramfs will
 automatically load all those modules for you at boot.
 
 Example:
 	mods = [ "i915", "zfs", "ahci", "ext2", "ext3", "ext4", "dm-crypt",
 	      "ohci-hcd", "ehci-hcd", "xhci-hcd", "usb-storage" ]
 
-That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4 
-filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci 
-usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies 
+That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4
+filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci
+usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies
 are automatically gathered and compressed by the initramfs, and automatically
 loaded at boot in that order.
