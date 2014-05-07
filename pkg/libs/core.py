@@ -276,8 +276,6 @@ class Core:
 			# source: https://bbs.archlinux.org/viewtopic.php?id=153868
 			hostid = check_output(["hostid"], universal_newlines=True).strip()
 
-			tools.ewarn("hostid: " + hostid)
-
 			cmd = "printf $(echo -n " + hostid.upper() + " | " + \
 			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
 			"> " + var.temp + "/etc/hostid"

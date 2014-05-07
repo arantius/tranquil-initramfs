@@ -69,7 +69,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -181,7 +181,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -196,7 +196,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/funtoo enc_root=/dev/sda3 enc_type=key quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3 enc_type=key quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -211,7 +211,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=rpool/ROOT/gentoo enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -238,12 +238,12 @@ ZFS
 =======
 
 root - ZFS root name
-	example: linux <kernel> root=rpool/ROOT/gentoo
+	example: linux <kernel> root=tank/gentoo/root
 
 refresh - ignores the zpool.cache in the initramfs, creates a new one
           at import and then copies it into the rootfs. You should recreate
 		  your initramfs afterwards so that your initramfs has the new cache.
-	example: linux <kernel> root=rpool/ROOT/gentoo refresh
+	example: linux <kernel> root=tank/gentoo/root refresh
 
 =======
 LUKS + ZFS
@@ -301,7 +301,12 @@ su - Single User Mode. This is a really crappy implementation of a single user,
      mode. But at least it will help you if you forgot to change your password,
      after installation.
 
-     example: linux <kernel> root=rpool/ROOT/gentoo su
+     example: linux <kernel> root=tank/gentoo/root su
+
+init - Specifies the init system to use. If the init system isn't located in /sbin/init,
+       you can specific it explictly:
+
+     example: linux <kernel> root=tank/gentoo/root init=/path/to/init
 
 =======================================
 Modules Support:

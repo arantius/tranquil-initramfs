@@ -7,6 +7,7 @@
 - Improved parameter passing
 - Improved dependency detection
 - Visual improvements, including the removal of unneeded messages
+- Supports passing the init to launch with the "init" flag. Example: init=/sbin/blahblah
 
 4.1.2
 ---------

@@ -76,6 +76,9 @@ parse_cmdline()
 		options\=*)
 			options="$(get_opt ${x})"
 			;;
+		init\=*)
+			INIT="$(get_opt ${x})"
+			;;
 		refresh)
 			refresh="1"
 			;;
@@ -144,8 +147,7 @@ luks_trigger()
 
 			# What drive is the keyfile in?
 			if [[ -z ${enc_key_drive} ]]; then
-				eqst "Enter drive where keyfile is located: " \
-				&& read enc_key_drive && eline
+				eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
 
 				if [[ -z ${enc_key_drive} ]]; then
 					die "Error setting path to keyfile's drive!"
@@ -279,11 +281,9 @@ zfs_trigger()
 		zpool import -f -N -o cachefile= ${POOL_NAME}
 	elif [[ -f "${CACHE}" ]] && [[ "${refresh}" == "1" ]]; then
 		ewarn "Ignoring cache file and importing your pool ..."
+		ewarn "Please recreate your initramfs so that it can use your new zpool.cache!"
 
-		ewarn "Please recreate your initramfs so that" \
-		      "it can use your new zpool.cache!"
-
-		sleep 2
+		sleep 3
 
 		zpool export -f ${POOL_NAME} 2> /dev/null
 		zpool import -f -N -o cachefile= ${POOL_NAME}
@@ -319,9 +319,7 @@ mount_root()
 switch_to_root()
 {
 	einfo "Switching into your root device..." && eline
-
-	exec switch_root ${NEW_ROOT} ${INIT} || \
-	die "Failed to switch into your root device!"
+	exec switch_root ${NEW_ROOT} ${INIT}
 }
 
 # Checks all triggers
@@ -364,8 +362,7 @@ single_user()
 	mount --rbind /dev ${NEW_ROOT}/dev
 	mount --rbind /sys ${NEW_ROOT}/sys
 
-	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash -c \
-	'hostname ${RHOSTN}' && chroot ${NEW_ROOT} /bin/bash -l"
+	setsid cttyhack /bin/bash -c "chroot ${NEW_ROOT} /bin/bash -c 'hostname ${RHOSTN}' && chroot ${NEW_ROOT} /bin/bash -l"
 
 	# Lazy unmount these devices from the rootfs since they will be fully
 	# unmounted from the initramfs environment right after this function
