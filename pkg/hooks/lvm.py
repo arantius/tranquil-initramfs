@@ -9,14 +9,17 @@ import os
 from pkg.hooks.hook import Hook
 
 class LVM(Hook):
-	# Required Files
-	files = [
+	def __init__(self):
+		Hook.__init__(self)
 
-	]
+		# Required Files
+		self.files = [
 
-	# Add the static lvm to the files list if it exists,
-	# otherwise add the dynamically-linked lvm if it exists
-	if os.path.exists("/sbin/lvm.static"):
-		files.append("/sbin/lvm.static")
-	elif os.path.exists("/sbin/lvm"):
-		files.append("/sbin/lvm")
+		]
+
+		# Add the static lvm to the files list if it exists,
+		# otherwise add the dynamically-linked lvm if it exists
+		if os.path.exists("/sbin/lvm.static"):
+			self.files.append("/sbin/lvm.static")
+		elif os.path.exists("/sbin/lvm"):
+			self.files.append("/sbin/lvm")

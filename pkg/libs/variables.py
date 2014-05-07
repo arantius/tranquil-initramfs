@@ -20,6 +20,13 @@ license = "MPL 2.0"
 # Locations
 home = os.getcwd()
 
+# Kernel and Menu Choice
+kernel = ""
+modules = ""
+lmodules = ""
+initrd = "initrd"
+choice = ""
+
 rstring = str(random.randint(1000,2000)) + "-" + \
 		  str(random.randint(2000,3000)) + "-" + \
 		  str(random.randint(3000,4000)) + "-" + \
@@ -55,6 +62,7 @@ arch = subprocess.check_output(["uname", "-m"], universal_newlines=True).strip()
 # but that are not needed to be placed inside the initrd
 prel_bin = [
 	"/bin/cpio",
+	"/sbin/depmod",
 ]
 
 # Layout of the initramfs

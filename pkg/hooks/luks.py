@@ -7,10 +7,13 @@
 from pkg.hooks.hook import Hook
 
 class LUKS(Hook):
-	# Required Files
-	files = [
-		"/sbin/cryptsetup",
-		"/usr/bin/gpg",
-		"/usr/bin/gpg-agent",
-		"/usr/share/gnupg/gpg-conf.skel",
-	]
+	def __init__(self):
+		Hook.__init__(self)
+
+		# Required Files
+		self.files = [
+			"/sbin/cryptsetup",
+			"/usr/bin/gpg",
+			"/usr/bin/gpg-agent",
+			"/usr/share/gnupg/gpg-conf.skel",
+		]

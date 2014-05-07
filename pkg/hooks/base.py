@@ -8,37 +8,48 @@ from pkg.hooks.hook import Hook
 from pkg.libs.toolkit import Toolkit as tools
 
 class Base(Hook):
-	# Activate the Base implicitly since it will always be included in all initramfs
-	use = 1
+	def __init__(self):
+		Hook.__init__(self)
 
-	# Set the kmod path for this system
-	# Gentoo = /bin/kmod; Funtoo = /sbin/kmod
-	kmod_path = tools.find_prog("kmod")
+		# Activate the Base implicitly since it will always be included in all initramfs
+		self.use = 1
 
-	files = [
-		# sys-apps/busybox
-		"/bin/busybox",
+		# Set the kmod path for this system
+		# Gentoo = /bin/kmod; Funtoo = /sbin/kmod
+		self.kmod_path = tools.find_prog("kmod")
 
-		# sys-apps/kmod
-		kmod_path,
+		self.files = [
+			# sys-apps/busybox
+			"/bin/busybox",
 
-		# app-shells/bash
-		"/bin/bash",
-		"/etc/bash/bashrc",
-		"/etc/DIR_COLORS",
-		"/etc/profile",
+			# sys-apps/kmod
+			self.kmod_path,
 
-		# sys-apps/grep
-		"/bin/egrep",
-		"/bin/fgrep",
-		"/bin/grep",
-	]
+			# app-shells/bash
+			"/bin/bash",
+			"/etc/bash/bashrc",
+			"/etc/DIR_COLORS",
+			"/etc/profile",
 
-	kmod_links = [
-		"depmod",
-		"insmod",
-		"lsmod",
-		"modinfo",
-		"modprobe",
-		"rmmod",
-	]
+			# sys-apps/grep
+			"/bin/egrep",
+			"/bin/fgrep",
+			"/bin/grep",
+		]
+
+		self.kmod_links = [
+			"depmod",
+			"insmod",
+			"lsmod",
+			"modinfo",
+			"modprobe",
+			"rmmod",
+		]
+
+		# Returns the kmod path
+		def get_kmod_path(self):
+			return self.kmod_path
+
+		# Returns the kmod links
+		def get_kmod_links(self):
+			return self.kmod_links

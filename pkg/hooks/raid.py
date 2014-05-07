@@ -7,7 +7,10 @@
 from pkg.hooks.hook import Hook
 
 class RAID(Hook):
-	# Requires Files
-	files = [
-		"/sbin/mdadm",
-	]
+	def __init__(self):
+		Hook.__init__(self)
+
+		# Requires Files
+		self.files = [
+			"/sbin/mdadm",
+		]

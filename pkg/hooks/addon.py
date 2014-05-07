@@ -7,8 +7,11 @@
 from pkg.hooks.hook import Hook
 
 class Addon(Hook):
-	# A list of kernel modules to include in the initramfs
-	# Format: "module1", "module2", "module3", ...
-	files = [
+	def __init__(self):
+		Hook.__init__(self)
 
-	]
+		# A list of kernel modules to include in the initramfs
+		# Format: "module1", "module2", "module3", ...
+		self.files = [
+
+		]

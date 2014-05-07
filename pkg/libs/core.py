@@ -6,14 +6,15 @@
 
 import os
 import shutil
+import re
 
 from subprocess import call
 from subprocess import check_output
-from subprocess import PIPE
-from subprocess import Popen
+from subprocess import CalledProcessError
 
-from pkg.libs.variables import Variables
-from pkg.libs.toolkit import Toolkit
+import pkg.libs.variables as var
+
+from pkg.libs.toolkit import Toolkit as tools
 
 from pkg.hooks.base import Base
 from pkg.hooks.zfs import ZFS
@@ -22,14 +23,8 @@ from pkg.hooks.raid import RAID
 from pkg.hooks.luks import LUKS
 from pkg.hooks.addon import Addon
 
-tools = Toolkit()
-var = Variables()
-
+# Contains the core of the application
 class Core:
-	"""
-	Contains the core of the application
-	"""
-
 	def __init__(self):
 		self.base = Base()
 		self.zfs = ZFS()
@@ -38,92 +33,61 @@ class Core:
 		self.luks = LUKS()
 		self.addon = Addon()
 
-		self.choice = ""
-		self.kernel = ""
-		self.modules = ""
-		self.lmodules = ""
-		self.initrd = "initrd"
+		# List of binaries (That will be 'ldd'ed later)
+		self.binset = set()
 
-	def print_header(self):
-		""" Prints the header of the application """
-
-		call(["echo", "-e", "\e[1;33m----------------------------------\e[0;m"])
-
-		call(["echo", "-e", "\e[1;33m| " + var.name + " - v" +
-		var.version + "\e[0;m"])
-
-		call(["echo", "-e", "\e[1;33m| " + var.contact + "\e[0;m"])
-
-		call(["echo", "-e", "\e[1;33m| Licensed under the " +
-		var.license + "\e[0;m"])
-
-		call(["echo", "-e", "\e[1;33m----------------------------------\e[0;m"])
+		# List of modules that will be compressed
+		self.modset = set()
 
 	# Prints the menu and accepts user choice
 	def print_menu(self):
 		# If the user didn't pass an option through the command line,
 		# then ask them which initramfs they would like to generate.
-		if not self.choice:
+		if not var.choice:
 			tools.einfo("Which initramfs would you like to generate:")
-			self.print_options()
-			self.choice = tools.eqst("Current choice [1]: ")
+			tools.print_options()
+			var.choice = tools.eqst("Current choice [1]: ")
 
-		# Enable the addons if the addon.mods is not empty
-		if self.addon.modules:
-			self.addon.use = "1"
+		# Enable the addons if the addon has files (modules) listed
+		if self.addon.get_files():
+			self.addon.enable_use()
 
-		if self.choice == "1" or not self.choice:
-			self.zfs.use = "1"
-			self.addon.use = "1"
-			self.addon.modules.append("zfs")
-		elif self.choice == "2":
-			self.lvm.use = "1"
-		elif self.choice == "3":
-			self.raid.use = "1"
-		elif self.choice == "4":
-			self.raid.use = "1"
-			self.lvm.use = "1"
-		elif self.choice == "5":
+		if var.choice == "1" or not var.choice:
+			self.zfs.enable_use()
+			self.addon.enable_use()
+			self.addon.add_to_files("zfs")
+		elif var.choice == "2":
+			self.lvm.enable_use()
+		elif var.choice == "3":
+			self.raid.enable_use()
+		elif var.choice == "4":
+			self.raid.enable_use()
+			self.lvm.enable_use()
+		elif var.choice == "5":
 			pass
-		elif self.choice == '6':
-			self.luks.use = "1"
-			self.zfs.use = "1"
-			self.addon.use = "1"
-			self.addon.modules.append("zfs")
-		elif self.choice == "7":
-			self.luks.use = "1"
-			self.lvm.use = "1"
-		elif self.choice == "8":
-			self.luks.use = "1"
-			self.raid.use = "1"
-		elif self.choice == "9":
-			self.luks.use = "1"
-			self.raid.use = "1"
-			self.lvm.use = "1"
-		elif self.choice == "10":
-			self.luks.use = "1"
-		elif self.choice == '11':
+		elif var.choice == '6':
+			self.luks.enable_use()
+			self.zfs.enable_use()
+			self.addon.enable_use()
+			self.addon.add_to_files("zfs")
+		elif var.choice == "7":
+			self.luks.enable_use()
+			self.lvm.enable_use()
+		elif var.choice == "8":
+			self.luks.enable_use()
+			self.raid.enable_use()
+		elif var.choice == "9":
+			self.luks.enable_use()
+			self.raid.enable_use()
+			self.lvm.enable_use()
+		elif var.choice == "10":
+			self.luks.enable_use()
+		elif var.choice == '11':
 			tools.ewarn("Exiting.")
-			quit()
+			quit(1)
 		else:
 			tools.ewarn("Invalid Option. Exiting.")
-			quit()
-
-	# Prints the available options
-	def print_options(self):
-		tools.eline()
-		tools.eopt("1. ZFS")
-		tools.eopt("2. LVM")
-		tools.eopt("3. RAID")
-		tools.eopt("4. LVM on RAID")
-		tools.eopt("5. Normal Boot")
-		tools.eopt("6. Encrypted ZFS")
-		tools.eopt("7. Encrypted LVM")
-		tools.eopt("8. Encrypted RAID")
-		tools.eopt("9. Encrypted LVM on RAID")
-		tools.eopt("10. Encrypted Normal")
-		tools.eopt("11. Exit Program")
-		tools.eline()
+			quit(1)
 
 	# Creates the base directory structure
 	def create_baselayout(self):
@@ -137,43 +101,39 @@ class Core:
 
 	# Ask the user if they want to use their current kernel, or another one
 	def do_kernel(self):
-		if not self.kernel:
-			current_kernel = check_output(["uname", "-r"],
-			                 universal_newlines=True).strip()
+		if not var.kernel:
+			current_kernel = check_output(["uname", "-r"], universal_newlines=True).strip()
 
 			tools.eline()
-
-			x = "Do you want to use the current kernel: " + \
-			     current_kernel + " [Y/n]: "
-
-			self.choice = tools.eqst(x)
+			x = "Do you want to use the current kernel: " + current_kernel + " [Y/n]: "
+			var.choice = tools.eqst(x)
 			tools.eline()
 
-			if self.choice == 'y' or self.choice == 'Y' or self.choice == '':
-				self.kernel = current_kernel
-			elif self.choice == 'n' or self.choice == 'N':
-				self.kernel = tools.eqst("Please enter the kernel name: ")
+			if var.choice == 'y' or var.choice == 'Y' or not var.choice:
+				var.kernel = current_kernel
+			elif var.choice == 'n' or var.choice == 'N':
+				var.kernel = tools.eqst("Please enter the kernel name: ")
 				tools.eline()
 
-				if self.kernel == "":
+				if not var.kernel:
 					tools.die("You didn't enter a kernel. Exiting...")
 			else:
 				tools.die("Invalid Option. Exiting.")
 
 		# Set modules path to correct location and
 		# sets kernel name for initramfs
-		self.modules = "/lib/modules/" + self.kernel + "/"
-		self.lmodules = var.temp + "/" + self.modules
-		self.initrd = "initrd-" + self.kernel
+		var.modules = "/lib/modules/" + var.kernel + "/"
+		var.lmodules = var.temp + "/" + var.modules
+		var.initrd = "initrd-" + var.kernel
 
 		# Check modules directory
 		self.check_mods_dir()
 
 	# Check to make sure the kernel modules directory exists
 	def check_mods_dir(self):
-		tools.einfo("Checking to see if " + self.modules + " exists ...")
+		tools.einfo("Checking to see if " + var.modules + " exists ...")
 
-		if not os.path.exists(self.modules):
+		if not os.path.exists(var.modules):
 			tools.die("Modules directory doesn't exist.")
 
 	# Make sure that the arch is x86_64
@@ -194,27 +154,28 @@ class Core:
 	def do_modules(self):
 		tools.einfo("Compressing kernel modules ...")
 
-		cmd = "find " + self.lmodules + " -name " + "*.ko"
-		cap = os.popen(cmd)
+		cmd = "find " + var.lmodules + " -name " + "*.ko"
+		results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
-		for x in cap:
-			cmd = "gzip -9 " + x.strip()
-			call(cmd, shell=True)
+		for x in results:
+			cmd = "gzip -9 " + x
+			cr = call(cmd, shell=True)
 
-		cap.close()
+			if cr != 0:
+				tools.die("Unable to compress " + x + " !")
 
+	# Generates the modprobe information
+	def gen_modinfo(self):
 		tools.einfo("Generating modprobe information ...")
 
-		# Copy modules.order and modules.builtin just so depmod
-		# doesn't spit out warnings. -_-
-		tools.ecopy(self.modules + "/modules.order")
-		tools.ecopy(self.modules + "/modules.builtin")
+		# Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
+		tools.ecopy(var.modules + "/modules.order")
+		tools.ecopy(var.modules + "/modules.builtin")
 
-		result = call(["depmod", "-b", var.temp, self.kernel])
+		result = call(["depmod", "-b", var.temp, var.kernel])
 
 		if result != 0:
-			tools.die("Either you don't have depmod, or " +
-					  "another problem occured")
+			tools.die("You've encountered an unknown problem!")
 
 	# Create the required symlinks to it
 	def create_links(self):
@@ -224,14 +185,18 @@ class Core:
 		os.chdir(var.lbin)
 
 		# Create busybox links
-		cmd = "chroot " + var.temp + \
-		" /bin/busybox sh -c \"cd /bin && /bin/busybox --install -s .\""
+		cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
 
-		call(cmd, shell=True)
+		cr = call(cmd, shell=True)
+
+		if cr != 0:
+			tools.die("Unable to create busybox links via chroot!")
 
 		# Create 'sh' symlink to 'bash'
 		os.remove(var.temp + "/bin/sh")
 		os.symlink("bash", "sh")
+
+		print("Kmod: " + self.base.get_kmod_path())
 
 		# Switch to the kmod directory, delete the corresponding busybox
 		# symlink and create the symlinks pointing to kmod
@@ -240,11 +205,12 @@ class Core:
 		elif os.path.isfile(var.lbin + "/kmod"):
 			os.chdir(var.lbin)
 
-		for target in self.base.kmod_links:
-			os.remove(var.temp + "/bin/" + target)
-			os.symlink("kmod", target)
+		for link in self.base.get_kmod_links():
+			os.remove(var.temp + "/bin/" + link)
+			os.symlink("kmod", link)
 
 		# If 'lvm.static' exists, then make a 'lvm' symlink to it
+		print("LVM: " + self.lvm.print_files())
 		if os.path.isfile(var.lsbin + "/lvm.static"):
 			os.symlink("lvm.static", "lvm")
 
@@ -260,34 +226,19 @@ class Core:
 			tools.die("Error creating the mtab file. Exiting.")
 
 		# Set library symlinks
-		if os.path.isdir(var.temp + "/usr/lib") and \
-		   os.path.isdir(var.temp + "/lib64"):
-			pcmd = "find /usr/lib -iname \"*.so.*\" " + \
-			       "-exec ln -s \"{}\" /lib64 \;"
-
-			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
-			pcmd + "\""
-
+		if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
+			pcmd = 'find /usr/lib -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+			cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
 			call(cmd, shell=True)
 
-		if os.path.isdir(var.temp + "/usr/lib32") and \
-		   os.path.isdir(var.temp + "/lib32"):
-			pcmd = "find /usr/lib32 -iname \"*.so.*\" " + \
-			       "-exec ln -s \"{}\" /lib32 \;"
-
-			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
-			pcmd + "\""
-
+		if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
+			pcmd = 'find /usr/lib32 -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
+			cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
 			call(cmd, shell=True)
 
-		if os.path.isdir(var.temp + "/usr/lib64") and \
-		   os.path.isdir(var.temp + "/lib64"):
-			pcmd = "find /usr/lib64 -iname \"*.so.*\" " + \
-			       "-exec ln -s \"{}\" /lib64 \;"
-
-			cmd = "chroot " + var.temp + " /bin/busybox sh -c \"" + \
-			pcmd + "\""
-
+		if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
+			pcmd = 'find /usr/lib64 -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+			cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
 			call(cmd, shell=True)
 
 		# Copy init functions
@@ -296,32 +247,28 @@ class Core:
 		# Copy the init script
 		shutil.copy(var.phome + "/files/init", var.temp)
 
-		# Give execute permissions to the script
-		call(["chmod", "u+x", var.temp + "/init"])
-
 		if not os.path.isfile(var.temp + "/init"):
 			tools.die("Error creating the init file. Exiting.")
 
-		# Fix 'poweroff, reboot' commands
-		call("sed -i \"71a alias reboot='reboot -f' \" " +
-			var.temp + "/etc/bash/bashrc", shell=True)
+		# Give execute permissions to the script
+		cr = call(["chmod", "u+x", var.temp + "/init"])
 
-		call("sed -i \"71a alias poweroff='poweroff -f' \" " +
-			var.temp + "/etc/bash/bashrc", shell=True)
+		if cr != 0:
+			tools.die("Failed to give executive privileges to " + var.temp + "/init")
+
+		# Fix 'poweroff, reboot' commands
+		call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+		call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
 
 		# Sets initramfs script version number
-		call(["sed", "-i", "-e", "27s/0/" + var.version +
-			"/", var.temp + "/init"])
+		call(["sed", "-i", "-e", "27s/0/" + var.version + "/", var.temp + "/init"])
 
 		# Fix EDITOR/PAGER
-		call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:",
-			var.temp + "/etc/profile"])
-
-		call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:",
-			var.temp + "/etc/profile"])
+		call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
+		call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
 
 		# Any last substitutions or additions/modifications should be done here
-		if self.zfs.use == "1":
+		if self.zfs.get_use():
 			# Enable ZFS in the init if ZFS is being used
 			call(["sed", "-i", "-e", "13s/0/1/", var.temp + "/init"])
 
@@ -335,6 +282,7 @@ class Core:
 			# source: https://bbs.archlinux.org/viewtopic.php?id=153868
 			hostid = check_output(["hostid"], universal_newlines=True).strip()
 
+			print("hostid: " + hostid)
 			cmd = "printf $(echo -n " + hostid.upper() + " | " + \
 			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
 			"> " + var.temp + "/etc/hostid"
@@ -349,23 +297,22 @@ class Core:
 				tools.ewarn("No zpool.cache was found. It will not be used ...")
 
 		# Enable RAID in the init if RAID is being used
-		if self.raid.use == "1":
+		if self.raid.get_use() == "1":
 			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
 
 		# Enable LVM in the init if LVM is being used
-		if self.lvm.use == "1":
+		if self.lvm.get_use() == "1":
 			call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
 
 		# Enable LUKS in the init if LUKS is being used
-		if self.luks.use == "1":
+		if self.luks.get_use() == "1":
 			call(["sed", "-i", "-e", "16s/0/1/", var.temp + "/init"])
 
 		# Enable ADDON in the init and add our modules to the initramfs
 		# if addon is being used
-		if self.addon.use == "1":
+		if self.addon.get_use() == "1":
 			call(["sed", "-i", "-e", "17s/0/1/", var.temp + "/init"])
-			call(["sed", "-i", "-e", "18s/\"\"/\"" +
-			" ".join(self.addon.modules) + "\"/", var.temp + "/libs/common.sh"])
+			call(["sed", "-i", "-e", "18s/\"\"/\"" + " ".join(self.addon.modules) + "\"/", var.temp + "/libs/common.sh"])
 
 	# Create the solution
 	def create(self):
@@ -376,18 +323,155 @@ class Core:
 		# the ${T} path.
 		os.chdir(var.temp)
 
-		call(["find . -print0 | cpio -o --null --format=newc | \
-			gzip -9 > " +  var.home + "/" + self.initrd], shell=True)
+		call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " +  var.home + "/" + var.initrd], shell=True)
 
-		if not os.path.isfile(var.home + "/" + self.initrd):
+		if not os.path.isfile(var.home + "/" + var.initrd):
 			tools.die("Error creating the initramfs. Exiting.")
 
-	# Getters
-	def get_kernel(self):
-		return self.kernel
+	# Checks to see if the binaries exist, if not then emerge
+	def check_binaries(self):
+		tools.einfo("Checking required files ...")
 
-	def get_module(self):
-		return self.module
+		# Check required base files
+		for f in self.base.get_files():
+			if not os.path.exists(f):
+				tools.err_bin_dexi(f)
 
-	def get_initrd(self):
-		return self.initrd
+		# Check required zfs files
+		if self.zfs.get_use() == "1":
+			tools.eflag("Using ZFS")
+			for f in self.zfs.get_files():
+				if not os.path.exists(f):
+					tools.err_bin_dexi(f)
+
+		# Check required lvm files
+		if self.lvm.get_use() == "1":
+			tools.eflag("Using LVM")
+			for f in self.lvm.get_files():
+				if not os.path.exists(f):
+					tools.err_bin_dexi(f)
+
+		# Check required raid files
+		if self.raid.get_use() == "1":
+			tools.eflag("Using RAID")
+			for f in self.raid.get_files():
+				if not os.path.exists(f):
+					tools.err_bin_dexi(f)
+
+		# Check required luks files
+		if self.luks.get_use() == "1":
+			tools.eflag("Using LUKS")
+			for f in self.luks.get_files():
+				if not os.path.exists(f):
+					tools.err_bin_dexi(f)
+
+	# Installs the packages
+	def install(self):
+		tools.einfo("Copying required files ...")
+
+		for f in self.base.get_files():
+			self.emerge(f)
+
+		if self.zfs.get_use():
+			for f in self.zfs.get_files():
+				self.emerge(f)
+
+		if self.lvm.get_use():
+			for f in self.lvm.get_files():
+				self.emerge(f)
+
+		if self.raid.get_use():
+			for f in self.raid.get_files():
+				self.emerge(f)
+
+		if self.luks.get_use():
+			for f in self.luks.get_files():
+				self.emerge(f)
+
+	# Filters and installs a package into the initramfs
+	def emerge(self, afile):
+		# If the application is a binary, add it to our binary set
+		try:
+			lcmd = check_output('file ' + afile.strip() + ' | grep "linked"', universal_newlines=True, shell=True).strip()
+
+			self.binset.add(afile)
+		except CalledProcessError:
+			pass
+
+		# Copy the file into the initramfs
+		tools.ecopy(afile)
+
+	# Copy modules and their dependencies
+	def copy_modules(self):
+		tools.einfo("Copying modules ...")
+
+		moddeps = set()
+
+		# Build the list of module dependencies
+		if self.addon.get_use():
+			# Checks to see if all the modules in the list exist
+			for x in self.addon.modules:
+				try:
+					cmd = 'find ' + self.modules + ' -iname "' + x + '.ko" | grep ' + x + '.ko'
+					result = check_output(cmd, universal_newlines=True, shell=True).strip()
+					self.modset.add(result)
+				except CalledProcessError:
+					tools.err_mod_dexi(x)
+
+		# If a kernel has been set, try to update the module dependencies
+		# database before searching it
+		if self.kernel:
+			result = call(["depmod", self.kernel])
+
+			if result:
+				tools.die("Error updating module dependency database!")
+
+		# Get the dependencies for all the modules in our set
+		for x in self.modset:
+			# Get only the name of the module
+			match = re.search('(?<=/)\w+.ko', x)
+
+			if match:
+				sx = match.group().split(".")[0]
+
+				cmd = "modprobe -S " + self.kernel + " --show-depends " + sx + " | awk -F ' ' '{print $2}'"
+				results = check_output(cmd, shell=True, universal_newlines=True).strip()
+
+				for i in results:
+					moddeps.add(i.strip())
+
+		# Copy the modules/dependencies
+		if moddeps:
+			for x in moddeps:
+				tools.ecopy(x)
+
+			# Compress the modules and update module dependency database
+			# inside the initramfs
+			self.do_modules()
+
+	# Gets the library dependencies for all our binaries and copies them
+	# into our initramfs.
+	def copy_deps(self):
+		tools.einfo("Copying library dependencies ...")
+
+		bindeps = set()
+
+		# Get the interpreter name that is on this system
+		results = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
+
+		# Add intepreter to deps since everything will depend on it
+		bindeps.add(results)
+
+		# Get the dependencies for the binaries we've collected and add them to
+		# our bindeps set. These will all be copied into the initramfs later.
+		for b in self.binset.strip():
+			cmd = "ldd " + b + " | awk -F '=>' '{print $2}' | sed '/^ *$/d' | awk -F '(' '{print $1}'"
+			results = check_output(cmd, shell=True, universal_newlines=True).strip()
+
+			for j in results:
+				bindeps.add(j)
+
+		# Copy all the dependencies of the binary files into the initramfs
+		for x in bindeps:
+			tools.ecopy(x)
+

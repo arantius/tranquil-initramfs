@@ -27,15 +27,43 @@ class Toolkit:
 		# Let the user directly create an initramfs if no modules are needed
 		if len(arguments) == 1:
 			if arguments[0] != "1" and arguments[0] != "6":
-				if not core.addon.modules:
-					core.choice = arguments[0]
+				if not core.addon.get_files():
+					var.choice = arguments[0]
 			else:
 				cls.die("You must pass a kernel parameter")
 
 		# If there are two parameters then we will use them, else just ignore them
 		elif len(arguments) == 2:
-			core.choice = arguments[0]
-			core.kernel = arguments[1]
+			var.choice = arguments[0]
+			var.kernel = arguments[1]
+
+	# Prints the header of the application
+	@classmethod
+	def print_header(cls):
+		""" Prints the header of the application """
+
+		cls.ewarn("----------------------------------")
+		cls.ewarn("| " + var.name + " - v" + var.version)
+		cls.ewarn("| " + var.contact)
+		cls.ewarn("| Distributed under the " + var.license)
+		cls.ewarn("----------------------------------")
+
+	# Prints the available options
+	@classmethod
+	def print_options(cls):
+		cls.eline()
+		cls.eopt("1. ZFS")
+		cls.eopt("2. LVM")
+		cls.eopt("3. RAID")
+		cls.eopt("4. LVM on RAID")
+		cls.eopt("5. Normal Boot")
+		cls.eopt("6. Encrypted ZFS")
+		cls.eopt("7. Encrypted LVM")
+		cls.eopt("8. Encrypted RAID")
+		cls.eopt("9. Encrypted LVM on RAID")
+		cls.eopt("10. Encrypted Normal")
+		cls.eopt("11. Exit Program")
+		cls.eline()
 
 	# Message for displaying the starting generating event
 	@classmethod

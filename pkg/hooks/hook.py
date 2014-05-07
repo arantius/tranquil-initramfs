@@ -7,45 +7,38 @@
 from pkg.libs.toolkit import Toolkit as tools
 
 class Hook:
-	use = 0
-
-	files = []
+	def __init__(self):
+		self.use = 0
+		self.files = []
 
 	# Enables the use value
-	@classmethod
-	def enable_use(cls):
-		cls.use = 1
+	def enable_use(self):
+		self.use = 1
 
 	# Disables the use value
-	@classmethod
-	def disable_use(cls):
-		cls.use = 0
+	def disable_use(self):
+		self.use = 0
 
 	# Gets the use value
-	@classmethod
-	def get_use(cls):
-		return cls.use
+	def get_use(self):
+		return self.use
 
 	# Adds a file to the list
-	@classmethod
-	def add_to_files(cls, afile):
-		cls.files.append(afile)
+	def add_to_files(self, afile):
+		self.files.append(afile)
 
 	# Deletes a file from the list
-	@classmethod
-	def remove_from_files(cls, afile):
+	def remove_from_files(self, afile):
 		try:
-			cls.files.remove(afile)
+			self.files.remove(afile)
 		except ValueError:
 			tools.die("The file \"" + afile + "\" was not found on the list!")
 
 	# Prints the files in the list
-	@classmethod
-	def print_files(cls):
-		for i in cls.files:
+	def print_files(self):
+		for i in self.files:
 			print("File: " + i)
 
 	# Returns the list
-	@classmethod
-	def get_files(cls):
-		return cls.files
+	def get_files(self):
+		return self.files
