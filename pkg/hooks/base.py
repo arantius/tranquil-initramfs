@@ -46,10 +46,10 @@ class Base(Hook):
 			"rmmod",
 		]
 
-		# Returns the kmod path
-		def get_kmod_path(self):
-			return self.kmod_path
+	# Returns the kmod path
+	def get_kmod_path(self):
+		return self.kmod_path
 
-		# Returns the kmod links
-		def get_kmod_links(self):
-			return self.kmod_links
+	# Returns the kmod links
+	def get_kmod_links(self):
+		return self.kmod_links

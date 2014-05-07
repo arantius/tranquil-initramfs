@@ -129,6 +129,7 @@ class Toolkit:
 		# before copying.
 		path = var.temp + "/" + afile
 
+		print("Attempting to install " + afile + " to " + path)
 		if os.path.exists(path):
 			if os.path.isfile(path):
 				os.remove(path)
@@ -144,6 +145,10 @@ class Toolkit:
 					shutil.copy(afile, path)
 			elif os.path.isdir(afile):
 				os.makedirs(path)
+
+		# Finally lets make sure that the file was copied to its destination
+		if not os.path.isfile(path):
+			cls.die("Unable to copy " + afile + " to " + path + "!")
 
 	####### Message Functions #######
 

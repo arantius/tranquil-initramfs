@@ -6,12 +6,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import sys
-import os
-
 from subprocess import call
 
 import pkg.libs.variables as var
+
 from pkg.libs.core import Core
 from pkg.libs.toolkit import Toolkit as tools
 
@@ -29,33 +27,28 @@ class Creator:
 		"""
 
 		tools.welcome(self.core)
-
 		call(["clear"])
-
 		tools.print_header()
-
 		self.core.print_menu()
 
-		if self.core.addon.get_files():
+		if var.kernel or self.core.addon.get_files():
 			self.core.do_kernel()
 			self.core.gen_modinfo()
-
-		"""
 
 		self.core.get_arch()
 		tools.print_start()
 		tools.clean()
 		self.core.check_prelim_binaries()
 		self.core.create_baselayout()
-		self.copy.check_binaries()
-		self.copy.install()
-		self.copy.copy_modules()
+		self.core.check_binaries()
+		self.core.install()
+		self.core.copy_modules()
 		self.core.create_links()
-		self.copy.copy_deps()
+		self.core.copy_deps()
+
 		self.core.last_steps()
 		self.core.create()
-		tools.clean_exit(self.core.get_initrd())
-		"""
+		tools.clean_exit(var.initrd)
 
 if __name__ == '__main__':
 	init = Creator()
