@@ -21,11 +21,8 @@ class Creator:
 	def __init__(self):
 		self.core = Core()
 
+	# Let the games begin ...
 	def main(self):
-		"""
-		Let the games begin!
-		"""
-
 		tools.welcome(self.core)
 		call(["clear"])
 		tools.print_header()
@@ -33,10 +30,8 @@ class Creator:
 
 		if var.kernel or self.core.addon.get_files():
 			self.core.do_kernel()
-			self.core.gen_modinfo()
 
 		self.core.get_arch()
-		tools.print_start()
 		tools.clean()
 		self.core.check_prelim_binaries()
 		self.core.create_baselayout()
@@ -45,7 +40,6 @@ class Creator:
 		self.core.copy_modules()
 		self.core.create_links()
 		self.core.copy_deps()
-
 		self.core.last_steps()
 		self.core.create()
 		tools.clean_exit(var.initrd)

@@ -40,13 +40,11 @@ class Toolkit:
 	# Prints the header of the application
 	@classmethod
 	def print_header(cls):
-		""" Prints the header of the application """
-
-		cls.ewarn("----------------------------------")
-		cls.ewarn("| " + var.name + " - v" + var.version)
-		cls.ewarn("| " + var.contact)
-		cls.ewarn("| Distributed under the " + var.license)
-		cls.ewarn("----------------------------------")
+		cls.eprint(cls.colorize("yellow", "----------------------------------"))
+		cls.eprint(cls.colorize("yellow", var.name + " - v" + var.version))
+		cls.eprint(cls.colorize("yellow", var.contact))
+		cls.eprint(cls.colorize("yellow", "Distributed under the " + var.license))
+		cls.eprint(cls.colorize("yellow", "----------------------------------") + "\n")
 
 	# Prints the available options
 	@classmethod
@@ -63,13 +61,6 @@ class Toolkit:
 		cls.eopt("9. Encrypted LVM on RAID")
 		cls.eopt("10. Encrypted Normal")
 		cls.eopt("11. Exit Program")
-		cls.eline()
-
-	# Message for displaying the starting generating event
-	@classmethod
-	def print_start(cls):
-		cls.eline()
-		cls.einfo("[ Starting ]")
 		cls.eline()
 
 	# Finds the path to a program on the system
@@ -110,13 +101,8 @@ class Toolkit:
 	# Clean up and exit after a successfull build
 	@classmethod
 	def clean_exit(cls, initrd):
-		cls.eline()
-		cls.einfo("[ Complete ]")
-		cls.eline()
 		cls.clean()
-
-		cls.einfo("Please copy the " + initrd + " to your " + "/boot directory")
-
+		cls.einfo("Please copy \"" + initrd + "\" to your " + "/boot directory")
 		quit()
 
 	# Intelligently copies the file into the initramfs
@@ -129,7 +115,6 @@ class Toolkit:
 		# before copying.
 		path = var.temp + "/" + afile
 
-		print("Attempting to install " + afile + " to " + path)
 		if os.path.exists(path):
 			if os.path.isfile(path):
 				os.remove(path)
@@ -170,10 +155,15 @@ class Toolkit:
 
 		return colored_message
 
+	# Prints a message through the shell
+	@classmethod
+	def eprint(cls, message):
+		call(["echo", "-e", message])
+
 	# Used for displaying information
 	@classmethod
 	def einfo(cls, message):
-		call(["echo", "-e", cls.colorize("green", message)])
+		call(["echo", "-e", cls.colorize("green", "[*] ") + message])
 
 	# Used for input (questions)
 	@classmethod
@@ -183,23 +173,22 @@ class Toolkit:
 	# Used for warnings
 	@classmethod
 	def ewarn(cls, message):
-		call(["echo", "-e", cls.colorize("yellow", message)])
+		call(["echo", "-e", cls.colorize("yellow", "[!] ") + message])
 
 	# Used for flags (aka using zfs, luks, etc)
 	@classmethod
 	def eflag(cls, flag):
-		call(["echo", "-e", cls.colorize("purple", flag)])
+		call(["echo", "-e", cls.colorize("purple", "[+] ") + flag])
 
 	# Used for options
 	@classmethod
 	def eopt(cls, opt):
-		call(["echo", "-e", cls.colorize("cyan", opt)])
+		call(["echo", "-e", cls.colorize("cyan", "[>] ") + opt])
 
 	# Used for errors
 	@classmethod
 	def die(cls, message):
-		cls.eline()
-		call(["echo", "-e", cls.colorize("red", message)])
+		cls.eprint(cls.colorize("red", "[#] ") + message)
 		cls.eline()
 		cls.clean()
 		quit(1)

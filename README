@@ -11,7 +11,7 @@ Please have the following installed:
 
 - Linux Kernel
   ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared
-  in the 'mods' variable in pkg/hooks/addon.py.
+  in the 'mods' variable in pkg/hooks/addon.py (Used for ZFS)
 
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support

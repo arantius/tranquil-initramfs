@@ -44,9 +44,10 @@ class Core:
 		# If the user didn't pass an option through the command line,
 		# then ask them which initramfs they would like to generate.
 		if not var.choice:
-			tools.einfo("Which initramfs would you like to generate:")
+			print("Which initramfs would you like to generate:")
 			tools.print_options()
 			var.choice = tools.eqst("Current choice [1]: ")
+			tools.eline()
 
 		# Enable the addons if the addon has files (modules) listed
 		if self.addon.get_files():
@@ -56,9 +57,6 @@ class Core:
 			self.zfs.enable_use()
 			self.addon.enable_use()
 			self.addon.add_to_files("zfs")
-
-			print("ZFS USE: " + str(self.zfs.get_use()))
-			print("ADDON USE: " + str(self.addon.get_use()))
 		elif var.choice == "2":
 			self.lvm.enable_use()
 		elif var.choice == "3":
@@ -107,7 +105,6 @@ class Core:
 		if not var.kernel:
 			current_kernel = check_output(["uname", "-r"], universal_newlines=True).strip()
 
-			tools.eline()
 			x = "Do you want to use the current kernel: " + current_kernel + " [Y/n]: "
 			var.choice = tools.eqst(x)
 			tools.eline()
@@ -123,8 +120,7 @@ class Core:
 			else:
 				tools.die("Invalid Option. Exiting.")
 
-		# Set modules path to correct location and
-		# sets kernel name for initramfs
+		# Set modules path to correct location and sets kernel name for initramfs
 		var.modules = "/lib/modules/" + var.kernel + "/"
 		var.lmodules = var.temp + "/" + var.modules
 		var.initrd = "initrd-" + var.kernel
@@ -134,10 +130,8 @@ class Core:
 
 	# Check to make sure the kernel modules directory exists
 	def check_mods_dir(self):
-		tools.einfo("Checking to see if " + var.modules + " exists ...")
-
 		if not os.path.exists(var.modules):
-			tools.die("Modules directory doesn't exist.")
+			tools.die("The modules directory for " + var.modules + " doesn't exist!")
 
 	# Make sure that the arch is x86_64
 	def get_arch(self):
@@ -158,7 +152,6 @@ class Core:
 		tools.einfo("Compressing kernel modules ...")
 
 		cmd = "find " + var.lmodules + " -name " + "*.ko"
-		print("lmod: " + var.lmodules)
 		results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
 		for x in results.split("\n"):
@@ -262,7 +255,7 @@ class Core:
 		call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
 
 		# Sets initramfs script version number
-		call(["sed", "-i", "-e", "27s/0/" + var.version + "/", var.temp + "/init"])
+		call(["sed", "-i", "-e", "19s/0/" + var.version + "/", var.temp + "/init"])
 
 		# Fix EDITOR/PAGER
 		call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
@@ -283,7 +276,8 @@ class Core:
 			# source: https://bbs.archlinux.org/viewtopic.php?id=153868
 			hostid = check_output(["hostid"], universal_newlines=True).strip()
 
-			print("hostid: " + hostid)
+			tools.ewarn("hostid: " + hostid)
+
 			cmd = "printf $(echo -n " + hostid.upper() + " | " + \
 			"sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\\4\\\\x\\3\\\\x\\2\\\\x\\1/') " + \
 			"> " + var.temp + "/etc/hostid"
@@ -392,9 +386,9 @@ class Core:
 	# Filters and installs a package into the initramfs
 	def emerge(self, afile):
 		# If the application is a binary, add it to our binary set
-		try:
-			lcmd = check_output('file ' + afile.strip() + ' | grep "linked"', universal_newlines=True, shell=True).strip()
 
+		try:
+			lcmd = check_output('file ' + afile.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
 			self.binset.add(afile)
 		except CalledProcessError:
 			pass
@@ -404,7 +398,7 @@ class Core:
 
 	# Copy modules and their dependencies
 	def copy_modules(self):
-		tools.einfo("Copying modules ... " + var.kernel )
+		tools.einfo("Copying modules ...")
 
 		moddeps = set()
 
@@ -412,11 +406,9 @@ class Core:
 		if self.addon.get_use():
 			# Checks to see if all the modules in the list exist
 			for x in self.addon.get_files():
-				print("In list: " + x.strip())
 				try:
 					cmd = 'find ' + var.modules + ' -iname "' + x + '.ko" | grep ' + x + '.ko'
 					result = check_output(cmd, universal_newlines=True, shell=True).strip()
-					print("adding to modset: " + result)
 					self.modset.add(result)
 				except CalledProcessError:
 					tools.err_mod_dexi(x)
@@ -426,13 +418,11 @@ class Core:
 		if var.kernel:
 			result = call(["depmod", var.kernel])
 
-			print("running depmod: " + var.kernel)
 			if result:
 				tools.die("Error updating module dependency database!")
 
 		# Get the dependencies for all the modules in our set
 		for x in self.modset:
-			print("X: " + x.strip())
 			# Get only the name of the module
 			match = re.search('(?<=/)\w+.ko', x)
 
@@ -443,18 +433,16 @@ class Core:
 				results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
 				for i in results.split("\n"):
-					print("adding: " + i)
 					moddeps.add(i.strip())
 
 		# Copy the modules/dependencies
 		if moddeps:
 			for x in moddeps:
-				print("Copying: " + x)
 				tools.ecopy(x)
 
-			# Compress the modules and update module dependency database
-			# inside the initramfs
+			# Compress the modules and update module dependency database inside the initramfs
 			self.do_modules()
+			self.gen_modinfo()
 
 	# Gets the library dependencies for all our binaries and copies them
 	# into our initramfs.
@@ -464,35 +452,22 @@ class Core:
 		bindeps = set()
 
 		# Get the interpreter name that is on this system
-		results = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
+		result = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
 
-		for x in results.split("\n"):
-
-			print("adding interpreter: " + x)
-			# Add intepreter to deps since everything will depend on it
-			bindeps.add(x)
+		# Add intepreter to deps since everything will depend on it
+		bindeps.add(result)
 
 		# Get the dependencies for the binaries we've collected and add them to
 		# our bindeps set. These will all be copied into the initramfs later.
 		for b in self.binset:
-			print("Binary: " + b)
 			cmd = "ldd " + b + " | awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'"
-
-			#awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'
-
-			print("Command: " + cmd)
 			results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
 			if results:
 				for j in results.split("\n"):
-					print("Adding Dependency: " + j)
 					bindeps.add(j)
-
-		for x in bindeps:
-			print("Pending: " + x)
 
 		# Copy all the dependencies of the binary files into the initramfs
 		for x in bindeps:
-			print("Installing: " + x)
 			tools.ecopy(x)
 
