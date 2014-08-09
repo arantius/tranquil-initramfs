@@ -163,7 +163,7 @@ luks_trigger()
 				fi
 			fi
 
-			# What is the decryption key?
+			# What is the decryption key for the keyfile?
 			if [[ ${enc_type} == "key_gpg" ]]; then
 				get_decrypt_key "key_gpg"
 			fi
@@ -249,24 +249,6 @@ decrypt_drives()
 	fi
 }
 
-# Run this function if USE_RAID is enabled
-raid_trigger()
-{
-	# Scan for raid arrays and save them in mdadm.conf
-	mdadm --examine --scan > /etc/mdadm.conf || rescue_shell
-
-	# Assemble all raid devices
-	mdadm --assemble --scan 2> /dev/null || rescue_shell
-}
-
-# Run this function if USE_LVM is enabled
-lvm_trigger()
-{
-	# Make LVM Volume Group/Pools available
-	lvm vgchange -a y || rescue_shell
-	lvm vgscan --mknodes || rescue_shell
-}
-
 # Run this function if USE_ZFS is enabled
 zfs_trigger()
 {
@@ -327,14 +309,6 @@ check_triggers()
 {
 	if [[ ${USE_LUKS} == "1" ]]; then
 		luks_trigger
-	fi
-
-	if [[ ${USE_RAID} == "1" ]]; then
-		raid_trigger
-	fi
-
-	if [[ ${USE_LVM} == "1" ]]; then
-		lvm_trigger
 	fi
 
 	if [[ ${USE_ZFS} == "1" ]]; then

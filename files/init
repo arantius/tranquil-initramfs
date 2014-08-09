@@ -11,8 +11,6 @@
 
 # Variables
 USE_ZFS="0"
-USE_RAID="0"
-USE_LVM="0"
 USE_LUKS="0"
 USE_ADDON="0"
 
@@ -38,7 +36,7 @@ if [[ ${recover} == "1" ]]; then
 	rescue_shell
 fi
 
-# Run all the triggers (Like LUKS, RAID, LVM, ZFS)
+# Run all the triggers (Like LUKS, ZFS)
 check_triggers
 
 # Mounts your root device

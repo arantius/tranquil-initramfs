@@ -10,11 +10,11 @@ import sys
 import random
 
 # Application Info
-name = "Bliss Initramfs Creator"
+name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "5.0.0"
+version = "5.1.0"
 license = "MPL 2.0"
 
 # Locations

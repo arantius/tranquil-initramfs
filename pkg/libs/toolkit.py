@@ -26,7 +26,7 @@ class Toolkit:
 
 		# Let the user directly create an initramfs if no modules are needed
 		if len(arguments) == 1:
-			if arguments[0] != "1" and arguments[0] != "6":
+			if arguments[0] != "1" and arguments[0] != "2":
 				if not core.addon.get_files():
 					var.choice = arguments[0]
 			else:
@@ -51,16 +51,10 @@ class Toolkit:
 	def print_options(cls):
 		cls.eline()
 		cls.eopt("1. ZFS")
-		cls.eopt("2. LVM")
-		cls.eopt("3. RAID")
-		cls.eopt("4. LVM on RAID")
-		cls.eopt("5. Normal Boot")
-		cls.eopt("6. Encrypted ZFS")
-		cls.eopt("7. Encrypted LVM")
-		cls.eopt("8. Encrypted RAID")
-		cls.eopt("9. Encrypted LVM on RAID")
-		cls.eopt("10. Encrypted Normal")
-		cls.eopt("11. Exit Program")
+		cls.eopt("2. Encrypted ZFS")
+		cls.eopt("3. Normal")
+		cls.eopt("4. Encrypted Normal")
+		cls.eopt("5. Exit Program")
 		cls.eline()
 
 	# Finds the path to a program on the system

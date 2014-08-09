@@ -15,11 +15,8 @@ from subprocess import CalledProcessError
 import pkg.libs.variables as var
 
 from pkg.libs.toolkit import Toolkit as tools
-
 from pkg.hooks.base import Base
 from pkg.hooks.zfs import ZFS
-from pkg.hooks.lvm import LVM
-from pkg.hooks.raid import RAID
 from pkg.hooks.luks import LUKS
 from pkg.hooks.addon import Addon
 
@@ -28,8 +25,6 @@ class Core:
 	def __init__(self):
 		self.base = Base()
 		self.zfs = ZFS()
-		self.lvm = LVM()
-		self.raid = RAID()
 		self.luks = LUKS()
 		self.addon = Addon()
 
@@ -53,39 +48,28 @@ class Core:
 		if self.addon.get_files():
 			self.addon.enable_use()
 
+		# ZFS
 		if var.choice == "1" or not var.choice:
 			self.zfs.enable_use()
 			self.addon.enable_use()
 			self.addon.add_to_files("zfs")
+		# Encrypted ZFS
 		elif var.choice == "2":
-			self.lvm.enable_use()
-		elif var.choice == "3":
-			self.raid.enable_use()
-		elif var.choice == "4":
-			self.raid.enable_use()
-			self.lvm.enable_use()
-		elif var.choice == "5":
-			pass
-		elif var.choice == '6':
 			self.luks.enable_use()
 			self.zfs.enable_use()
 			self.addon.enable_use()
 			self.addon.add_to_files("zfs")
-		elif var.choice == "7":
+		# Normal
+		elif var.choice == "3":
+			pass
+		# Encrypted Normal
+		elif var.choice == "4":
 			self.luks.enable_use()
-			self.lvm.enable_use()
-		elif var.choice == "8":
-			self.luks.enable_use()
-			self.raid.enable_use()
-		elif var.choice == "9":
-			self.luks.enable_use()
-			self.raid.enable_use()
-			self.lvm.enable_use()
-		elif var.choice == "10":
-			self.luks.enable_use()
-		elif var.choice == '11':
+		# Exit
+		elif var.choice == "5":
 			tools.ewarn("Exiting.")
 			quit(1)
+		# Invalid Option
 		else:
 			tools.ewarn("Invalid Option. Exiting.")
 			quit(1)
@@ -172,9 +156,9 @@ class Core:
 		result = call(["depmod", "-b", var.temp, var.kernel])
 
 		if result != 0:
-			tools.die("You've encountered an unknown problem!")
+			tools.die("Depmod was unable to refresh the dependency information for your initramfs!")
 
-	# Create the required symlinks to it
+	# Create the required symlinks
 	def create_links(self):
 		tools.einfo("Creating symlinks ...")
 
@@ -203,10 +187,6 @@ class Core:
 		for link in self.base.get_kmod_links():
 			os.remove(var.temp + "/bin/" + link)
 			os.symlink("kmod", link)
-
-		# If 'lvm.static' exists, then make a 'lvm' symlink to it
-		if os.path.isfile(var.lsbin + "/lvm.static"):
-			os.symlink("lvm.static", "lvm")
 
 	# This functions does any last minute steps like copying zfs.conf,
 	# giving init execute permissions, setting up symlinks, etc
@@ -255,7 +235,7 @@ class Core:
 		call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
 
 		# Sets initramfs script version number
-		call(["sed", "-i", "-e", "19s/0/" + var.version + "/", var.temp + "/init"])
+		call(["sed", "-i", "-e", "17s/0/" + var.version + "/", var.temp + "/init"])
 
 		# Fix EDITOR/PAGER
 		call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
@@ -289,22 +269,14 @@ class Core:
 			else:
 				tools.ewarn("No zpool.cache was found. It will not be used ...")
 
-		# Enable RAID in the init if RAID is being used
-		if self.raid.get_use():
-			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
-
-		# Enable LVM in the init if LVM is being used
-		if self.lvm.get_use():
-			call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
-
 		# Enable LUKS in the init if LUKS is being used
 		if self.luks.get_use():
-			call(["sed", "-i", "-e", "16s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
 
 		# Enable ADDON in the init and add our modules to the initramfs
 		# if addon is being used
 		if self.addon.get_use():
-			call(["sed", "-i", "-e", "17s/0/1/", var.temp + "/init"])
+			call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
 			call(["sed", "-i", "-e", "20s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "/libs/common.sh"])
 
 	# Create the solution
@@ -337,20 +309,6 @@ class Core:
 				if not os.path.exists(f):
 					tools.err_bin_dexi(f)
 
-		# Check required lvm files
-		if self.lvm.get_use():
-			tools.eflag("Using LVM")
-			for f in self.lvm.get_files():
-				if not os.path.exists(f):
-					tools.err_bin_dexi(f)
-
-		# Check required raid files
-		if self.raid.get_use():
-			tools.eflag("Using RAID")
-			for f in self.raid.get_files():
-				if not os.path.exists(f):
-					tools.err_bin_dexi(f)
-
 		# Check required luks files
 		if self.luks.get_use():
 			tools.eflag("Using LUKS")
@@ -369,14 +327,6 @@ class Core:
 			for f in self.zfs.get_files():
 				self.emerge(f)
 
-		if self.lvm.get_use():
-			for f in self.lvm.get_files():
-				self.emerge(f)
-
-		if self.raid.get_use():
-			for f in self.raid.get_files():
-				self.emerge(f)
-
 		if self.luks.get_use():
 			for f in self.luks.get_files():
 				self.emerge(f)
@@ -384,7 +334,6 @@ class Core:
 	# Filters and installs a package into the initramfs
 	def emerge(self, afile):
 		# If the application is a binary, add it to our binary set
-
 		try:
 			lcmd = check_output('file ' + afile.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
 			self.binset.add(afile)
@@ -468,4 +417,3 @@ class Core:
 		# Copy all the dependencies of the binary files into the initramfs
 		for x in bindeps:
 			tools.ecopy(x)
-

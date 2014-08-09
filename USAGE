@@ -74,85 +74,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 }
 
 =======================================
-Normal RAID
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-	insmod part_gpt
-	insmod ext2
-
-	set root=(hd0,gpt1)
-
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 quiet
-	initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Normal LVM
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-	insmod part_gpt
-	insmod ext2
-
-	set root=(hd0,gpt1)
-
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root quiet
-	initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted LVM with just a passphrase and one encrypted drive
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-	insmod part_gpt
-	insmod ext2
-
-	set root=(hd0,gpt1)
-
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass quiet
-	initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted RAID with just a passphrase and two encrypted drives
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-	insmod part_gpt
-	insmod ext2
-
-	set root=(hd0,gpt1)
-
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
-	initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted RAID + LVM with just a passphrase and two encrypted drives
-=======================================
-
-** Note: The initramfs only supports LVM on RAID, which means that your disks will first be decrypted, assembled,
-         then the lvm will activate the logical volumes on that assembled raid array and then boot your system.
-	 Thus, the raid operations are actionally transparent.
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-	insmod part_gpt
-	insmod ext2
-
-	set root=(hd0,gpt1)
-
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
-	initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
 Encrypted Normal with one encrypted drive
 =======================================
 
@@ -201,7 +122,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 }
 
 =======================================
-Encrypted ZFS with an encrypted gpg key and two encrypted partitions
+Encrypted ZFS with an encrypted gpg key named "animal" in a folder called "farm" on a flash drive named /dev/sdc2 and two encrypted partitions
 =======================================
 
 # Gentoo
@@ -211,7 +132,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 quiet
 	initrd /initrd-3.9.9-FB.02
 }
 

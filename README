@@ -1,4 +1,4 @@
-Bliss Initramfs Creator - v5.0.0
+Bliss Initramfs Creator - v5.1.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Gentoo Linux
 
@@ -40,8 +40,6 @@ Please have the following installed:
 - sys-apps/grep
 
 - sys-fs/zfs (ZFS support)
-- sys-fs/mdadm (RAID support)
-- sys-fs/lvm2 (LVM support)
 - sys-fs/cryptsetup (LUKS support)
 - app-crypt/gnupg (LUKS support)
 

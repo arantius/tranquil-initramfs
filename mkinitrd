@@ -12,9 +12,7 @@ import pkg.libs.variables as var
 
 from pkg.libs.core import Core
 from pkg.libs.toolkit import Toolkit as tools
-
 from pkg.hooks.zfs import ZFS
-from pkg.hooks.lvm import LVM
 from pkg.hooks.base import Base
 
 class Creator:

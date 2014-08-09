@@ -1,3 +1,12 @@
+5.1.0
+---------
+- All support not relating to ZFS or a Normal boot has been removed. There are better
+  initramfs applications out there for those use cases (LVM, LVM on RAID, etc)
+- Added a commented "dm-crypt" to the addons.py to facilitate the user to enable encryption
+  support (when their encryption support is compiled as a module)
+  rather than built into the kernel). 
+- Improved comments in some places
+
 5.0.0
 ---------
 - The application has been refactored. Smaller, faster, and cleaner.
