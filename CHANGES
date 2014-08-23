@@ -13,6 +13,8 @@
 - The initramfs will now not only display /dev/sd? devices, but also /dev/vd? devices (In case you are making drives under KVM)
 - Some of the "key_gpg" parts were broken. This has now been fixed.
 - Fixed a bug where the decryption loop would only let you try twice rather than three times
+- Improved the "decrypt_drives" algorithm
+- Updated the USAGE file
 
 5.1.0
 ---------
