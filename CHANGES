@@ -1,12 +1,15 @@
 5.2.0
 ---------
-- Now supports encrypting/decrypting your swap partition
+- Now supports encrypting/decrypting your swap partition (just append it to the "enc_drives" variable)
+- "enc_root" has been renamed to "enc_drives" and is now an optional parameter. 
+  Meaning that if you don't pass it in, the program will ask you for it.
 - No longer supports multiple individual encryption passphrases. The application will use the one passphrase
   you provided to automatically decrypt all your drives, or it will use your keyfile to automatically decrypt
   them all.
 - You are now able to refresh the "available drives" list when the "redetect" flag is set
 - The application will now ask you for the enc_type if you didn't explictly declare it
 - The initramfs will no longer set the hostid value. It will default to the patched upstream ZoL code (all zeroes)
+- Updated the design a bit
 
 5.1.0
 ---------

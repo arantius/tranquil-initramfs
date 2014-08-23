@@ -61,8 +61,8 @@ parse_cmdline()
 		root\=*)
 			root="$(get_opt ${x})"
 			;;
-		enc_root\=*)
-			enc_root="$(get_opt ${x})"
+		enc_drives\=*)
+			enc_drives="$(get_opt ${x})"
 			;;
 		enc_type\=*)
 			enc_type="$(get_opt ${x})"
@@ -72,9 +72,6 @@ parse_cmdline()
 			;;
 		enc_key_drive\=*)
 			enc_key_drive="$(get_opt ${x})"
-			;;
-		enc_swap\=*)
-			enc_swap="$(get_opt ${x})"
 			;;
 		options\=*)
 			options="$(get_opt ${x})"
@@ -105,16 +102,16 @@ parse_cmdline()
 # Extract all the drives needed to decrypt before mounting the pool
 get_drives()
 {
-	if [[ -z ${enc_root} ]]; then
-		die "You didn't pass the 'enc_root' variable to the kernel."
-	else
-		if [[ -z ${enc_swap} ]]; then
-			drives=($(echo ${enc_root} | tr "," "\n"))
-		else
-			drives=($(echo ${enc_root},${enc_swap} | tr "," "\n"))
+	if [[ -z ${enc_drives} ]]; then
+		eqst "Please enter your encrypted drives: " && read enc_drives
+		
+		if [[ -z ${enc_drives} ]]; then
+			die "No encrypted drives have been entered."
 		fi
+		
+		drives=($(echo ${enc_drives} | tr "," "\n"))
 	fi
-
+	
 	for i in $(seq 0 $((${#drives[@]} - 1))); do
 		eflag "Drive ${i}: ${drives[${i}]}"
 	done
@@ -145,14 +142,14 @@ ask_for_enc_type()
 	
 	einfo "Please enter the encryption type that will be used:"
 	eflag "1. Passphrase"
-	eflag "2. Plain Keyfile"
+	eflag "2. Keyfile"
 	eflag "3. Encrypted Keyfile"
-	einfo "Choice: " && read choice
+	echo -n "\nCurrent choice [1]: " && read choice
 	
 	local good="no"
 	while [[ ${good} == "no" ]]; do
 		case ${choice} in
-		1) enc_type="pass" && good="yes" ;;
+		""|1) enc_type="pass" && good="yes" ;;
 		2) enc_type="key" && good="yes" ;;
 		3) enc_type="key_gpg" && good="yes" ;;
 		*) eqst "Invalid input. Please enter a correct choice: " && read choice
@@ -163,16 +160,18 @@ ask_for_enc_type()
 # Detects the available drives
 detect_available_drives()
 {
+	local timer=3
+	
 	if [[ -z ${redetect} ]]; then
-		einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
+		einfo "Detecting available drives..." && sleep ${timer} && ls /dev/sd*
 	else
 		local keep_going="yes"
-
 		while [[ ${keep_going} == "yes" ]]; do
-			einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
+			einfo "Detecting available drives..." && sleep ${timer} && ls /dev/sd*
 
 			local choice=""
-			eqst "Attempt to redetect drives? [y/N]: " && read choice
+			eqst "Redetect drives? [y/N]: " && read choice
+			timer=0
 
 			if [[ ${choice} != "y" ]] && [[ ${choice} != "Y" ]]; then
 				keep_going="no"
@@ -192,7 +191,7 @@ luks_trigger()
 		ask_for_enc_type
 
 		if [[ -z ${enc_type} ]]; then
-			die "You didn't pass/or select an 'enc_type'."
+			die "The encryption type was not set."
 		fi
 	fi
 
@@ -244,7 +243,7 @@ luks_trigger()
 decrypt_drives()
 {
 	if [[ -z ${drives} ]]; then
-		die "Failed to get drives.. The 'drives' value is empty"
+		die "Failed to get encrypted drives. The 'drives' value is empty."
 	fi
 
 	einfo "Opening up your encrypted drive(s)..."
@@ -265,7 +264,7 @@ decrypt_drives()
 			# If the user kept failing and reached their max tries,
 			# then throw them into a rescue shell
 			if [[ ${lcount} -eq ${lmax} ]]; then
-				die "luksOpen failed to open: ${drives[${i}]}"
+				die "Failed to decrypt: ${drives[${i}]}"
 			fi
 
 		elif [[ ${enc_type} == "key" ]]; then
@@ -275,7 +274,7 @@ decrypt_drives()
 
 			cryptsetup --key-file "${keyfile}" \
 			luksOpen ${drives[${i}]} vault_${i} || \
-			die "luksOpen failed to open: ${drives[${i}]}"
+			die "Failed to decrypt: ${drives[${i}]}"
 
 		elif [[ ${enc_type} == "key_gpg" ]]; then
 			if [[ ! -e ${keyfile} ]]; then
@@ -293,7 +292,7 @@ decrypt_drives()
 			# If the user kept failing and reached their max tries,
 			# then throw them into a rescue shell
 			if [[ ${lcount} -eq ${lmax} ]]; then
-				die "luksOpen failed to open: ${drives[${i}]}"
+				die "Failed to decrypt: ${drives[${i}]}"
 			fi
 		fi
 	done
@@ -404,31 +403,31 @@ single_user()
 # Used for displaying information
 einfo()
 {
-	echo -e "\e[1;32m*\e[0;m ${@}"
+	echo -e "\e[1;32m[*]\e[0;m ${@}"
 }
 
 # Used for input (questions)
 eqst()
 {
-	echo -en "\e[1;37m*\e[0;m ${@}"
+	echo -en "\e[1;37m[?]\e[0;m ${@}"
 }
 
 # Used for warnings
 ewarn()
 {
-	echo -e "\e[1;33m*\e[0;m ${@}"
+	echo -e "\e[1;33m[!]\e[0;m ${@}"
 }
 
 # Used for flags
 eflag()
 {
-	echo -e "\e[1;34m*\e[0;m ${@}"
+	echo -e "\e[1;34m[+]\e[0;m ${@}"
 }
 
 # Used for errors
 die()
 {
-	echo -e "\e[1;31m*\e[0;m ${@}" && rescue_shell
+	echo -e "\e[1;31m[#]\e[0;m ${@}" && rescue_shell
 }
 
 # Prints empty line
