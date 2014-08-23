@@ -150,7 +150,7 @@ ask_for_enc_type()
 	einfo "Choice: " && read choice
 	
 	local good="no"
-	while [[ ${good} == "no" ]]; then
+	while [[ ${good} == "no" ]]; do
 		case ${choice} in
 		1) enc_type="pass" && good="yes" ;;
 		2) enc_type="key" && good="yes" ;;
