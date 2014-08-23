@@ -241,6 +241,11 @@ init - Specifies the init system to use. If the init system isn't located in /sb
      
 redetect - Use this if you want to have the option to re-scan your /dev/ directory for new devices.
 	   You really only need this if you don't know where your enc_key_drive is.
+	   
+	   Sometimes during the output of available drives, you won't see your drives listed, don't worry,
+	   if it normally works on your machine, your drive will silently appear. You could just wait a few
+	   seconds yourself until you feel it is ready, and then just press enter to attempt to mount
+	   and decrypt the drive.
 
 =======================================
 Modules Support:

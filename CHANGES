@@ -15,6 +15,7 @@
 - Fixed a bug where the decryption loop would only let you try twice rather than three times
 - Improved the "decrypt_drives" algorithm
 - Updated the USAGE file
+- Fixed a bug where you needed to press enter twice in order for your decryption key to continue process control
 
 5.1.0
 ---------

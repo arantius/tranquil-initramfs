@@ -124,11 +124,11 @@ get_decrypt_key()
 
 	if [[ $1 == "pass" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter passphrase: " && read -s code && eline
+			eqst "Enter passphrase: " && read -s code
 		done
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter decryption key: " && read -s code && eline
+			eqst "Enter decryption key: " && read -s code
 		done
 	else
 		die "Either a decryption type wasn't passed or it's not supported!"
@@ -241,6 +241,12 @@ luks_trigger()
 	# Unmount the drive with the keyfile if we had one
 	if [[ ${enc_type} == "key_gpg" ]]; then
 		umount ${enc_key_drive}
+		
+		if [[ $? -eq 0 ]]; then
+			einfo "Your key drive has been unmounted successfully."
+		else
+			ewarn "Error unmounting your key drive."
+		fi
 	fi
 }
 
