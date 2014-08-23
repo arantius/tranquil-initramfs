@@ -73,6 +73,9 @@ parse_cmdline()
 		enc_key_drive\=*)
 			enc_key_drive="$(get_opt ${x})"
 			;;
+		enc_swap\=*)
+			enc_swap="$(get_opt ${x})"
+			;;
 		options\=*)
 			options="$(get_opt ${x})"
 			;;
@@ -88,6 +91,9 @@ parse_cmdline()
 		su)
 			su="1"
 			;;
+		redetect)
+			redetect="1"
+			;;
 		esac
 	done
 
@@ -99,7 +105,19 @@ parse_cmdline()
 # Extract all the drives needed to decrypt before mounting the pool
 get_drives()
 {
-	drives=($(echo ${enc_root} | tr "," "\n"))
+	if [[ -z ${enc_root} ]]; then
+		die "You didn't pass the 'enc_root' variable to the kernel."
+	else
+		if [[ -z ${enc_swap} ]]; then
+			drives=($(echo ${enc_root} | tr "," "\n"))
+		else
+			drives=($(echo ${enc_root},${enc_swap} | tr "," "\n"))
+		fi
+	fi
+
+	for i in $(seq 0 $((${#drives[@]} - 1))); do
+		eflag "Drive ${i}: ${drives[${i}]}"
+	done
 }
 
 # Gets a decryption key without displaying it on screen
@@ -108,8 +126,9 @@ get_decrypt_key()
 	unset code
 
 	if [[ $1 == "pass" ]]; then
-		eqst "Enter passphrase (Leave blank if more than 1): " \
-		&& read -s code && eline
+		while [[ -z ${code} ]]; do
+			eqst "Enter passphrase: " && read -s code && eline
+		done
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
 			eqst "Enter decryption key: " && read -s code && eline
@@ -119,133 +138,169 @@ get_decrypt_key()
 	fi
 }
 
+# Returns the encryption type that will be used interactively from the user
+ask_for_enc_type()
+{
+	local choice=""
+	
+	einfo "Please enter the encryption type that will be used:"
+	eflag "1. Passphrase"
+	eflag "2. Plain Keyfile"
+	eflag "3. Encrypted Keyfile"
+	einfo "Choice: " && read choice
+	
+	local good="no"
+	while [[ ${good} == "no" ]]; then
+		case ${choice} in
+		1) enc_type="pass" && good="yes" ;;
+		2) enc_type="key" && good="yes" ;;
+		3) enc_type="key_gpg" && good="yes" ;;
+		*) eqst "Invalid input. Please enter a correct choice: " && read choice
+		esac
+	done
+}
+
+# Detects the available drives
+detect_available_drives()
+{
+	if [[ -z ${redetect} ]]; then
+		einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
+	else
+		local keep_going="yes"
+
+		while [[ ${keep_going} == "yes" ]]; do
+			einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
+
+			local choice=""
+			eqst "Attempt to redetect drives? [y/N]: " && read choice
+
+			if [[ ${choice} != "y" ]] && [[ ${choice} != "Y" ]]; then
+				keep_going="no"
+			fi
+		done
+	fi
+}
+
 # Run this function if USE_LUKS is enabled
 luks_trigger()
 {
-	if [[ -z ${enc_root} ]]; then
-		die "You didn't pass the 'enc_root' variable to the kernel."
-	fi
-
 	einfo "Gathering encrypted devices..." && get_drives
 
-	for i in $(seq 0 $((${#drives[@]} - 1))); do
-		eflag "Drive ${i}: ${drives[${i}]}"
-	done
-
+	# If the user left their enc_type blank (Could be intentional),
+	# then let's ask them now to select the type.
 	if [[ -z ${enc_type} ]]; then
-		die "You didn't pass the 'enc_type' variable to the kernel."
-	elif [[ ${enc_type} != "pass" ]] &&
-		 [[ ${enc_type} != "key" ]] &&
-		 [[ ${enc_type} != "key_gpg" ]]; then
-		die "Invalid 'enc_type' option. Only pass, key, key_gpg are supported."
-	else
-		# Gathers information required (passphrase, keyfile location, etc)
-		if [[ ${enc_type} == "pass" ]]; then
-			get_decrypt_key "pass"
-		elif [[ ${enc_type} == "key" ]] || [[ ${enc_type} == "key_gpg" ]]; then
-			einfo "Detecting available drives..." && sleep 3 && ls /dev/sd*
+		ask_for_enc_type
 
-			# What drive is the keyfile in?
+		if [[ -z ${enc_type} ]]; then
+			die "You didn't pass/or select an 'enc_type'."
+		fi
+	fi
+
+	if [[ ${enc_type} != "pass" ]] && [[ ${enc_type} != "key" ]] && [[ ${enc_type} != "key_gpg" ]]; then
+		die "Invalid 'enc_type' option. Only 'pass', 'key', and 'key_gpg' are supported."
+	fi
+
+	# Gathers information required (passphrase, keyfile location, etc)
+	if [[ ${enc_type} == "pass" ]]; then
+		get_decrypt_key "pass"
+	elif [[ ${enc_type} == "key" ]] || [[ ${enc_type} == "key_gpg" ]]; then
+		detect_available_drives
+
+		# What drive is the keyfile in?
+		if [[ -z ${enc_key_drive} ]]; then
+			eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
+
 			if [[ -z ${enc_key_drive} ]]; then
-				eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
-
-				if [[ -z ${enc_key_drive} ]]; then
-					die "Error setting path to keyfile's drive!"
-				fi
+				die "Error setting path to keyfile's drive!"
 			fi
-
-			# What is the path to the keyfile?
-			if [[ -z ${enc_key} ]]; then
-				eqst "Enter path to keyfile: " && read enc_key && eline
-
-				if [[ -z ${enc_key} ]]; then
-					die "Error setting path to keyfile!"
-				fi
-			fi
-
-			# What is the decryption key for the keyfile?
-			if [[ ${enc_type} == "key_gpg" ]]; then
-				get_decrypt_key "key_gpg"
-			fi
-
-			# Mount the drive
-			mount ${enc_key_drive} ${KEY_DRIVE}
-
-			# Set path to keyfile
-			keyfile="${KEY_DRIVE}/${enc_key}"
 		fi
 
-		# Attempt to decrypt the drives
-		decrypt_drives
+		# What is the path to the keyfile?
+		if [[ -z ${enc_key} ]]; then
+			eqst "Enter path to keyfile: " && read enc_key && eline
+
+			if [[ -z ${enc_key} ]]; then
+				die "Error setting path to keyfile!"
+			fi
+		fi
+
+		# What is the decryption key for the keyfile?
+		if [[ ${enc_type} == "key_gpg" ]]; then
+			get_decrypt_key "key_gpg"
+		fi
+
+		# Mount the drive
+		mount ${enc_key_drive} ${KEY_DRIVE}
+
+		# Set path to keyfile
+		keyfile="${KEY_DRIVE}/${enc_key}"
 	fi
+
+	# Attempt to decrypt the drives
+	decrypt_drives
 }
 
 # Attempts to decrypt the drives
 decrypt_drives()
 {
-	if [[ ! -z ${drives} ]]; then
-		einfo "Opening up your encrypted drive(s)..."
-
-		# Set up a counter in case the user gave an incorrect
-		# passphrase/key_gpg decryption code
-		local lcount=1
-		local lmax=3
-
-		for i in $(seq 0 $((${#drives[@]} - 1))); do
-			if [[ ${enc_type} == "pass" ]]; then
-				while [[ ${lcount} -lt ${lmax} ]]; do
-					if [[ ! -z ${code} ]]; then
-						echo "${code}" | \
-						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						break || lcount=$((lcount + 1)) &&
-						get_decrypt_key "pass"
-					else
-						cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
-						break || lcount=$((lcount + 1))
-					fi
-				done
-
-				# If the user kept failing and reached their max tries,
-				# then throw them into a rescue shell
-				if [[ ${lcount} -eq ${lmax} ]]; then
-					die "luksOpen failed to open: ${drives[${i}]}"
-				fi
-
-			elif [[ ${enc_type} == "key" ]]; then
-				if [[ -f ${keyfile} ]]; then
-					cryptsetup --key-file "${keyfile}" \
-					luksOpen ${drives[${i}]} vault_${i} || \
-					die "luksOpen failed to open: ${drives[${i}]}"
-				else
-					die "Keyfile doesn't exist in this path: ${keyfile}"
-				fi
-			elif [[ ${enc_type} == "key_gpg" ]]; then
-				if [[ -f ${keyfile} ]]; then
-					while [[ ${lcount} -lt ${lmax} ]]; do
-						echo "${code}" | \
-						gpg --batch --passphrase-fd 0 -q -d ${keyfile} \
-						2> /dev/null | cryptsetup --key-file=- \
-						luksOpen ${drives[${i}]} vault_${i} && break || \
-						lcount=$((lcount + 1)) && get_decrypt_key "key_gpg"
-					done
-
-					# If the user kept failing and reached their max tries,
-					# then throw them into a rescue shell
-					if [[ ${lcount} -eq ${lmax} ]]; then
-						die "luksOpen failed to open: ${drives[${i}]}"
-					fi
-				else
-					die "Keyfile doesn't exist in this path: ${keyfile}"
-				fi
-			fi
-		done
-
-		# Umount the drive with the keyfile if we had one
-		if [[ ${enc_type} == "key_gpg" ]] && [[ ! -z ${enc_key_drive} ]]; then
-			umount ${enc_key_drive}
-		fi
-	else
+	if [[ -z ${drives} ]]; then
 		die "Failed to get drives.. The 'drives' value is empty"
+	fi
+
+	einfo "Opening up your encrypted drive(s)..."
+
+	# Set up a counter in case the user gave an incorrect passphrase/key_gpg decryption code
+	local lcount=1
+	local lmax=3
+
+	for i in $(seq 0 $((${#drives[@]} - 1))); do
+		if [[ ${enc_type} == "pass" ]]; then
+			while [[ ${lcount} -lt ${lmax} ]]; do
+				echo "${code}" | \
+				cryptsetup luksOpen ${drives[${i}]} vault_${i} &&
+				break || lcount=$((lcount + 1)) &&
+				get_decrypt_key "pass"
+			done
+
+			# If the user kept failing and reached their max tries,
+			# then throw them into a rescue shell
+			if [[ ${lcount} -eq ${lmax} ]]; then
+				die "luksOpen failed to open: ${drives[${i}]}"
+			fi
+
+		elif [[ ${enc_type} == "key" ]]; then
+			if [[ ! -e ${keyfile} ]]; then
+				die "Keyfile doesn't exist in this path: ${keyfile}"
+			fi
+
+			cryptsetup --key-file "${keyfile}" \
+			luksOpen ${drives[${i}]} vault_${i} || \
+			die "luksOpen failed to open: ${drives[${i}]}"
+
+		elif [[ ${enc_type} == "key_gpg" ]]; then
+			if [[ ! -e ${keyfile} ]]; then
+				die "Keyfile doesn't exist in this path: ${keyfile}"
+			fi
+
+			while [[ ${lcount} -lt ${lmax} ]]; do
+				echo "${code}" | \
+				gpg --batch --passphrase-fd 0 -q -d ${keyfile} \
+				2> /dev/null | cryptsetup --key-file=- \
+				luksOpen ${drives[${i}]} vault_${i} && break || \
+				lcount=$((lcount + 1)) && get_decrypt_key "key_gpg"
+			done
+
+			# If the user kept failing and reached their max tries,
+			# then throw them into a rescue shell
+			if [[ ${lcount} -eq ${lmax} ]]; then
+				die "luksOpen failed to open: ${drives[${i}]}"
+			fi
+		fi
+	done
+
+	# Unmount the drive with the keyfile if we had one
+	if [[ ${enc_type} == "key_gpg" ]]; then
+		umount ${enc_key_drive}
 	fi
 }
 

@@ -1,3 +1,12 @@
+5.2.0
+---------
+- Now supports encrypting/decrypting your swap partition
+- No longer supports multiple individual encryption passphrases. The application will use the one passphrase
+  you provided to automatically decrypt all your drives, or it will use your keyfile to automatically decrypt
+  them all.
+- You are now able to refresh the "available drives" list when the "redetect" flag is set
+- The application will now ask you for the enc_type if you didn't explictly declare it
+
 5.1.0
 ---------
 - All support not relating to ZFS or a Normal boot has been removed. There are better
