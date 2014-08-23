@@ -323,7 +323,7 @@ class Core:
 	def emerge(self, afile):
 		# If the application is a binary, add it to our binary set
 		try:
-			lcmd = check_output('file ' + afile.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
+			lcmd = check_output('file -L ' + afile.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
 			self.binset.add(afile)
 		except CalledProcessError:
 			pass

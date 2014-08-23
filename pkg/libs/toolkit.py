@@ -92,7 +92,7 @@ class Toolkit:
 				cls.ewarn("Failed to delete the " + var.temp + " directory. Exiting.")
 				quit(1)
 
-	# Clean up and exit after a successfull build
+	# Clean up and exit after a successful build
 	@classmethod
 	def clean_exit(cls, initrd):
 		cls.clean()

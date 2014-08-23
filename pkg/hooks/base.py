@@ -15,7 +15,6 @@ class Base(Hook):
 		self.use = 1
 
 		# Set the kmod path for this system
-		# Gentoo = /bin/kmod; Funtoo = /sbin/kmod
 		self.kmod_path = tools.find_prog("kmod")
 
 		self.files = [

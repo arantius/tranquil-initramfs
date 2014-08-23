@@ -81,4 +81,5 @@ baselayout = [
 	temp + "/bin",
 	temp + "/sbin",
 	temp + "/usr",
+	temp + "/root",
 ]
