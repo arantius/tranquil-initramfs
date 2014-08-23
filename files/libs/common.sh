@@ -170,7 +170,7 @@ detect_available_drives()
 			einfo "Detecting available drives..." && sleep ${timer} && ls /dev/[sv]d*
 
 			local choice=""
-			eqst "Redetect drives? [y/N]: " && read choice
+			eqst "Attempt to re-detect drives? [y/N]: " && read choice
 			timer=0
 
 			if [[ ${choice} != "y" ]] && [[ ${choice} != "Y" ]]; then
@@ -207,7 +207,7 @@ luks_trigger()
 
 		# What drive is the keyfile in?
 		if [[ -z ${enc_key_drive} ]]; then
-			eqst "Enter drive where keyfile is located: " && read enc_key_drive && eline
+			eqst "Enter drive where keyfile is located: " && read enc_key_drive
 
 			if [[ -z ${enc_key_drive} ]]; then
 				die "Error setting path to keyfile's drive!"
@@ -216,7 +216,7 @@ luks_trigger()
 
 		# What is the path to the keyfile?
 		if [[ -z ${enc_key} ]]; then
-			eqst "Enter path to keyfile: " && read enc_key && eline
+			eqst "Enter path to keyfile: " && read enc_key
 
 			if [[ -z ${enc_key} ]]; then
 				die "Error setting path to keyfile!"
@@ -246,10 +246,8 @@ decrypt_drives()
 		die "Failed to get encrypted drives. The 'drives' value is empty."
 	fi
 
-	einfo "Opening up your encrypted drive(s)..."
-
 	# Set up a counter in case the user gave an incorrect passphrase/key_gpg decryption code
-	local lcount=1
+	local lcount=0
 	local lmax=3
 
 	for i in $(seq 0 $((${#drives[@]} - 1))); do
