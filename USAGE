@@ -87,7 +87,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/vault_0 enc_root=/dev/sda3 enc_type=pass quiet
+	linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/vault_0 enc_drives=/dev/sda3 quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -102,7 +102,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -117,7 +117,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3 enc_type=key quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3 enc_type=key quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -132,7 +132,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 	set root=(hd0,gpt1)
 
-	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_root=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 quiet
+	linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 quiet
 	initrd /initrd-3.9.9-FB.02
 }
 
@@ -140,10 +140,10 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Summary:
 =======================================
 
-This would load the 'vmlinuz-3.9.9-FB.02' kernel and try to mount the 'rpool/ROOT/gentoo' dataset
+This would load the 'vmlinuz-3.9.9-FB.02' kernel and try to mount the 'tank/gentoo/root' dataset
 as the / of the filesystem. It will then chroot into it and load your system.
 
-If you are using Encrypted ZFS, then the 'enc_root' parameter will luksOpen each of your listed
+If you are using Encrypted ZFS, then the 'enc_drives' parameter will luksOpen each of your listed
 devices, and then it will continue as usual.
 
 * In order for you to unlock multiple devices, the passphrase/keyfile must be identical for all of them.
@@ -170,13 +170,23 @@ refresh - ignores the zpool.cache in the initramfs, creates a new one
 LUKS + ZFS
 =======
 
-Follow the same instructions as above, but also add "enc_root=" and "enc_type" to your kernel line.
+Follow the same instructions as above, but also add "enc_drives=" and "enc_type" to your kernel line.
+If you don't enter them, the initramfs will just ask you for it.
 
-enc_root - Encrypted root drive (You need the enc_type variable below as well)
+enc_drives - Encrypted drives (You need the enc_type variable below as well)
 
 If you have your zpool on spread over multiple drives, you can pass them all
 to this variable as well:
-	example: linux <kernel> enc_root=/dev/sda2,/dev/sdb3,/dev/sdc4,/dev/sdd5,/dev/sde6
+	example: linux <kernel> enc_drives=/dev/sda2,/dev/sdb3,/dev/sdc4,/dev/sdd5,/dev/sde6
+	
+	example with an encrypted swap: linux <kernel> enc_drives=/dev/sda2,/dev/sdb2,/dev/sdc2,/dev/sdc3
+	
+	As you noticed, there isn't really anything different, just add your encrypted swap to the list
+	and it will be automatically unlocked with the rest of the drives using the same passphrase or keyfile.
+	The name of the swap will be the position it's in the list -1. For example, if /dev/sdc3 is the swap partition,
+	then it will be the last one unlocked. The indexing starts at 0, so you have /dev/sdc3 being called "vault_3".
+	Just put /dev/mapper/vault_3 in your /etc/fstab and the init system will auto mount vault_3 since it was automatically
+	unlocked in the initramfs and available in the root filesystem.
 
 enc_type - What type of method will are you using to decrypt?
 	Types: pass - passphrase
@@ -184,7 +194,7 @@ enc_type - What type of method will are you using to decrypt?
 	       key_gpg - keyfile encrypted with gpg
 
 enc_key_drive - What drive the keyfile in?
-	example: linux <kernel> enc_root=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
+	example: linux <kernel> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
 
 	In the above example, we use /dev/sdb1 because we will assume that every time we turn on the machine,
 	the encryption key will be in /dev/sdb1. We also assume that if you have your key in a removable media,
@@ -196,7 +206,7 @@ enc_key - What is the path to the keyfile?
 	You basically pass to grub where in the drive the file is located
 	(After the initramfs mounts the drive that you have the key in).
 
-	example: linux <kernel> enc_root=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1 enc_key=/keys/root.gpg
+	example: linux <kernel> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1 enc_key=/keys/root.gpg
 
 	In this example, once the initramfs mounts /dev/sdb1, it will look for the /keys/root.gpg at /dev/sdb1.
 	So if the initramfs mounts /dev/sdb1 at /mnt/key, it will look for the key at /mnt/key/keys/root.gpg.
@@ -228,6 +238,9 @@ init - Specifies the init system to use. If the init system isn't located in /sb
        you can specific it explictly:
 
      example: linux <kernel> root=tank/gentoo/root init=/path/to/init
+     
+redetect - Use this if you want to have the option to re-scan your /dev/ directory for new devices.
+	   You really only need this if you don't know where your enc_key_drive is.
 
 =======================================
 Modules Support:

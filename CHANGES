@@ -10,6 +10,7 @@
 - The application will now ask you for the enc_type if you didn't explictly declare it
 - The initramfs will no longer set the hostid value. It will default to the patched upstream ZoL code (all zeroes)
 - Updated the design a bit
+- The initramfs will now not only display /dev/sd? devices, but also /dev/vd? devices (In case you are making drives under KVM)
 
 5.1.0
 ---------

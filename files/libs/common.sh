@@ -144,7 +144,7 @@ ask_for_enc_type()
 	eflag "1. Passphrase"
 	eflag "2. Keyfile"
 	eflag "3. Encrypted Keyfile"
-	echo -n "Current choice [1]: " && read choice
+	eqst "Current choice [1]: " && read choice
 	
 	local good="no"
 	while [[ ${good} == "no" ]]; do
@@ -163,11 +163,11 @@ detect_available_drives()
 	local timer=3
 	
 	if [[ -z ${redetect} ]]; then
-		einfo "Detecting available drives..." && sleep ${timer} && ls /dev/sd*
+		einfo "Detecting available drives..." && sleep ${timer} && ls /dev/[sv]d*
 	else
 		local keep_going="yes"
 		while [[ ${keep_going} == "yes" ]]; do
-			einfo "Detecting available drives..." && sleep ${timer} && ls /dev/sd*
+			einfo "Detecting available drives..." && sleep ${timer} && ls /dev/[sv]d*
 
 			local choice=""
 			eqst "Redetect drives? [y/N]: " && read choice
