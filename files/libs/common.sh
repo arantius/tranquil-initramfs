@@ -108,9 +108,9 @@ get_drives()
 		if [[ -z ${enc_drives} ]]; then
 			die "No encrypted drives have been entered."
 		fi
-		
-		drives=($(echo ${enc_drives} | tr "," "\n"))
 	fi
+	
+	drives=($(echo ${enc_drives} | tr "," "\n"))
 	
 	for i in $(seq 0 $((${#drives[@]} - 1))); do
 		eflag "Drive ${i}: ${drives[${i}]}"
@@ -144,7 +144,7 @@ ask_for_enc_type()
 	eflag "1. Passphrase"
 	eflag "2. Keyfile"
 	eflag "3. Encrypted Keyfile"
-	echo -n "\nCurrent choice [1]: " && read choice
+	echo -n "Current choice [1]: " && read choice
 	
 	local good="no"
 	while [[ ${good} == "no" ]]; do
@@ -409,7 +409,7 @@ einfo()
 # Used for input (questions)
 eqst()
 {
-	echo -en "\e[1;37m[?]\e[0;m ${@}"
+	echo -en "\e[1;37m[*]\e[0;m ${@}"
 }
 
 # Used for warnings
