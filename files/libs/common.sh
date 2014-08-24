@@ -125,10 +125,12 @@ get_decrypt_key()
 	if [[ $1 == "pass" ]]; then
 		while [[ -z ${code} ]]; do
 			eqst "Enter passphrase: " && read -s code
+			eline
 		done
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
 			eqst "Enter decryption key: " && read -s code
+			eline
 		done
 	else
 		die "Either a decryption type wasn't passed or it's not supported!"
@@ -142,8 +144,8 @@ ask_for_enc_type()
 	
 	einfo "Please enter the encryption type that will be used:"
 	eflag "1. Passphrase"
-	eflag "2. Keyfile"
-	eflag "3. Encrypted Keyfile"
+	eflag "2. Plain keyfile"
+	eflag "3. Encrypted keyfile"
 	eqst "Current choice [1]: " && read choice
 	
 	local good="no"
@@ -239,7 +241,7 @@ luks_trigger()
 	decrypt_drives
 	
 	# Unmount the drive with the keyfile if we had one
-	if [[ ${enc_type} == "key_gpg" ]]; then
+	if [[ ${enc_type} == "key" ]] || [[ ${enc_type} == "key_gpg" ]]; then
 		umount ${enc_key_drive}
 		
 		if [[ $? -eq 0 ]]; then
