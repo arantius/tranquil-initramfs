@@ -103,7 +103,7 @@ parse_cmdline()
 get_drives()
 {
 	if [[ -z ${enc_drives} ]]; then
-		eqst "Please enter your encrypted drives: " ; read enc_drives
+		eqst "Please enter your encrypted drives: " && read enc_drives
 		
 		if [[ -z ${enc_drives} ]]; then
 			die "No encrypted drives have been entered."
@@ -124,11 +124,11 @@ get_decrypt_key()
 
 	if [[ $1 == "pass" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter passphrase: " ; read -s code ; eline
+			eqst "Enter passphrase: " && read -s code && eline
 		done
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter decryption key: " ; read -s code ; eline
+			eqst "Enter decryption key: " && read -s code && eline
 		done
 	else
 		die "Either a decryption type wasn't passed or it's not supported!"
@@ -142,9 +142,9 @@ ask_for_enc_type()
 	
 	einfo "Please enter the encryption type that will be used:"
 	eflag "1. Passphrase"
-	eflag "2. Unencrypted Key File"
-	eflag "3. GPG Encrypted Key File"
-	eqst "Current choice [1]: " ; read choice
+	eflag "2. Normal Key File"
+	eflag "3. Encrypted Key File"
+	eqst "Current choice [1]: " && read choice
 	
 	local good="no"
 	while [[ ${good} == "no" ]]; do
@@ -152,7 +152,7 @@ ask_for_enc_type()
 		""|1) enc_type="pass" && good="yes" ;;
 		2) enc_type="key" && good="yes" ;;
 		3) enc_type="key_gpg" && good="yes" ;;
-		*) eqst "Invalid input. Please enter a correct choice: " ; read choice
+		*) eqst "Invalid input. Please enter a correct choice: " && read choice
 		esac
 	done
 }
@@ -170,7 +170,7 @@ detect_available_drives()
 			einfo "Detecting available drives..." && sleep ${timer} && ls /dev/[sv]d*
 
 			local choice=""
-			eqst "Attempt to re-detect drives? [y/N]: " ; read choice
+			eqst "Do you want to re-detect the drives? [y/N]: " && read choice
 			timer=0
 
 			if [[ ${choice} != "y" ]] && [[ ${choice} != "Y" ]]; then
@@ -207,8 +207,7 @@ luks_trigger()
 
 		# What drive is the keyfile in?
 		if [[ -z ${enc_key_drive} ]]; then
-			eqst "Enter drive where keyfile is located: " ; echo "before..." ; read enc_key_drive
-			echo "something here"
+			eqst "Enter drive where keyfile is located: " && read enc_key_drive
 
 			if [[ -z ${enc_key_drive} ]]; then
 				die "Error setting path to keyfile's drive!"
@@ -217,7 +216,7 @@ luks_trigger()
 
 		# What is the path to the keyfile?
 		if [[ -z ${enc_key} ]]; then
-			eqst "Enter path to keyfile: " ; read enc_key
+			eqst "Enter path to keyfile: " && read enc_key
 
 			if [[ -z ${enc_key} ]]; then
 				die "Error setting path to keyfile!"
@@ -230,7 +229,7 @@ luks_trigger()
 		fi
 
 		# Mount the drive
-		mount ${enc_key_drive} ${KEY_DRIVE}
+		mount ${enc_key_drive} ${KEY_DRIVE} || die "Failed to mount your key drive"
 
 		# Set path to keyfile
 		keyfile="${KEY_DRIVE}/${enc_key}"
@@ -241,13 +240,8 @@ luks_trigger()
 	
 	# Unmount the drive with the keyfile if we had one
 	if [[ ${enc_type} == "key" ]] || [[ ${enc_type} == "key_gpg" ]]; then
-		umount ${enc_key_drive}
-		
-		if [[ $? -eq 0 ]]; then
-			einfo "Your key drive has been unmounted successfully."
-		else
-			ewarn "Error unmounting your key drive."
-		fi
+		umount ${enc_key_drive} || ewarn "Error unmounting your key drive"
+		einfo "Your key drive has been unmounted successfully."
 	fi
 }
 
@@ -328,7 +322,7 @@ zfs_trigger()
 		ewarn "Ignoring cache file and importing your pool ..."
 		ewarn "Please recreate your initramfs so that it can use your new zpool.cache!"
 
-		sleep 3
+		sleep 2
 
 		zpool export -f ${POOL_NAME} 2> /dev/null
 		zpool import -f -N -o cachefile= ${POOL_NAME}
