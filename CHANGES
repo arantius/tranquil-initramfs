@@ -14,7 +14,6 @@
 - Some of the "key_gpg" parts were broken. This has now been fixed.
 - Fixed a bug where the decryption loop would only let you try twice rather than three times
 - Improved the "decrypt_drives" algorithm
-- Fixed a bug where you needed to press enter twice in order for you to continue process control
 - Fixed a bug where the key drive file wasn't being unmounted if you were using "key" as your enc_type
 - Decreased delay for the zfs refresh zpool.cache message from 3 to 2
 - The available drives will only be detected and shown if you didn't set your enc_key_drive. This speeds things up a bit.

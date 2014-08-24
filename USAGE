@@ -266,3 +266,18 @@ filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci
 usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies
 are automatically gathered and compressed by the initramfs, and automatically
 loaded at boot in that order.
+
+=======================================
+Known Issues
+=======================================
+
+1. It seems that sometimes right after a "read" is encountered and executed,
+the user can enter an output, but after that, there is a possibility where the
+shell will just sit there and wait until the user presses "enter". This then triggers
+the continuation of processes. I've been researching/debugging this issue for a bit and haven't
+found a solution. If you have any ideas how to solve this, definitely let me know. This happens
+in that files/libs/common.sh file's "read" commands.
+
+Given the above, this doesn't happen if you aren't performing any User I/O with the program.
+
+

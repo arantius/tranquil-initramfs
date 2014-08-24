@@ -206,7 +206,6 @@ luks_trigger()
 		# What drive is the keyfile in?
 		if [[ -z ${enc_key_drive} ]]; then
 			detect_available_drives
-			
 			eqst "Enter drive where keyfile is located: " && read enc_key_drive
 
 			if [[ -z ${enc_key_drive} ]]; then
