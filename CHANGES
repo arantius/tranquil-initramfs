@@ -16,6 +16,7 @@
 - Improved the "decrypt_drives" algorithm
 - Updated the USAGE file
 - Fixed a bug where you needed to press enter twice in order for your decryption key to continue process control
+- Fixed a bug where the key drive file wasn't being unmounted if you were using "key" as your enc_type
 
 5.1.0
 ---------

@@ -124,13 +124,11 @@ get_decrypt_key()
 
 	if [[ $1 == "pass" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter passphrase: " && read -s code
-			eline
+			eqst "Enter passphrase: " && read -s code < /dev/tty && eline
 		done
 	elif [[ $1 == "key_gpg" ]]; then
 		while [[ -z ${code} ]]; do
-			eqst "Enter decryption key: " && read -s code
-			eline
+			eqst "Enter decryption key: " && read -s code < /dev/tty && eline
 		done
 	else
 		die "Either a decryption type wasn't passed or it's not supported!"
@@ -144,8 +142,8 @@ ask_for_enc_type()
 	
 	einfo "Please enter the encryption type that will be used:"
 	eflag "1. Passphrase"
-	eflag "2. Plain keyfile"
-	eflag "3. Encrypted keyfile"
+	eflag "2. Unencrypted Key File"
+	eflag "3. GPG Encrypted Key File"
 	eqst "Current choice [1]: " && read choice
 	
 	local good="no"
