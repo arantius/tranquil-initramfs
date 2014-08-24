@@ -231,15 +231,15 @@ class Core:
 			tools.die("Failed to give executive privileges to " + var.temp + "/init")
 
 		# Fix 'poweroff, reboot' commands
-		#call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
-		#call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+		call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+		call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
 
 		# Sets initramfs script version number
 		call(["sed", "-i", "-e", "17s/0/" + var.version + "/", var.temp + "/init"])
 
 		# Fix EDITOR/PAGER
-		#call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
-		#call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
+		call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
+		call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
 
 		# Any last substitutions or additions/modifications should be done here
 		if self.zfs.get_use():

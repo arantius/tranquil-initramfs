@@ -207,7 +207,8 @@ luks_trigger()
 
 		# What drive is the keyfile in?
 		if [[ -z ${enc_key_drive} ]]; then
-			eqst "Enter drive where keyfile is located: " ; read enc_key_drive
+			eqst "Enter drive where keyfile is located: " ; echo "before..." ; read enc_key_drive
+			echo "something here"
 
 			if [[ -z ${enc_key_drive} ]]; then
 				die "Error setting path to keyfile's drive!"

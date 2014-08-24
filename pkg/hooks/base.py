@@ -26,9 +26,9 @@ class Base(Hook):
 
 			# app-shells/bash
 			"/bin/bash",
-			#"/etc/bash/bashrc",
-			#"/etc/DIR_COLORS",
-			#"/etc/profile",
+			"/etc/bash/bashrc",
+			"/etc/DIR_COLORS",
+			"/etc/profile",
 
 			# sys-apps/grep
 			"/bin/egrep",
