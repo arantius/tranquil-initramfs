@@ -14,7 +14,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "5.2.0"
+version = "5.3.0"
 license = "MPL 2.0"
 
 # Locations
@@ -28,9 +28,9 @@ initrd = "initrd"
 choice = ""
 
 rstring = str(random.randint(1000,2000)) + "-" + \
-		  str(random.randint(2000,3000)) + "-" + \
-		  str(random.randint(3000,4000)) + "-" + \
-		  str(random.randint(4000,5000))
+          str(random.randint(2000,3000)) + "-" + \
+          str(random.randint(3000,4000)) + "-" + \
+          str(random.randint(4000,5000))
 
 temp = "/tmp/" + rstring
 
@@ -61,25 +61,25 @@ arch = subprocess.check_output(["uname", "-m"], universal_newlines=True).strip()
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
 prel_bin = [
-	"/bin/cpio",
-	"/sbin/depmod",
+    "/bin/cpio",
+    "/sbin/depmod",
 ]
 
 # Layout of the initramfs
 baselayout = [
-	temp + "/etc",
-	temp + "/etc/zfs",
-	temp + "/dev",
-	temp + "/proc",
-	temp + "/sys",
-	temp + "/mnt",
-	temp + "/mnt/root",
-	temp + "/mnt/key",
-	temp + "/lib",
-	temp + "/lib/modules",
-	temp + "/lib64",
-	temp + "/bin",
-	temp + "/sbin",
-	temp + "/usr",
-	temp + "/root",
+    temp + "/etc",
+    temp + "/etc/zfs",
+    temp + "/dev",
+    temp + "/proc",
+    temp + "/sys",
+    temp + "/mnt",
+    temp + "/mnt/root",
+    temp + "/mnt/key",
+    temp + "/lib",
+    temp + "/lib/modules",
+    temp + "/lib64",
+    temp + "/bin",
+    temp + "/sbin",
+    temp + "/usr",
+    temp + "/root",
 ]

@@ -16,32 +16,32 @@ from pkg.hooks.zfs import ZFS
 from pkg.hooks.base import Base
 
 class Creator:
-	def __init__(self):
-		self.core = Core()
+    def __init__(self):
+        self.core = Core()
 
-	# Let the games begin ...
-	def main(self):
-		tools.welcome(self.core)
-		call(["clear"])
-		tools.print_header()
-		self.core.print_menu()
+    # Let the games begin ...
+    def main(self):
+        tools.welcome(self.core)
+        call(["clear"])
+        tools.print_header()
+        self.core.print_menu()
 
-		if var.kernel or self.core.addon.get_files():
-			self.core.do_kernel()
+        if var.kernel or self.core.addon.get_files():
+            self.core.do_kernel()
 
-		self.core.get_arch()
-		tools.clean()
-		self.core.check_prelim_binaries()
-		self.core.create_baselayout()
-		self.core.check_binaries()
-		self.core.install()
-		self.core.copy_modules()
-		self.core.create_links()
-		self.core.copy_deps()
-		self.core.last_steps()
-		self.core.create()
-		tools.clean_exit(var.initrd)
+        self.core.get_arch()
+        tools.clean()
+        self.core.check_prelim_binaries()
+        self.core.create_baselayout()
+        self.core.check_binaries()
+        self.core.install()
+        self.core.copy_modules()
+        self.core.create_links()
+        self.core.copy_deps()
+        self.core.last_steps()
+        self.core.create()
+        tools.clean_exit(var.initrd)
 
 if __name__ == '__main__':
-	init = Creator()
-	init.main()
+    init = Creator()
+    init.main()

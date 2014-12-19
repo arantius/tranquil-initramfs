@@ -1,7 +1,12 @@
+5.3.0
+---------
+- You are now able to pass options to 'cryptsetup' via the 'enc_options' boot line parameter.
+- Converted tabs to spaces, ensured line endings, etc.
+
 5.2.0
 ---------
 - Now supports encrypting/decrypting your swap partition (just append it to the "enc_drives" variable)
-- "enc_root" has been renamed to "enc_drives" and is now an optional parameter. 
+- "enc_root" has been renamed to "enc_drives" and is now an optional parameter.
   Meaning that if you don't pass it in, the program will ask you for it.
 - No longer supports multiple individual encryption passphrases. The application will use the one passphrase
   you provided to automatically decrypt all your drives, or it will use your keyfile to automatically decrypt
@@ -24,7 +29,7 @@
   initramfs applications out there for those use cases (LVM, LVM on RAID, etc)
 - Added a commented "dm-crypt" to the addons.py to facilitate the user to enable encryption
   support (when their encryption support is compiled as a module)
-  rather than built into the kernel). 
+  rather than built into the kernel).
 - Improved comments in some places
 
 5.0.0

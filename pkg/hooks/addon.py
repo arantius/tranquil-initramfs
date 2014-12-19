@@ -7,15 +7,15 @@
 from pkg.hooks.hook import Hook
 
 class Addon(Hook):
-	def __init__(self):
-		Hook.__init__(self)
+    def __init__(self):
+        Hook.__init__(self)
 
-		# A list of kernel modules to include in the initramfs
-		# Format: "module1", "module2", "module3", ...
-		self.files = [
-			# Uncomment the module below if you have encryption support built as a module, rather than built into the kernel:
-			#"dm-crypt",
+        # A list of kernel modules to include in the initramfs
+        # Format: "module1", "module2", "module3", ...
+        self.files = [
+            # Uncomment the module below if you have encryption support built as a module, rather than built into the kernel:
+            #"dm-crypt",
 
-			# Add your modules below
-			#"",
-		]
+            # Add your modules below
+            #"",
+        ]

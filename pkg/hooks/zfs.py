@@ -7,13 +7,13 @@
 from pkg.hooks.hook import Hook
 
 class ZFS(Hook):
-	def __init__(self):
-		Hook.__init__(self)
+    def __init__(self):
+        Hook.__init__(self)
 
-		# Required Files
-		self.files = [
-			"/sbin/mount.zfs",
-			"/sbin/zdb",
-			"/sbin/zfs",
-			"/sbin/zpool",
-		]
+        # Required Files
+        self.files = [
+            "/sbin/mount.zfs",
+            "/sbin/zdb",
+            "/sbin/zfs",
+            "/sbin/zpool",
+        ]
