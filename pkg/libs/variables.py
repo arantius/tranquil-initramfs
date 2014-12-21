@@ -22,7 +22,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.0.0"
+version = "6.0.1"
 license = "Apache License 2.0"
 
 # Locations

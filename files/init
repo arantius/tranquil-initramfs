@@ -173,6 +173,10 @@ RetrieveDriveValue()
             eval "${tempDrive}"
             echo "/dev/disk/by-partuuid/${UUID}"
             ;;
+        LABEL=*)
+            eval "${tempDrive}"
+            echo "/dev/disk/by-label/${LABEL}"
+            ;;
         PARTLABEL=*)
             eval "${tempDrive}"
             echo "/dev/disk/by-partlabel/${PARTLABEL}"
@@ -209,6 +213,10 @@ GetDrivesNeededToDecrypt()
             PARTUUID=*)
                 eval "${tempDrives[i]}"
                 _drives+=("/dev/disk/by-partuuid/${PARTUUID}")
+                ;;
+            LABEL=*)
+                eval "${tempDrives[i]}"
+                _drives+=("/dev/disk/by-label/${LABEL}")
                 ;;
             PARTLABEL=*)
                 eval "${tempDrives[i]}"
