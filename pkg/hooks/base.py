@@ -39,10 +39,8 @@ class Base(Hook):
             self.udev_path,
             self.udevadm_path,
 
-            # used for udev cookie release
-            # when cryptsetup announces udev support
-            # and attempts to decrypt the drive.
-            # without this, the cryptsetup will lock up
+            # used for udev cookie release when cryptsetup announces udev support
+            # and attempts to decrypt the drive. Without this, the cryptsetup will lock up
             # and stay at "waiting for zero"
             "/sbin/dmsetup",
 

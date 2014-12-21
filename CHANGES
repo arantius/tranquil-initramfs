@@ -1,7 +1,7 @@
 6.0.0
 ---------
-- bliss-initramfs is now using udev. So you will now benefit from UUIDs, Labels, better integration
-  with systemd post boot, and anything else udev provides.
+- bliss-initramfs is now using udev. So you will now benefit from UUIDs, PartUUIDs, PartLabels, IDs, and
+  better integration with systemd post boot, and anything else udev provides.
 - Relicensed to Apache License 2.0
 - Increased default encryption loop tries from 3 to 5.
 - Added the "enc_tries" boot parameter. You can use this to adjust the max tries that cryptsetup will give you.
@@ -15,6 +15,9 @@
   get your root filesystem up and delegate everything else to the userspace. The proper way to decrypt your drive is to use
   /etc/crypttab. Doing this properly also fixes the issue where systemd would hang for 1 minute and 30 seconds because it
   tried to decrypt a swap partition/waited for an event that was already performed.
+- The following directories are now copied into the initramfs: /etc/modprobe.d/, /etc/udev/, /lib/udev
+- You can now copy either all of your firmware files or only the needed firmware by modifying hooks/firmware.py.
+- "Copying modules" message will only appear when modules are actually going to be copied.
 
 5.3.0
 ---------

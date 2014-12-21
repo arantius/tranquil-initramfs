@@ -27,6 +27,7 @@ from pkg.hooks.base import Base
 from pkg.hooks.zfs import ZFS
 from pkg.hooks.luks import LUKS
 from pkg.hooks.addon import Addon
+from pkg.hooks.firmware import Firmware
 
 # Contains the core of the application
 class Core:
@@ -35,6 +36,7 @@ class Core:
         self.zfs = ZFS()
         self.luks = LUKS()
         self.addon = Addon()
+        self.firmware = Firmware()
 
         # List of binaries (That will be 'ldd'ed later)
         self.binset = set()
@@ -166,6 +168,27 @@ class Core:
         if result != 0:
             tools.die("Depmod was unable to refresh the dependency information for your initramfs!")
 
+    # Copies the firmware files if necessary
+    def copy_firmware(self):
+        if self.firmware.get_use():
+            tools.einfo("Copying firmware...")
+
+            if os.path.isdir("/lib/firmware/"):
+                if self.firmware.is_copy_all():
+                    shutil.copytree("/lib/firmware/", var.temp + "/lib/firmware/")
+                else:
+                    # copy the firmware in the files list
+                    if self.firmware.get_files():
+                        try:
+                            for fw in self.firmware.get_files():
+                                tools.ecopy(fw)
+                        except FileNotFoundError:
+                            tools.ewarn("An error occured while copying the following firmware: " + fw)
+                    else:
+                        tools.ewarn("No firmware files were found in the firmware list!")
+            else:
+                tools.die("The /lib/firmware/ directory does not exist")
+
     # Create the required symlinks
     def create_links(self):
         tools.einfo("Creating symlinks ...")
@@ -258,13 +281,14 @@ class Core:
             shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
 
         systemd_dir = os.path.dirname(self.base.udev_path)
-        if os.path.isdir(systemd_dir):
-            shutil.rmtree(var.temp + systemd_dir)
-            shutil.copytree(systemd_dir, var.temp + systemd_dir)
+        #if os.path.isdir(systemd_dir):
+        #    shutil.rmtree(var.temp + systemd_dir)
+        #    shutil.copytree(systemd_dir, var.temp + systemd_dir)
 
         # Rename udevd and place in /sbin
         if os.path.isfile(var.temp + self.base.udev_path):
             os.rename(var.temp + self.base.udev_path, var.temp + "/sbin/udevd")
+            os.rmdir(var.temp + systemd_dir)
 
         # Any last substitutions or additions/modifications should be done here
         if self.zfs.get_use():
@@ -354,12 +378,12 @@ class Core:
 
     # Copy modules and their dependencies
     def copy_modules(self):
-        tools.einfo("Copying modules ...")
-
         moddeps = set()
 
         # Build the list of module dependencies
         if self.addon.get_use():
+            tools.einfo("Copying modules ...")
+
             # Checks to see if all the modules in the list exist
             for x in self.addon.get_files():
                 try:

@@ -78,7 +78,8 @@ Encrypted Normal with one encrypted drive
 =======================================
 
 ** Note: The program will auto mount all your encrypted drives as follows: /dev/mapper/vault_0, /dev/mapper/vault_1,
-         /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0
+         /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0,
+         or use its UUID.
 
 # Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
@@ -137,6 +138,23 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 }
 
 =======================================
+Encrypted ZFS with a gpg key, 3 encrypted drives for the tank pool, and mixing UUIDs, IDs, Labels, and regular drive naming,
+and the key file on a usb which we also use a UUID for.
+=======================================
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=UUID=4443433f-5f03-475f-974e-5345fd524c34,ID=ata-ST500LT012-9WS142_W0V788BP-part2,/dev/sda4
+    enc_type=key enc_key_drive=PARTLABEL=Linux\x20filesystem quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
 Summary:
 =======================================
 
@@ -179,15 +197,6 @@ If you have your zpool on spread over multiple drives, you can pass them all
 to this variable as well:
     example: linux <kernel> enc_drives=/dev/sda2,/dev/sdb3,/dev/sdc4,/dev/sdd5,/dev/sde6
 
-    example with an encrypted swap: linux <kernel> enc_drives=/dev/sda2,/dev/sdb2,/dev/sdc2,/dev/sdc3
-
-    As you noticed, there isn't really anything different, just add your encrypted swap to the list
-    and it will be automatically unlocked with the rest of the drives using the same passphrase or keyfile.
-    The name of the swap will be the position it's in the list -1. For example, if /dev/sdc3 is the swap partition,
-    then it will be the last one unlocked. The indexing starts at 0, so you have /dev/sdc3 being called "vault_3".
-    Just put /dev/mapper/vault_3 in your /etc/fstab and the init system will auto mount vault_3 since it was automatically
-    unlocked in the initramfs and available in the root filesystem.
-
 enc_type - What type of method will are you using to decrypt?
     Types: pass - passphrase
            key - plain keyfile
@@ -195,6 +204,7 @@ enc_type - What type of method will are you using to decrypt?
 
 enc_key_drive - What drive the keyfile in?
     example: linux <kernel> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
+             linux <kernel> enc_drives=/dev/sda3 enc_type=key enc_key_drive=UUID=4443433f-5f03-475f-974e-5345fd524c34
 
     In the above example, we use /dev/sdb1 because we will assume that every time we turn on the machine,
     the encryption key will be in /dev/sdb1. We also assume that if you have your key in a removable media,
@@ -213,6 +223,9 @@ enc_key - What is the path to the keyfile?
 
 enc_options - Allows you to pass options to the 'cryptsetup' command
     example: linux <kernel> enc_drives=/dev/sda3,/dev/sda4 enc_options="--allow-discards -y"
+
+enc_tries - Allows you to set how many times you can retype your passphrase before the initramfs fails to unlock your drives (default is 5)
+    example: linux <kernel> enc_tries=10
 
 LUKS passphrase/key:
 The easiest way to pass the passphrase is just to wait till the initramfs

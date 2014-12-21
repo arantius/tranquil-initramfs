@@ -44,6 +44,7 @@ class Creator:
         self.core.check_binaries()
         self.core.install()
         self.core.copy_modules()
+        self.core.copy_firmware()
         self.core.create_links()
         self.core.copy_deps()
         self.core.last_steps()
