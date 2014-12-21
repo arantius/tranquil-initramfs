@@ -286,7 +286,7 @@ class Core:
         # if addon is being used
         if self.addon.get_use():
             call(["sed", "-i", "-e", "20s/0/1/", var.temp + "/init"])
-            call(["sed", "-i", "-e", "45s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "init"])
+            call(["sed", "-i", "-e", "45s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "/init"])
 
     # Create the solution
     def create(self):

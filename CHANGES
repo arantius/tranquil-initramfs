@@ -3,7 +3,9 @@
 - bliss-initramfs is now using udev. So you will now benefit from UUIDs, Labels, better integration
   with systemd post boot, and anything else udev provides.
 - Relicensed to Apache License 2.0
-- Removed encryption loop. Use the native --tries/-T # options for cryptsetup
+- Increased default encryption loop tries from 3 to 5.
+- Added the "enc_tries" boot parameter. You can use this to adjust the max tries that cryptsetup will give you.
+  Example: enc_tries=10
 - One init file rather than init and libs/common.sh
 - Major refactoring was done. The init file was ran through shellcheck.net's analyzer.
 - New command line parsing algorithm

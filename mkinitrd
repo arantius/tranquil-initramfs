@@ -30,7 +30,7 @@ class Creator:
     # Let the games begin ...
     def main(self):
         tools.welcome(self.core)
-        #call(["clear"])
+        call(["clear"])
         tools.print_header()
         self.core.print_menu()
 
@@ -48,7 +48,7 @@ class Creator:
         self.core.copy_deps()
         self.core.last_steps()
         self.core.create()
-        #tools.clean_exit(var.initrd)
+        tools.clean_exit(var.initrd)
 
 if __name__ == '__main__':
     init = Creator()

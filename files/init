@@ -129,6 +129,9 @@ ParseKernelParameters()
         enc_key_drive=*)
             _enc_key_drive=$(RetrieveDriveValue "${param}")
             ;;
+        enc_tries=*)
+            _enc_tries=$(ParseOption "${param}")
+            ;;
         init=*)
             _init=$(ParseOption "${param}")
             ;;
@@ -350,12 +353,24 @@ LuksTrigger()
     fi
 
     # Attempt to decrypt the drives
-    DecryptDrives || Fail "Failed to decrypt your drives!"
+    DecryptDrives
 
     # Unmount the drive with the keyfile if we had one
     if [[ ${_enc_type} == "key" ]] || [[ ${_enc_type} == "key_gpg" ]]; then
         umount "${_enc_key_drive}" || Warn "Error unmounting your key drive"
         Info "Your key drive has been unmounted successfully."
+    fi
+}
+
+# Validate the maximum tries for decryption
+ValidateMaximumTries()
+{
+    local maximumTryValue=5
+
+    if [[ -z ${_enc_tries} ]]; then
+        _enc_tries=${maximumTryValue}
+    elif [[ ! ${_enc_tries} -gt 0 ]]; then
+        _enc_tries=${maximumTryValue}
     fi
 }
 
@@ -366,15 +381,34 @@ DecryptDrives()
         Fail "Failed to get encrypted drives. The 'drives' value is empty."
     fi
 
+    # Make sure that the maximum amount of tries is set correctly
+    ValidateMaximumTries
+
+    # Set up a counter in case the user gave an incorrect passphrase/key_gpg decryption code
+    local count=0
+    local max="${_enc_tries}"
+
     for i in "${!_drives[@]}"; do
         if [[ ${_enc_type} == "pass" ]]; then
-            # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
-            # and display an "unknown option" message.
-            echo "${code}" | cryptsetup ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+            while [[ ${count} -lt ${max} ]]; do
+                # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
+                # and display an "unknown option" message.
+                echo "${_code}" | cryptsetup ${_enc_options} luksOpen ${_drives[i]} vault_${i} && break
 
-            if [[ $? -eq 0 ]]; then
-                Ask "Successfully decrypted ${_drives[i]}!"
-            fi
+                if [[ $? -ne 0 ]]; then
+                    count=$((count + 1))
+
+                    # If the user kept failing and reached their max tries,
+                    # then throw them into a rescue shell
+                    if [[ ${count} -eq ${max} ]]; then
+                        Fail "Failed to decrypt: ${_drives[i]}"
+                    else
+                        GetDecryptionKey "pass"
+                    fi
+                fi
+            done
+
+            Ask "Successfully decrypted: ${_drives[i]}" && NewLine
         elif [[ ${_enc_type} == "key" ]]; then
             if [[ ! -e ${_keyfile} ]]; then
                 Fail "The keyfile doesn't exist in this path: ${_keyfile}"
@@ -383,19 +417,33 @@ DecryptDrives()
             cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen ${_drives[i]} vault_${i}
 
             if [[ $? -eq 0 ]]; then
-                Ask "Successfully decrypted ${_drives[i]}!"
+                Ask "Successfully decrypted ${_drives[i]}!" && NewLine
+            else
+                Fail "Failed to decrypt ${_drives[i]}!"
             fi
         elif [[ ${_enc_type} == "key_gpg" ]]; then
             if [[ ! -e ${_keyfile} ]]; then
                 Fail "The keyfile doesn't exist in this path: ${_keyfile}"
             fi
 
-            echo "${code}" | gpg --batch --passphrase-fd 0 -q -d "${_keyfile}" 2> /dev/null | \
-            cryptsetup --key-file=- ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+            while [[ ${count} -lt ${max} ]]; do
+                echo "${_code}" | gpg --batch --passphrase-fd 0 -q -d "${_keyfile}" 2> /dev/null | \
+                cryptsetup --key-file=- ${_enc_options} luksOpen ${_drives[i]} vault_${i} && break
 
-            if [[ $? -eq 0 ]]; then
-                Ask "Successfully decrypted ${_drives[i]}!"
-            fi
+                if [[ $? -ne 0 ]]; then
+                    count=$((count + 1))
+
+                    # If the user kept failing and reached their max tries,
+                    # then throw them into a rescue shell
+                    if [[ ${count} -eq ${max} ]]; then
+                        Fail "Failed to decrypt: ${_drives[i]}"
+                    else
+                        GetDecryptionKey "pass"
+                    fi
+                fi
+            done
+
+            Ask "Successfully decrypted: ${_drives[i]}" && NewLine
         fi
     done
 }
@@ -539,11 +587,11 @@ NewLine()
 # Shows the welcome message
 WelcomeMessage()
 {
-    einfo "Welcome to Bliss! [${_version}]"
+    Info "Welcome to Bliss! [${_version}]"
 }
 
 # Prevent kernel from printing on screen
-PreventVerboseKernel
+PreventVerboseKernel()
 {
     echo 0 > /proc/sys/kernel/printk
 }
@@ -552,8 +600,8 @@ PreventVerboseKernel
 
 WelcomeMessage
 MountRequiredDevices || die "Failed to mount kernel devices"
-ParseKernelParameters
 PreventVerboseKernel
+ParseKernelParameters
 LoadModules || die "Failed to load kernel modules"
 StartUdev
 
