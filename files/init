@@ -2,52 +2,578 @@
 
 # Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Import Functions
-. libs/common.sh
+# ========== Variables ==========
+_use_zfs=0
+_use_luks=0
+_use_addon=0
 
-# Variables
-USE_ZFS="0"
-USE_LUKS="0"
-USE_ADDON="0"
+_version="0"
 
-VERSION="0"
-
-NEW_ROOT="/mnt/root"
-INIT="/sbin/init"
-KEY_DRIVE="/mnt/key"
+_new_root="/mnt/root"
+_init="/sbin/init"
+_key_drive="/mnt/key"
 
 # Hostnames for initrd and rootfs
-HOSTN="initrd"
-RHOSTN="rootfs"
+_hostn="initrd"
+_rhostn="rootfs"
+
+# Starts a rescue shell
+RescueShell()
+{
+    Warn "Booting into rescue shell..." && NewLine
+    hostname "${_hostn}" && setsid cttyhack /bin/bash -l
+}
+
+# Module loading function
+LoadModules()
+{
+    if [[ ${_use_zfs} -eq 1 ]] || [[ ${_use_addon} -eq 1 ]]; then
+        Info "Loading modules..."
+
+        local modules=""
+
+        for module in ${modules}; do
+            modprobe ${module}
+        done
+    fi
+}
+
+# Cleanly mounts the required devices
+MountRequiredDevices()
+{
+    Info "Mounting kernel devices..."
+
+    mount -t proc none /proc
+    mount -t devtmpfs none /dev
+    mount -t sysfs none /sys
+    mount -t tmpfs none /run
+}
+
+# Cleanly umounts the required devices
+UnmountRequiredDevices()
+{
+    Info "Unmounting kernel devices..."
+
+    umount /proc
+    umount /dev
+    umount /sys
+    umount /run
+}
+
+# Parses an individual parameter from the command line
+ParseOption()
+{
+    echo "${1#*=}"
+}
+
+# Starts udev and udevadm
+StartUdev()
+{
+        Info "Starting udev..."
+        udevd --daemon --resolve-names=never
+        GenerateDeviceLinks
+}
+
+# Starts udevadm and generates the device symlinks (uuid, label, etc)
+GenerateDeviceLinks()
+{
+        Info "Generating device symbolic links (UUIDs)..."
+        udevadm trigger
+        udevadm settle
+}
+
+# Stops udev from running so that we don't have problems when systemd attempts to run udev itself
+StopUdev()
+{
+    Info "Stopping udev..."
+    killall udevd
+}
+
+# Process command line parameters
+ParseKernelParameters()
+{
+    Info "Parsing kernel parameters..."
+
+    for param in $(cat /proc/cmdline); do
+        case "${param}" in
+        root=*)
+            _root=$(RetrieveDriveValue "${param}")
+            ;;
+        options=*)
+            _options=$(ParseOption "${param}")
+            ;;
+        enc_options=*)
+            _enc_options=$(ParseOption "${param}")
+            ;;
+        enc_drives=*)
+            _enc_drives=$(ParseOption "${param}")
+            ;;
+        enc_type=*)
+            _enc_type=$(ParseOption "${param}")
+            ;;
+        enc_key=*)
+            _enc_key=$(ParseOption "${param}")
+            ;;
+        enc_key_drive=*)
+            _enc_key_drive=$(RetrieveDriveValue "${param}")
+            ;;
+        init=*)
+            _init=$(ParseOption "${param}")
+            ;;
+        refresh)
+            _refresh=1
+            ;;
+        recover)
+            _recover=1
+            ;;
+        su)
+            _su=1
+            ;;
+        redetect)
+            _redetect=1
+            ;;
+        esac
+    done
+
+    if [[ -z ${_root} ]]; then
+        Fail "You must pass the 'root' variable."
+    fi
+}
+
+# Retrieves the proper value for the encrypted key drive
+RetrieveDriveValue()
+{
+    if [[ -z $1 ]]; then
+        Fail "No key drive was passed into the function!"
+    fi
+
+    local tempDrive=$(ParseOption "$1")
+
+    case "${tempDrive}" in
+        UUID=*)
+            eval "${tempDrive}"
+            echo "/dev/disk/by-uuid/${UUID}"
+            ;;
+        LABEL=*)
+            eval "${tempDrive}"
+            echo "/dev/disk/by-label/${LABEL}"
+            ;;
+        *)
+            echo "${tempDrive}"
+            ;;
+    esac
+}
+
+# Extract all the drives needed to decrypt before mounting the pool
+GetDrivesNeededToDecrypt()
+{
+    if [[ -z ${_enc_drives} ]]; then
+        Ask "Please enter your encrypted drives: " && read _enc_drives
+
+        if [[ -z ${_enc_drives} ]]; then
+            Fail "No encrypted drives have been entered."
+        fi
+    fi
+
+    IFS="," read -a tempDrives <<< "${_enc_drives}"
+
+    for i in "${!tempDrives[@]}"; do
+        case ${tempDrives[i]} in
+            UUID=*)
+                eval "${tempDrives[i]}"
+                _drives+=("/dev/disk/by-uuid/${UUID}")
+                ;;
+            LABEL=*)
+                eval "${tempDrives[i]}"
+                _drives+=("/dev/disk/by-label/${LABEL}")
+                ;;
+            /dev/*)
+                _drives+=(${tempDrives[i]})
+                ;;
+        esac
+    done
+
+    for i in "${!_drives[@]}"; do
+        Flag "Drive ${i}: ${_drives[i]}"
+    done
+
+    unset tempDrives
+}
+
+# Gets a decryption key without displaying it on screen
+GetDecryptionKey()
+{
+    unset _code
+
+    if [[ $1 == "pass" ]]; then
+        while [[ -z ${_code} ]]; do
+            Ask "Enter passphrase: " && read -s _code && NewLine
+        done
+    elif [[ $1 == "key_gpg" ]]; then
+        while [[ -z ${_code} ]]; do
+            Ask "Enter decryption key: " && read -s _code && NewLine
+        done
+    else
+        Fail "Either a decryption type wasn't passed or it's not supported!"
+    fi
+}
+
+# Returns the encryption type that will be used interactively from the user
+AskEncryptionType()
+{
+    local choice=""
+
+    Info "Please enter the encryption type that will be used:"
+    Flag "1. Passphrase"
+    Flag "2. Normal Key File"
+    Flag "3. Encrypted Key File"
+    Ask "Current choice [1]: " && read choice
+
+    local isResponseValid="no"
+
+    while [[ ${isResponseValid} == "no" ]]; do
+        case "${choice}" in
+        ""|1)
+            _enc_type="pass"
+            isResponseValid="yes"
+            ;;
+        2)
+            _enc_type="key"
+            isResponseValid="yes"
+            ;;
+        3)
+            _enc_type="key_gpg"
+            isResponseValid="yes"
+            ;;
+        *)
+            Ask "Invalid input. Please enter a correct choice: "
+            read choice
+            ;;
+        esac
+    done
+}
+
+# Prints the available drives
+PrintAvailableDrives()
+{
+    Info "Detecting available drives..." && sleep "${_timer}" && ls /dev/[sv]d*
+}
+
+# Detects the available drives
+DetectAvailableDrives()
+{
+    _timer=3
+
+    if [[ -z ${_redetect} ]]; then
+        PrintAvailableDrives
+    else
+        local keepGoing="yes"
+
+        while [[ ${keepGoing} == "yes" ]]; do
+            PrintAvailableDrives
+
+            local choice=""
+            Ask "Do you want to re-detect the drives? [y/N]: " && read choice
+            _timer=0
+
+            if [[ ${choice} != "y" ]] && [[ ${choice} != "Y" ]]; then
+                keepGoing="no"
+            fi
+        done
+    fi
+}
+
+# If "use_luks" is enabled, luks specific code will be ran
+LuksTrigger()
+{
+    Info "Gathering encrypted devices..." && GetDrivesNeededToDecrypt
+
+    # If the user left their _enc_type blank (Could be intentional),
+    # then let's ask them now to select the type.
+    if [[ -z ${_enc_type} ]]; then
+        AskEncryptionType
+
+        if [[ -z ${_enc_type} ]]; then
+            Fail "The encryption type was not set."
+        fi
+    fi
+
+    if [[ ${_enc_type} != "pass" ]] && [[ ${_enc_type} != "key" ]] && [[ ${_enc_type} != "key_gpg" ]]; then
+        Fail "Invalid 'enc_type' option. Only 'pass', 'key', and 'key_gpg' are supported."
+    fi
+
+    # Gathers information required (passphrase, keyfile location, etc)
+    if [[ ${_enc_type} == "pass" ]]; then
+        GetDecryptionKey "pass"
+    elif [[ ${_enc_type} == "key" ]] || [[ ${_enc_type} == "key_gpg" ]]; then
+        # What drive is the keyfile in?
+        if [[ -z ${_enc_key_drive} ]]; then
+            DetectAvailableDrives
+            Ask "Enter drive where keyfile is located: " && read _enc_key_drive
+
+            if [[ -z ${_enc_key_drive} ]]; then
+                Fail "Error setting path to keyfile's drive!"
+            fi
+        fi
+
+        # What is the path to the keyfile?
+        if [[ -z ${_enc_key} ]]; then
+            Ask "Enter path to keyfile: " && read _enc_key
+
+            if [[ -z ${_enc_key} ]]; then
+                Fail "Error setting path to keyfile!"
+            fi
+        fi
+
+        # What is the decryption key for the keyfile?
+        if [[ ${_enc_type} == "key_gpg" ]]; then
+            GetDecryptionKey "key_gpg"
+        fi
+
+        # Mount the drive
+        mount "${_enc_key_drive}" "${_key_drive}" || die "Failed to mount your key drive"
+
+        # Set path to keyfile
+        _keyfile="${_key_drive}/${_enc_key}"
+    fi
+
+    # Attempt to decrypt the drives
+    DecryptDrives || Fail "Failed to decrypt your drives!"
+
+    # Unmount the drive with the keyfile if we had one
+    if [[ ${_enc_type} == "key" ]] || [[ ${_enc_type} == "key_gpg" ]]; then
+        umount "${_enc_key_drive}" || Warn "Error unmounting your key drive"
+        Info "Your key drive has been unmounted successfully."
+    fi
+}
+
+# Attempts to decrypt the drives
+DecryptDrives()
+{
+    if [[ -z ${_drives[@]} ]]; then
+        Fail "Failed to get encrypted drives. The 'drives' value is empty."
+    fi
+
+    for i in "${!_drives[@]}"; do
+        if [[ ${_enc_type} == "pass" ]]; then
+            # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
+            # and display an "unknown option" message.
+            echo "${code}" | cryptsetup ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+
+            if [[ $? -eq 0 ]]; then
+                Ask "Successfully decrypted ${_drives[i]}!"
+            fi
+        elif [[ ${_enc_type} == "key" ]]; then
+            if [[ ! -e ${_keyfile} ]]; then
+                Fail "The keyfile doesn't exist in this path: ${_keyfile}"
+            fi
+
+            cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+
+            if [[ $? -eq 0 ]]; then
+                Ask "Successfully decrypted ${_drives[i]}!"
+            fi
+        elif [[ ${_enc_type} == "key_gpg" ]]; then
+            if [[ ! -e ${_keyfile} ]]; then
+                Fail "The keyfile doesn't exist in this path: ${_keyfile}"
+            fi
+
+            echo "${code}" | gpg --batch --passphrase-fd 0 -q -d "${_keyfile}" 2> /dev/null | \
+            cryptsetup --key-file=- ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+
+            if [[ $? -eq 0 ]]; then
+                Ask "Successfully decrypted ${_drives[i]}!"
+            fi
+        fi
+    done
+}
+
+# If "use_zfs" is enabled, zfs specific code will be ran
+ZfsTrigger()
+{
+    _pool_name="${_root%%/*}"
+
+    Flag "Importing ${_pool_name}..."
+
+    _cache="/etc/zfs/zpool.cache"
+
+    if [[ ! -f ${_cache} ]]; then
+        Warn "No cache file exists, importing your pool without it ..."
+        zpool import -f -N -o cachefile= "${_pool_name}"
+    elif [[ -f ${_cache} ]] && [[ ${_refresh} -eq 1 ]]; then
+        Warn "Ignoring cache file and importing your pool ..."
+        Warn "Please recreate your initramfs so that it can use your new zpool.cache!"
+
+        sleep 2
+
+        zpool export -f "${_pool_name}" 2> /dev/null
+        zpool import -f -N -o cachefile= "${_pool_name}"
+    fi
+}
+
+# Mounts your root device
+MountRoot()
+{
+    Info "Mounting your root device..."
+
+    # Using "" for the ${options} below so that if the user doesn't have any
+    # options, the variable ends up expanding back to empty quotes and allows
+    # the mount command to keep going.
+    if [[ ${_use_zfs} -eq 1 ]]; then
+        # Try to mount the pool now, if it fails then there might have been
+        # a problem with the cache, so try to remount the pool and then try
+        # again before failing.
+        mount -t zfs -o zfsutil,"${options}" "${_root}" "${_new_root}" || \
+        Fail "Failed to import your zfs root dataset!"
+
+        # Installs the cache generated by this initramfs run to the rootfs.
+        # This prevents the main system from becoming out of sync with what
+        # the initramfs is working with.
+        InstallZpoolCache
+    else
+        mount -o "${_options}" "${_root}" "${_new_root}" || \
+        Fail "Failed to import your root device: ${_root}!"
+    fi
+}
+
+# Switches into your root device
+SwitchToNewRoot()
+{
+    Info "Switching into your root device..." && NewLine
+    exec switch_root "${_new_root}" "${_init}"
+}
+
+# Checks all triggers
+CheckTriggers()
+{
+    if [[ ${_use_luks} -eq 1 ]]; then
+        LuksTrigger
+    fi
+
+    if [[ ${_use_zfs} -eq 1 ]]; then
+        ZfsTrigger
+    fi
+}
+
+# Installs the zpool.cache to the rootfs
+InstallZpoolCache()
+{
+    # If there is an old cache in the rootfs, then delete it.
+    local old_cache="${_new_root}/${_cache}"
+
+    if [[ -f ${old_cache} ]]; then
+        rm -f "${old_cache}"
+    fi
+
+    cp -f "${_cache}" "${old_cache}"
+}
+
+# Single User Mode
+SingleUser()
+{
+    Warn "Booting into single user mode..." && NewLine
+
+    mount --rbind /proc "${_new_root}"/proc
+    mount --rbind /dev "${_new_root}"/dev
+    mount --rbind /sys "${_new_root}"/sys
+    mount --rbind /run "${_new_root}"/run
+
+    setsid cttyhack /bin/bash -c "chroot ${_new_root} /bin/bash -c 'hostname ${_rhostn}' && chroot ${_new_root} /bin/bash -l"
+
+    # Lazy unmount these devices from the rootfs since they will be fully
+    # unmounted from the initramfs environment right after this function
+    # is over.
+    umount -l "${_new_root}"/proc "${_new_root}"/dev "${_new_root}"/sys "${_new_root}"/run
+}
+
+### Utility Functions ###
+
+# Used for displaying information
+Info()
+{
+    echo -e "\e[1;32m[*]\e[0;m ${*}"
+}
+
+# Used for input (questions, retrieving feedback from user)
+Ask()
+{
+    echo -en "\e[1;37m[*]\e[0;m ${*}"
+}
+
+# Used for warnings
+Warn()
+{
+    echo -e "\e[1;33m[!]\e[0;m ${*}"
+}
+
+# Used for flags
+Flag()
+{
+    echo -e "\e[1;34m[+]\e[0;m ${*}"
+}
+
+# Used for errors
+Fail()
+{
+    echo -e "\e[1;31m[#]\e[0;m ${*}" && RescueShell
+}
+
+# Prints empty line
+NewLine()
+{
+    echo ""
+}
+
+# Shows the welcome message
+WelcomeMessage()
+{
+    einfo "Welcome to Bliss! [${_version}]"
+}
+
+# Prevent kernel from printing on screen
+PreventVerboseKernel
+{
+    echo 0 > /proc/sys/kernel/printk
+}
 
 ### Xian zai shi shen me shi jian? Kai shi de shi jian! ###
 
-welcome
-mnt_kernel_devs || die "Failed to mount kernel devices"
-parse_cmdline
-prevent_printk
-load_modules || die "Failed to load kernel modules"
+WelcomeMessage
+MountRequiredDevices || die "Failed to mount kernel devices"
+ParseKernelParameters
+PreventVerboseKernel
+LoadModules || die "Failed to load kernel modules"
+StartUdev
 
-if [[ ${recover} == "1" ]]; then
-    rescue_shell
+if [[ ${_recover} -eq 1 ]]; then
+    RescueShell
 fi
 
 # Run all the triggers (Like LUKS, ZFS)
-check_triggers
+CheckTriggers
 
 # Mounts your root device
-mount_root
+MountRoot
 
-if [[ ${su} == "1" ]]; then
-    single_user
+if [[ ${_su} -eq 1 ]]; then
+    SingleUser
 fi
 
 # Let's clean up and go to the OS
-umnt_kernel_devs || die "Failed to umount kernel devices"
+StopUdev
+UnmountRequiredDevices || Die "Failed to unmount kernel devices"
 
 # Switches into your root device
-switch_to_root
+SwitchToNewRoot

@@ -1,3 +1,19 @@
+6.0.0
+---------
+- bliss-initramfs is now using udev. So you will now benefit from UUIDs, Labels, better integration
+  with systemd post boot, and anything else udev provides.
+- Relicensed to Apache License 2.0
+- Removed encryption loop. Use the native --tries/-T # options for cryptsetup
+- One init file rather than init and libs/common.sh
+- Major refactoring was done. The init file was ran through shellcheck.net's analyzer.
+- New command line parsing algorithm
+- Just to mention it again.. UUIDs support has been finally implemented! You can use the UUIDs for both multiple root drives,
+  and also your usb drive if you have your keyfile in there :D.
+- I'm no longer supporting using the initramfs to decrypt your swap via enc_drives. The initramfs is only supposed to
+  get your root filesystem up and delegate everything else to the userspace. The proper way to decrypt your drive is to use
+  /etc/crypttab. Doing this properly also fixes the issue where systemd would hang for 1 minute and 30 seconds because it
+  tried to decrypt a swap partition/waited for an event that was already performed.
+
 5.3.0
 ---------
 - You are now able to pass options to 'cryptsetup' via the 'enc_options' boot line parameter.

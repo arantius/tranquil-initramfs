@@ -1,8 +1,16 @@
 # Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from pkg.hooks.hook import Hook
 from pkg.libs.toolkit import Toolkit as tools
@@ -17,12 +25,26 @@ class Base(Hook):
         # Set the kmod path for this system
         self.kmod_path = tools.find_prog("kmod")
 
+        self.udev_path = tools.find_udevd()
+        self.udevadm_path = tools.find_prog("udevadm")
+
         self.files = [
             # sys-apps/busybox
             "/bin/busybox",
 
             # sys-apps/kmod
             self.kmod_path,
+
+            # udev
+            self.udev_path,
+            self.udevadm_path,
+
+            # used for udev cookie release
+            # when cryptsetup announces udev support
+            # and attempts to decrypt the drive.
+            # without this, the cryptsetup will lock up
+            # and stay at "waiting for zero"
+            "/sbin/dmsetup",
 
             # app-shells/bash
             "/bin/bash",

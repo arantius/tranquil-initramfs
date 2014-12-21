@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - v5.3.0
+Bliss Initramfs Creator - v6.0.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Gentoo Linux
 
-Distributed under the MPL 2.0 which can be found in the LICENSE file.
+Distributed under the Apache License 2.0 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
@@ -34,11 +34,12 @@ Please have the following installed:
     them in the 'mods' variable in pkg/hooks/addon.py.
 
 - dev-lang/python 3.3 or greater
+-
 - app-arch/cpio
 - app-shells/bash
 - sys-apps/kmod
 - sys-apps/grep
-
+- sys-fs/udev or sys-apps/systemd (which provides udev)
 - sys-fs/zfs (ZFS support)
 - sys-fs/cryptsetup (LUKS support)
 - app-crypt/gnupg (LUKS support)

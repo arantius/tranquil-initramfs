@@ -1,8 +1,16 @@
 # Copyright 2012-2014 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import shutil
@@ -215,9 +223,6 @@ class Core:
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-        # Copy init functions
-        shutil.copytree(var.phome + "/files/libs/", var.temp + "/libs")
-
         # Copy the init script
         shutil.copy(var.phome + "/files/init", var.temp)
 
@@ -235,20 +240,36 @@ class Core:
         call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
 
         # Sets initramfs script version number
-        call(["sed", "-i", "-e", "17s/0/" + var.version + "/", var.temp + "/init"])
+        call(["sed", "-i", "-e", "22s/0/" + var.version + "/", var.temp + "/init"])
 
         # Fix EDITOR/PAGER
         call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
         call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
 
+        # Copy all of the modprobe configurations
+        if os.path.isdir("/etc/modprobe.d/"):
+            shutil.copytree("/etc/modprobe.d/", var.temp + "/etc/modprobe.d/")
+
+        # Copy all of the udev files
+        if os.path.isdir("/etc/udev/"):
+            shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
+
+        if os.path.isdir("/lib/udev/"):
+            shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
+
+        systemd_dir = os.path.dirname(self.base.udev_path)
+        if os.path.isdir(systemd_dir):
+            shutil.rmtree(var.temp + systemd_dir)
+            shutil.copytree(systemd_dir, var.temp + systemd_dir)
+
+        # Rename udevd and place in /sbin
+        if os.path.isfile(var.temp + self.base.udev_path):
+            os.rename(var.temp + self.base.udev_path, var.temp + "/sbin/udevd")
+
         # Any last substitutions or additions/modifications should be done here
         if self.zfs.get_use():
             # Enable ZFS in the init if ZFS is being used
-            call(["sed", "-i", "-e", "13s/0/1/", var.temp + "/init"])
-
-            # Copy the /etc/modprobe.d/zfs.conf file if it exists
-            if os.path.isfile("/etc/modprobe.d/zfs.conf"):
-                tools.ecopy("/etc/modprobe.d/zfs.conf")
+            call(["sed", "-i", "-e", "18s/0/1/", var.temp + "/init"])
 
             # Copy zpool.cache into initramfs
             if os.path.isfile("/etc/zfs/zpool.cache"):
@@ -259,13 +280,13 @@ class Core:
 
         # Enable LUKS in the init if LUKS is being used
         if self.luks.get_use():
-            call(["sed", "-i", "-e", "14s/0/1/", var.temp + "/init"])
+            call(["sed", "-i", "-e", "19s/0/1/", var.temp + "/init"])
 
         # Enable ADDON in the init and add our modules to the initramfs
         # if addon is being used
         if self.addon.get_use():
-            call(["sed", "-i", "-e", "15s/0/1/", var.temp + "/init"])
-            call(["sed", "-i", "-e", "20s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "/libs/common.sh"])
+            call(["sed", "-i", "-e", "20s/0/1/", var.temp + "/init"])
+            call(["sed", "-i", "-e", "45s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "init"])
 
     # Create the solution
     def create(self):
