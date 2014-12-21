@@ -474,13 +474,11 @@ ZfsTrigger()
     _cache="/etc/zfs/zpool.cache"
 
     if [[ ! -f ${_cache} ]]; then
-        Warn "No cache file exists, importing your pool without it ..."
+        Warn "No cache file exists, importing your pool without it..."
         zpool import -f -N -o cachefile= "${_pool_name}"
     elif [[ -f ${_cache} ]] && [[ ${_refresh} -eq 1 ]]; then
-        Warn "Ignoring cache file and importing your pool ..."
+        Warn "Ignoring cache file and importing your pool..."
         Warn "Please recreate your initramfs so that it can use your new zpool.cache!"
-
-        sleep 2
 
         zpool export -f "${_pool_name}" 2> /dev/null
         zpool import -f -N -o cachefile= "${_pool_name}"

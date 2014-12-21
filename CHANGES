@@ -18,6 +18,7 @@
 - The following directories are now copied into the initramfs: /etc/modprobe.d/, /etc/udev/, /lib/udev
 - You can now copy either all of your firmware files or only the needed firmware by modifying hooks/firmware.py.
 - "Copying modules" message will only appear when modules are actually going to be copied.
+- Removed 2 second delay when 'refresh' is used for zpool.cache
 
 5.3.0
 ---------
