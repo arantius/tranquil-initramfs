@@ -280,12 +280,9 @@ class Core:
         if os.path.isdir("/lib/udev/"):
             shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
 
-        systemd_dir = os.path.dirname(self.base.udev_path)
-        #if os.path.isdir(systemd_dir):
-        #    shutil.rmtree(var.temp + systemd_dir)
-        #    shutil.copytree(systemd_dir, var.temp + systemd_dir)
-
         # Rename udevd and place in /sbin
+        systemd_dir = os.path.dirname(self.base.udev_path)
+
         if os.path.isfile(var.temp + self.base.udev_path):
             os.rename(var.temp + self.base.udev_path, var.temp + "/sbin/udevd")
             os.rmdir(var.temp + systemd_dir)
