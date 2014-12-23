@@ -12,41 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pkg.libs.toolkit import Toolkit as tools
+from pkg.libs.Tools import Tools
 
-class Hook:
-    def __init__(self):
-        self.use = 0
-        self.files = []
+class Hook(object):
+    _use = 0
+    _files = []
 
     # Enables the use value
-    def enable_use(self):
-        self.use = 1
+    @classmethod
+    def Enable(cls):
+        cls._use = 1
 
     # Disables the use value
-    def disable_use(self):
-        self.use = 0
+    @classmethod
+    def Disable(cls):
+        cls._use = 0
 
     # Gets the use value
-    def get_use(self):
-        return self.use
+    @classmethod
+    def IsEnabled(cls):
+        return cls._use
 
     # Adds a file to the list
-    def add_to_files(self, afile):
-        self.files.append(afile)
+    @classmethod
+    def AddFile(cls, vFile):
+        cls._files.append(vFile)
 
     # Deletes a file from the list
-    def remove_from_files(self, afile):
+    @classmethod
+    def RemoveFile(cls, vFile):
         try:
-            self.files.remove(afile)
+            cls._files.remove(vFile)
         except ValueError:
-            tools.die("The file \"" + afile + "\" was not found on the list!")
+            Tools.Fail("The file \"" + vFile + "\" was not found on the list!")
 
     # Prints the files in the list
-    def print_files(self):
-        for i in self.files:
-            print("File: " + i)
+    @classmethod
+    def PrintFiles(cls):
+        for file in cls.GetFiles():
+            print("File: " + file)
 
     # Returns the list
-    def get_files(self):
-        return self.files
+    @classmethod
+    def GetFiles(cls):
+        return cls._files

@@ -16,41 +16,47 @@
 
 from subprocess import call
 
-import pkg.libs.variables as var
+import pkg.libs.Variables as var
 
-from pkg.libs.core import Core
-from pkg.libs.toolkit import Toolkit as tools
-from pkg.hooks.zfs import ZFS
-from pkg.hooks.base import Base
+from pkg.libs.Core import Core
+from pkg.libs.Tools import Tools
+from pkg.hooks.Addon import Addon
 
-class Creator:
-    def __init__(self):
-        self.core = Core()
-
+class Main(object):
     # Let the games begin ...
-    def main(self):
-        tools.welcome(self.core)
-        call(["clear"])
-        tools.print_header()
-        self.core.print_menu()
+    @classmethod
+    def start(cls):
+        Tools.ProcessArguments(Addon)
+        #call(["clear"])
+        Tools.PrintHeader()
+        Core.PrintMenu()
 
-        if var.kernel or self.core.addon.get_files():
-            self.core.do_kernel()
+        if var.kernel or Addon.GetFiles():
+            Core.GetDesiredKernel()
 
-        self.core.get_arch()
-        tools.clean()
-        self.core.check_prelim_binaries()
-        self.core.create_baselayout()
-        self.core.check_binaries()
-        self.core.install()
-        self.core.copy_modules()
-        self.core.copy_firmware()
-        self.core.create_links()
-        self.core.copy_deps()
-        self.core.last_steps()
-        self.core.create()
-        tools.clean_exit(var.initrd)
+    #def main(self):
+        #cls.core = Core()
+        #Tools.welcome(self.core)
+        #call(["clear"])
+        #Tools.print_header()
+        #self.core.print_menu()
+
+        #if var.kernel or self.core.addon.get_files():
+            #self.core.do_kernel()
+
+        #self.core.get_arch()
+        #Tools.clean()
+        #self.core.check_prelim_binaries()
+        #self.core.create_baselayout()
+        #self.core.check_binaries()
+        #self.core.install()
+        #self.core.copy_modules()
+        #self.core.copy_firmware()
+        #self.core.create_links()
+        #self.core.copy_deps()
+        #self.core.last_steps()
+        #self.core.create()
+        #Tools.clean_exit(var.initrd)
 
 if __name__ == '__main__':
-    init = Creator()
-    init.main()
+    Main.start()

@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pkg.hooks.hook import Hook
+from pkg.hooks.Hook import Hook
+from pkg.libs.Tools import Tools
 
-class ZFS(Hook):
-    def __init__(self):
-        Hook.__init__(self)
+class Udev(Hook):
+    # Required Files
+    _files = [
+        # udev
+        Tools.GetUdevPath(),
+        Tools.GetProgramPath("udevadm"),
 
-        # Required Files
-        self.files = [
-            "/sbin/mount.zfs",
-            "/sbin/zdb",
-            "/sbin/zfs",
-            "/sbin/zpool",
-        ]
+        # Used for udev cookie release when cryptsetup announces udev support
+        # and attempts to decrypt the drive. Without this, the cryptsetup will lock up
+        # and stay at "waiting for zero"
+        "/sbin/dmsetup",
+    ]

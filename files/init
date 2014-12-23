@@ -417,7 +417,7 @@ DecryptDrives()
             while [[ ${count} -lt ${max} ]]; do
                 # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
                 # and display an "unknown option" message.
-                echo "${_code}" | cryptsetup ${_enc_options} luksOpen ${_drives[i]} vault_${i} && break
+                echo "${_code}" | cryptsetup ${_enc_options} luksOpen "${_drives[i]}" "vault_${i}" && break
 
                 if [[ $? -ne 0 ]]; then
                     count=$((count + 1))
@@ -431,18 +431,14 @@ DecryptDrives()
                     fi
                 fi
             done
-
-            Ask "Successfully decrypted: ${_drives[i]}" && NewLine
         elif [[ ${_enc_type} == "key" ]]; then
             if [[ ! -e ${_keyfile} ]]; then
                 Fail "The keyfile doesn't exist in this path: ${_keyfile}"
             fi
 
-            cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen ${_drives[i]} vault_${i}
+            cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen "${_drives[i]}" "vault_${i}"
 
-            if [[ $? -eq 0 ]]; then
-                Ask "Successfully decrypted ${_drives[i]}!" && NewLine
-            else
+            if [[ $? -ne 0 ]]; then
                 Fail "Failed to decrypt ${_drives[i]}!"
             fi
         elif [[ ${_enc_type} == "key_gpg" ]]; then
@@ -466,8 +462,6 @@ DecryptDrives()
                     fi
                 fi
             done
-
-            Ask "Successfully decrypted: ${_drives[i]}" && NewLine
         fi
     done
 }

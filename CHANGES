@@ -1,3 +1,9 @@
+6.1.0
+---------
+- The core engine has gone through refactoring as well
+- "Successfully decrypted: <>" message will no longer be displayed
+- udev support is now optional
+
 6.0.1
 ---------
 - Added "LABEL=" to the list of supported boot namings

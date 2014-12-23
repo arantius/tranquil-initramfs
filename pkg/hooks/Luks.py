@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License..
 
-from pkg.hooks.hook import Hook
+from pkg.hooks.Hook import Hook
 
-class LUKS(Hook):
-    def __init__(self):
-        Hook.__init__(self)
-
-        # Required Files
-        self.files = [
-            "/sbin/cryptsetup",
-            "/usr/bin/gpg",
-            "/usr/bin/gpg-agent",
-            "/usr/share/gnupg/gpg-conf.skel",
-        ]
+class Luks(Hook):
+    # Required Files
+    _files = [
+        "/sbin/cryptsetup",
+        "/usr/bin/gpg",
+        "/usr/bin/gpg-agent",
+        "/usr/share/gnupg/gpg-conf.skel",
+    ]
