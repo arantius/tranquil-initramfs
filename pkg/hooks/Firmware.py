@@ -15,6 +15,9 @@
 from pkg.hooks.Hook import Hook
 
 class Firmware(Hook):
+    # Copy firmware?
+    _use = 0
+
     # If enabled, all the firmware in /lib/firmware will be copied into the initramfs.
     # If you know exactly what firmware files you want, definitely leave this at 0 so
     # to reduce the initramfs size.
@@ -23,8 +26,8 @@ class Firmware(Hook):
     # A list of firmware files to include in the initramfs
     _files = [
         # Add your firmware files below
-        #"/lib/firmware/iwlwifi-6000g2a-6.ucode",
-        #"/lib/firmware/yamaha/yss225_registers.bin",
+        #"iwlwifi-6000g2a-6.ucode",
+        #"/yamaha/yss225_registers.bin",
     ]
 
     # Gets the flag_all_firmware value

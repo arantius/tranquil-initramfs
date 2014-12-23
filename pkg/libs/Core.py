@@ -23,7 +23,6 @@ from subprocess import CalledProcessError
 import pkg.libs.Variables as var
 
 from pkg.libs.Tools import Tools
-
 from pkg.hooks.Base import Base
 from pkg.hooks.Zfs import Zfs
 from pkg.hooks.Luks import Luks
@@ -83,15 +82,16 @@ class Core(object):
             Tools.Warn("Invalid Option. Exiting.")
             quit(1)
 
-    ## Creates the base directory structure
-    #def create_baselayout(self):
-        #for b in var.baselayout:
-            #call(["mkdir", "-p", b])
+    # Creates the base directory structure
+    @classmethod
+    def CreateBaselayout(cls):
+        for dir in var.baselayout:
+            call(["mkdir", "-p", dir])
 
-        ## Create a symlink to this temporary directory at the home dir.
-        ## This will help us debug if anything (since the dirs are randomly
-        ## generated...)
-        #os.symlink(var.temp, var.tlink)
+        # Create a symlink to this temporary directory at the home dir.
+        # This will help us debug if anything (since the dirs are randomly
+        # generated...)
+        os.symlink(var.temp, var.tlink)
 
     # Ask the user if they want to use their current kernel, or another one
     @classmethod
@@ -128,323 +128,367 @@ class Core(object):
         if not os.path.exists(var.modules):
             Tools.Fail("The modules directory for " + var.modules + " doesn't exist!")
 
-    ## Make sure that the arch is x86_64
-    #def get_arch(self):
-        #if var.arch != "x86_64":
-            #Tools.Fail("Your architecture isn't supported. Exiting.")
-
-    ## Checks to see if the preliminary binaries exist
-    #def check_prelim_binaries(self):
-        #Tools.einfo("Checking preliminary binaries ...")
-
-        ## If the required binaries don't exist, then exit
-        #for x in var.prel_bin:
-            #if not os.path.isfile(x):
-                #Tools.err_bin_dexi(x)
-
-    ## Compresses the kernel modules and generates modprobe table
-    #def do_modules(self):
-        #Tools.einfo("Compressing kernel modules ...")
-
-        #cmd = "find " + var.lmodules + " -name " + "*.ko"
-        #results = check_output(cmd, shell=True, universal_newlines=True).strip()
-
-        #for x in results.split("\n"):
-            #cmd = "gzip -9 " + x
-            #cr = call(cmd, shell=True)
-
-            #if cr != 0:
-                #Tools.Fail("Unable to compress " + x + " !")
-
-    ## Generates the modprobe information
-    #def gen_modinfo(self):
-        #Tools.einfo("Generating modprobe information ...")
-
-        ## Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
-        #Tools.ecopy(var.modules + "/modules.order")
-        #Tools.ecopy(var.modules + "/modules.builtin")
-
-        #result = call(["depmod", "-b", var.temp, var.kernel])
-
-        #if result != 0:
-            #Tools.Fail("Depmod was unable to refresh the dependency information for your initramfs!")
-
-    ## Copies the firmware files if necessary
-    #def copy_firmware(self):
-        #if self.firmware.get_use():
-            #Tools.einfo("Copying firmware...")
-
-            #if os.path.isdir("/lib/firmware/"):
-                #if self.firmware.is_copy_all():
-                    #shutil.copytree("/lib/firmware/", var.temp + "/lib/firmware/")
-                #else:
-                    ## copy the firmware in the files list
-                    #if self.firmware.get_files():
-                        #try:
-                            #for fw in self.firmware.get_files():
-                                #Tools.ecopy(fw)
-                        #except FileNotFoundError:
-                            #Tools.ewarn("An error occured while copying the following firmware: " + fw)
-                    #else:
-                        #Tools.ewarn("No firmware files were found in the firmware list!")
-            #else:
-                #Tools.Fail("The /lib/firmware/ directory does not exist")
-
-    ## Create the required symlinks
-    #def create_links(self):
-        #Tools.einfo("Creating symlinks ...")
-
-        ## Needs to be from this directory so that the links are relative
-        #os.chdir(var.lbin)
-
-        ## Create busybox links
-        #cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
-
-        #cr = call(cmd, shell=True)
-
-        #if cr != 0:
-            #Tools.Fail("Unable to create busybox links via chroot!")
-
-        ## Create 'sh' symlink to 'bash'
-        #os.remove(var.temp + "/bin/sh")
-        #os.symlink("bash", "sh")
-
-        ## Switch to the kmod directory, delete the corresponding busybox
-        ## symlink and create the symlinks pointing to kmod
-        #if os.path.isfile(var.lsbin + "/kmod"):
-            #os.chdir(var.lsbin)
-        #elif os.path.isfile(var.lbin + "/kmod"):
-            #os.chdir(var.lbin)
-
-        #for link in self.base.get_kmod_links():
-            #os.remove(var.temp + "/bin/" + link)
-            #os.symlink("kmod", link)
-
-    ## This functions does any last minute steps like copying zfs.conf,
-    ## giving init execute permissions, setting up symlinks, etc
-    #def last_steps(self):
-        #Tools.einfo("Performing finishing steps ...")
-
-        ## Create mtab file
-        #call(["touch", var.temp + "/etc/mtab"])
-
-        #if not os.path.isfile(var.temp + "/etc/mtab"):
-            #Tools.Fail("Error creating the mtab file. Exiting.")
-
-        ## Set library symlinks
-        #if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
-            #pcmd = 'find /usr/lib -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
-            #cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            #call(cmd, shell=True)
-
-        #if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
-            #pcmd = 'find /usr/lib32 -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
-            #cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            #call(cmd, shell=True)
-
-        #if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
-            #pcmd = 'find /usr/lib64 -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
-            #cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            #call(cmd, shell=True)
-
-        ## Copy the init script
-        #shutil.copy(var.phome + "/files/init", var.temp)
-
-        #if not os.path.isfile(var.temp + "/init"):
-            #Tools.Fail("Error creating the init file. Exiting.")
-
-        ## Give execute permissions to the script
-        #cr = call(["chmod", "u+x", var.temp + "/init"])
-
-        #if cr != 0:
-            #Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
-
-        ## Fix 'poweroff, reboot' commands
-        #call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
-        #call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
-
-        ## Sets initramfs script version number
-        #call(["sed", "-i", "-e", "22s/0/" + var.version + "/", var.temp + "/init"])
-
-        ## Fix EDITOR/PAGER
-        #call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
-        #call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
-
-        ## Copy all of the modprobe configurations
-        #if os.path.isdir("/etc/modprobe.d/"):
-            #shutil.copytree("/etc/modprobe.d/", var.temp + "/etc/modprobe.d/")
-
-        ## Copy all of the udev files
-        #if os.path.isdir("/etc/udev/"):
-            #shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
-
-        #if os.path.isdir("/lib/udev/"):
-            #shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
-
-        ## Rename udevd and place in /sbin
-        #systemd_dir = os.path.dirname(Tools.GetUdevPath())
-
-        #if os.path.isfile(var.temp + self.base.udev_path) and Tools.GetUdevPath() != "/sbin/udevd":
-            #os.rename(var.temp + self.base.udev_path, var.temp + "/sbin/udevd")
-            #os.rmdir(var.temp + systemd_dir)
-
-        ## Any last substitutions or additions/modifications should be done here
-        #if self.zfs.get_use():
-            ## Enable ZFS in the init if ZFS is being used
-            #call(["sed", "-i", "-e", "18s/0/1/", var.temp + "/init"])
-
-            ## Copy zpool.cache into initramfs
-            #if os.path.isfile("/etc/zfs/zpool.cache"):
-                #Tools.ewarn("Using your zpool.cache file ...")
-                #Tools.ecopy("/etc/zfs/zpool.cache")
-            #else:
-                #Tools.ewarn("No zpool.cache was found. It will not be used ...")
-
-        ## Enable LUKS in the init if LUKS is being used
-        #if self.luks.get_use():
-            #call(["sed", "-i", "-e", "19s/0/1/", var.temp + "/init"])
-
-        ## Enable ADDON in the init and add our modules to the initramfs
-        ## if addon is being used
-        #if self.addon.get_use():
-            #call(["sed", "-i", "-e", "20s/0/1/", var.temp + "/init"])
-            #call(["sed", "-i", "-e", "45s/\"\"/\"" + " ".join(self.addon.get_files()) + "\"/", var.temp + "/init"])
-
-    ## Create the solution
-    #def create(self):
-        #Tools.einfo("Creating the initramfs ...")
-
-        ## The find command must use the `find .` and not `find ${T}`
-        ## because if not, then the initramfs layout will be prefixed with
-        ## the ${T} path.
-        #os.chdir(var.temp)
-
-        #call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " +  var.home + "/" + var.initrd], shell=True)
-
-        #if not os.path.isfile(var.home + "/" + var.initrd):
-            #Tools.Fail("Error creating the initramfs. Exiting.")
-
-    ## Checks to see if the binaries exist, if not then emerge
-    #def check_binaries(self):
-        #Tools.einfo("Checking required files ...")
-
-        ## Check required base files
-        #for f in self.base.get_files():
-            #if not os.path.exists(f):
-                #Tools.err_bin_dexi(f)
-
-        ## Check required zfs files
-        #if self.zfs.get_use():
-            #Tools.eflag("Using ZFS")
-            #for f in self.zfs.get_files():
-                #if not os.path.exists(f):
-                    #Tools.err_bin_dexi(f)
-
-        ## Check required luks files
-        #if self.luks.get_use():
-            #Tools.eflag("Using LUKS")
-            #for f in self.luks.get_files():
-                #if not os.path.exists(f):
-                    #Tools.err_bin_dexi(f)
-
-    ## Installs the packages
-    #def install(self):
-        #Tools.einfo("Copying required files ...")
-
-        #for f in self.base.get_files():
-            #self.emerge(f)
-
-        #if self.zfs.get_use():
-            #for f in self.zfs.get_files():
-                #self.emerge(f)
-
-        #if self.luks.get_use():
-            #for f in self.luks.get_files():
-                #self.emerge(f)
-
-    ## Filters and installs a package into the initramfs
-    #def emerge(self, afile):
-        ## If the application is a binary, add it to our binary set
-        #try:
-            #lcmd = check_output('file -L ' + afile.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
-            #self.binset.add(afile)
-        #except CalledProcessError:
-            #pass
-
-        ## Copy the file into the initramfs
-        #Tools.ecopy(afile)
-
-    ## Copy modules and their dependencies
-    #def copy_modules(self):
-        #moddeps = set()
-
-        ## Build the list of module dependencies
-        #if self.addon.get_use():
-            #Tools.einfo("Copying modules ...")
-
-            ## Checks to see if all the modules in the list exist
-            #for x in self.addon.get_files():
-                #try:
-                    #cmd = 'find ' + var.modules + ' -iname "' + x + '.ko" | grep ' + x + '.ko'
-                    #result = check_output(cmd, universal_newlines=True, shell=True).strip()
-                    #self.modset.add(result)
-                #except CalledProcessError:
-                    #Tools.err_mod_dexi(x)
-
-        ## If a kernel has been set, try to update the module dependencies
-        ## database before searching it
-        #if var.kernel:
-            #result = call(["depmod", var.kernel])
-
-            #if result:
-                #Tools.Fail("Error updating module dependency database!")
-
-        ## Get the dependencies for all the modules in our set
-        #for x in self.modset:
-            ## Get only the name of the module
-            #match = re.search('(?<=/)\w+.ko', x)
-
-            #if match:
-                #sx = match.group().split(".")[0]
-
-                #cmd = "modprobe -S " + var.kernel + " --show-depends " + sx + " | awk -F ' ' '{print $2}'"
-                #results = check_output(cmd, shell=True, universal_newlines=True).strip()
-
-                #for i in results.split("\n"):
-                    #moddeps.add(i.strip())
-
-        ## Copy the modules/dependencies
-        #if moddeps:
-            #for x in moddeps:
-                #Tools.ecopy(x)
-
-            ## Compress the modules and update module dependency database inside the initramfs
-            #self.do_modules()
-            #self.gen_modinfo()
-
-    ## Gets the library dependencies for all our binaries and copies them
-    ## into our initramfs.
-    #def copy_deps(self):
-        #Tools.einfo("Copying library dependencies ...")
-
-        #bindeps = set()
-
-        ## Get the interpreter name that is on this system
-        #result = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
-
-        ## Add intepreter to deps since everything will depend on it
-        #bindeps.add(result)
-
-        ## Get the dependencies for the binaries we've collected and add them to
-        ## our bindeps set. These will all be copied into the initramfs later.
-        #for b in self.binset:
-            #cmd = "ldd " + b + " | awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'"
-            #results = check_output(cmd, shell=True, universal_newlines=True).strip()
-
-            #if results:
-                #for j in results.split("\n"):
-                    #bindeps.add(j)
-
-        ## Copy all the dependencies of the binary files into the initramfs
-        #for x in bindeps:
-            #Tools.ecopy(x)
+    # Make sure that the arch is x86_64
+    @classmethod
+    def VerifySupportedArchitecture(cls):
+        if var.arch != "x86_64":
+            Tools.Fail("Your architecture isn't supported. Exiting.")
+
+    # Checks to see if the preliminary binaries exist
+    @classmethod
+    def VerifyPreliminaryBinaries(cls):
+        Tools.Info("Checking preliminary binaries ...")
+
+        # If the required binaries don't exist, then exit
+        for binary in var.prel_bin:
+            if not os.path.isfile(binary):
+                Tools.BinaryDoesntExist(binary)
+
+    # Compresses the kernel modules
+    @classmethod
+    def CompressKernelModules(cls):
+        Tools.Info("Compressing kernel modules ...")
+
+        cmd = "find " + var.lmodules + " -name " + "*.ko"
+        results = check_output(cmd, shell=True, universal_newlines=True).strip()
+
+        for module in results.split("\n"):
+            cmd = "gzip -9 " + module
+            callResult = call(cmd, shell=True)
+
+            if callResult != 0:
+                Tools.Fail("Unable to compress " + module + " !")
+
+    # Generates the modprobe information
+    @classmethod
+    def GenerateModprobeInfo(cls):
+        Tools.Info("Generating modprobe information ...")
+
+        # Copy modules.order and modules.builtin just so depmod doesn't spit out warnings. -_-
+        Tools.Copy(var.modules + "/modules.order")
+        Tools.Copy(var.modules + "/modules.builtin")
+
+        result = call(["depmod", "-b", var.temp, var.kernel])
+
+        if result != 0:
+            Tools.Fail("Depmod was unable to refresh the dependency information for your initramfs!")
+
+    # Copies the firmware files if necessary
+    @classmethod
+    def CopyFirmware(cls):
+        if Firmware.IsEnabled():
+            Tools.Info("Copying firmware...")
+
+            if os.path.isdir("/lib/firmware/"):
+                if Firmware.IsCopyAllEnabled():
+                    shutil.copytree("/lib/firmware/", var.temp + "/lib/firmware/")
+                else:
+                    # Copy the firmware in the files list
+                    if Firmware.GetFiles():
+                        try:
+                            for fw in Firmware.GetFiles():
+                                Tools.Copy(fw, directoryPrefix=var.firmwareDirectory)
+                        except FileNotFoundError:
+                            Tools.Warn("An error occured while copying the following firmware: " + fw)
+                    else:
+                        Tools.Warn("No firmware files were found in the firmware list!")
+            else:
+                Tools.Fail("The /lib/firmware/ directory does not exist")
+
+    # Create the required symlinks
+    @classmethod
+    def CreateLinks(cls):
+        Tools.Info("Creating symlinks ...")
+
+        # Needs to be from this directory so that the links are relative
+        os.chdir(var.lbin)
+
+        # Create busybox links
+        cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
+
+        callResult = call(cmd, shell=True)
+
+        if callResult != 0:
+            Tools.Fail("Unable to create busybox links via chroot!")
+
+        # Create 'sh' symlink to 'bash'
+        os.remove(var.temp + "/bin/sh")
+        os.symlink("bash", "sh")
+
+        # Switch to the kmod directory, delete the corresponding busybox
+        # symlink and create the symlinks pointing to kmod
+        if os.path.isfile(var.lsbin + "/kmod"):
+            os.chdir(var.lsbin)
+        elif os.path.isfile(var.lbin + "/kmod"):
+            os.chdir(var.lbin)
+
+        for link in Base.GetKmodLinks():
+            os.remove(var.temp + "/bin/" + link)
+            os.symlink("kmod", link)
+
+    # Creates symlinks from library files found in each /usr/lib## dir to the /lib[32/64] directories
+    @classmethod
+    def CreateLibraryLinks(cls):
+         # Set library symlinks
+        if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
+            pcmd = 'find /usr/lib -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+        if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
+            pcmd = 'find /usr/lib32 -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+        if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
+            pcmd = 'find /usr/lib64 -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+    # Copies files that udev uses, like /etc/udev/*, /lib/udev/*, etc
+    @classmethod
+    def CopyUdevSupportFiles(cls):
+        if Udev.IsEnabled():
+            # Activate udev support in 'init'
+            call(["sed", "-i", "-e", var.useUdevLine + "s/0/1/", var.temp + "/init"])
+
+            # Copy all of the udev files
+            if os.path.isdir("/etc/udev/"):
+                shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
+
+            if os.path.isdir("/lib/udev/"):
+                shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
+
+            # Rename udevd and place in /sbin
+            udev_path = Tools.GetUdevPath()
+            systemd_dir = os.path.dirname(udev_path)
+
+            if os.path.isfile(var.temp + udev_path) and udev_path != "/sbin/udevd":
+                os.rename(var.temp + udev_path, var.temp + "/sbin/udevd")
+                os.rmdir(var.temp + systemd_dir)
+
+    # This functions does any last minute steps like copying zfs.conf,
+    # giving init execute permissions, setting up symlinks, etc
+    @classmethod
+    def LastSteps(cls):
+        Tools.Info("Performing finishing steps ...")
+
+        # Create mtab file
+        call(["touch", var.temp + "/etc/mtab"])
+
+        if not os.path.isfile(var.temp + "/etc/mtab"):
+            Tools.Fail("Error creating the mtab file. Exiting.")
+
+        cls.CreateLibraryLinks()
+
+        # Copy the init script
+        shutil.copy(var.phome + "/files/init", var.temp)
+
+        if not os.path.isfile(var.temp + "/init"):
+            Tools.Fail("Error creating the init file. Exiting.")
+
+        # Give execute permissions to the script
+        cr = call(["chmod", "u+x", var.temp + "/init"])
+
+        if cr != 0:
+            Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
+
+        # Fix 'poweroff, reboot' commands
+        call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+        call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+
+        # Sets initramfs script version number
+        call(["sed", "-i", "-e", var.initrdVersionLine + "s/0/" + var.version + "/", var.temp + "/init"])
+
+        # Fix EDITOR/PAGER
+        call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
+        call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
+
+        # Copy all of the modprobe configurations
+        if os.path.isdir("/etc/modprobe.d/"):
+            shutil.copytree("/etc/modprobe.d/", var.temp + "/etc/modprobe.d/")
+
+        cls.CopyUdevSupportFiles()
+
+        # Any last substitutions or additions/modifications should be done here
+        if Zfs.IsEnabled():
+            # Enable ZFS in the init if ZFS is being used
+            call(["sed", "-i", "-e", var.useZfsLine + "s/0/1/", var.temp + "/init"])
+
+            # Copy zpool.cache into initramfs
+            if os.path.isfile("/etc/zfs/zpool.cache"):
+                Tools.Flag("Using your zpool.cache file ...")
+                Tools.Copy("/etc/zfs/zpool.cache")
+            else:
+                Tools.Warn("No zpool.cache was found. It will not be used ...")
+
+        # Enable LUKS in the init if LUKS is being used
+        if Luks.IsEnabled():
+            call(["sed", "-i", "-e", var.useLuksLine + "s/0/1/", var.temp + "/init"])
+
+        # Enable ADDON in the init and add our modules to the initramfs
+        # if addon is being used
+        if Addon.IsEnabled():
+            call(["sed", "-i", "-e", var.useAddonLine + "s/0/1/", var.temp + "/init"])
+            call(["sed", "-i", "-e", var.addonModulesLine + "s/\"\"/\"" + " ".join(Addon.GetFiles()) + "\"/", var.temp + "/init"])
+
+    # Create the initramfs
+    @classmethod
+    def CreateInitramfs(cls):
+        Tools.Info("Creating the initramfs ...")
+
+        # The find command must use the `find .` and not `find ${T}`
+        # because if not, then the initramfs layout will be prefixed with
+        # the ${T} path.
+        os.chdir(var.temp)
+
+        call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " +  var.home + "/" + var.initrd], shell=True)
+
+        if not os.path.isfile(var.home + "/" + var.initrd):
+            Tools.Fail("Error creating the initramfs. Exiting.")
+
+    # Checks to see if the binaries exist, if not then emerge
+    @classmethod
+    def VerifyBinaries(cls):
+        Tools.Info("Checking required files ...")
+
+        # Check required base files
+        cls.VerifyBinariesExist(Base.GetFiles())
+
+        # Check required udev files
+        if Udev.IsEnabled():
+            Tools.Flag("Using udev")
+            cls.VerifyBinariesExist(Udev.GetFiles())
+        else:
+            Tools.Warn("Not including udev. Booting using UUIDs will not be supported.")
+
+        # Check required zfs files
+        if Zfs.IsEnabled():
+            Tools.Flag("Using ZFS")
+            cls.VerifyBinariesExist(Zfs.GetFiles())
+
+        # Check required luks files
+        if Luks.IsEnabled():
+            Tools.Flag("Using LUKS")
+            cls.VerifyBinariesExist(Luks.GetFiles())
+
+    # Checks to see that all the binaries in the array exist and errors if they don't
+    @classmethod
+    def VerifyBinariesExist(cls, vFiles):
+        for file in vFiles:
+            if not os.path.exists(file):
+                Tools.BinaryDoesntExist(file)
+
+    # Copies the required files into the initramfs
+    @classmethod
+    def CopyRequiredFiles(cls):
+        Tools.Info("Copying required files ...")
+
+        cls.FilterAndInstall(Base.GetFiles())
+
+        if Udev.IsEnabled():
+            cls.FilterAndInstall(Udev.GetFiles())
+
+        if Zfs.IsEnabled():
+            cls.FilterAndInstall(Zfs.GetFiles())
+
+        if Luks.IsEnabled():
+            cls.FilterAndInstall(Luks.GetFiles())
+
+    # Filters and installs each file in the array into the initramfs
+    @classmethod
+    def FilterAndInstall(cls, vFiles):
+        for file in vFiles:
+            # If the application is a binary, add it to our binary set. If the application is not
+            # a binary, then we will get a CalledProcessError because the output will be null.
+            try:
+                check_output('file -L ' + file.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
+                cls._binset.add(file)
+            except CalledProcessError:
+                pass
+
+            # Copy the file into the initramfs
+            Tools.Copy(file)
+
+    # Copy modules and their dependencies
+    @classmethod
+    def CopyModules(cls):
+        moddeps = set()
+
+        # Build the list of module dependencies
+        if Addon.IsEnabled():
+            Tools.Info("Copying modules ...")
+
+            # Checks to see if all the modules in the list exist
+            for file in Addon.GetFiles():
+                try:
+                    cmd = 'find ' + var.modules + ' -iname "' + file + '.ko" | grep ' + file + '.ko'
+                    result = check_output(cmd, universal_newlines=True, shell=True).strip()
+                    cls._modset.add(result)
+                except CalledProcessError:
+                    Tools.ModuleDoesntExist(file)
+
+        # If a kernel has been set, try to update the module dependencies
+        # database before searching it
+        if var.kernel:
+            try:
+                result = call(["depmod", var.kernel])
+
+                if result:
+                    Tools.Fail("Error updating module dependency database!")
+            except FileNotFoundError:
+                    # This should never occur because the application checks
+                    # that root is the user that is running the application.
+                    # Non-administraative users normally don't have access
+                    # to the 'depmod' command.
+                    Tools.Fail("The 'depmod' command wasn't found.")
+
+        # Get the dependencies for all the modules in our set
+        for file in cls._modset:
+            # Get only the name of the module
+            match = re.search('(?<=/)\w+.ko', file)
+
+            if match:
+                sFile = match.group().split(".")[0]
+
+                cmd = "modprobe -S " + var.kernel + " --show-depends " + sFile + " | awk -F ' ' '{print $2}'"
+                results = check_output(cmd, shell=True, universal_newlines=True).strip()
+
+                for i in results.split("\n"):
+                    moddeps.add(i.strip())
+
+        # Copy the modules/dependencies
+        if moddeps:
+            for module in moddeps:
+                Tools.Copy(module)
+
+            # Compress the modules and update module dependency database inside the initramfs
+            cls.CompressKernelModules()
+            cls.GenerateModprobeInfo()
+
+    # Gets the library dependencies for all our binaries and copies them into our initramfs.
+    @classmethod
+    def CopyDependencies(cls):
+        Tools.Info("Copying library dependencies ...")
+
+        bindeps = set()
+
+        # Get the interpreter name that is on this system
+        result = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
+
+        # Add intepreter to deps since everything will depend on it
+        bindeps.add(result)
+
+        # Get the dependencies for the binaries we've collected and add them to
+        # our bindeps set. These will all be copied into the initramfs later.
+        for binary in cls._binset:
+            cmd = "ldd " + binary + " | awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'"
+            results = check_output(cmd, shell=True, universal_newlines=True).strip()
+
+            if results:
+                for library in results.split("\n"):
+                    bindeps.add(library)
+
+        # Copy all the dependencies of the binary files into the initramfs
+        for library in bindeps:
+            Tools.Copy(library)

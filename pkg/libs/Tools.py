@@ -27,8 +27,8 @@ class Tools(object):
     def ProcessArguments(cls, Addon):
         user = check_output(["whoami"], universal_newlines=True).strip()
 
-        #if user != "root":
-            #cls.Fail("This program must be ran as root")
+        if user != "root":
+            cls.Fail("This program must be ran as root")
 
         arguments = sys.argv[1:]
 

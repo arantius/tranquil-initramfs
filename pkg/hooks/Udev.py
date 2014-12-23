@@ -16,6 +16,9 @@ from pkg.hooks.Hook import Hook
 from pkg.libs.Tools import Tools
 
 class Udev(Hook):
+    # Enable udev support?
+    _use = 1
+
     # Required Files
     _files = [
         # udev

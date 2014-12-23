@@ -27,36 +27,26 @@ class Main(object):
     @classmethod
     def start(cls):
         Tools.ProcessArguments(Addon)
-        #call(["clear"])
+        call(["clear"])
         Tools.PrintHeader()
         Core.PrintMenu()
 
         if var.kernel or Addon.GetFiles():
             Core.GetDesiredKernel()
 
-    #def main(self):
-        #cls.core = Core()
-        #Tools.welcome(self.core)
-        #call(["clear"])
-        #Tools.print_header()
-        #self.core.print_menu()
-
-        #if var.kernel or self.core.addon.get_files():
-            #self.core.do_kernel()
-
-        #self.core.get_arch()
-        #Tools.clean()
-        #self.core.check_prelim_binaries()
-        #self.core.create_baselayout()
-        #self.core.check_binaries()
-        #self.core.install()
-        #self.core.copy_modules()
-        #self.core.copy_firmware()
-        #self.core.create_links()
-        #self.core.copy_deps()
-        #self.core.last_steps()
-        #self.core.create()
-        #Tools.clean_exit(var.initrd)
+        Core.VerifySupportedArchitecture()
+        Tools.Clean()
+        Core.VerifyPreliminaryBinaries()
+        Core.CreateBaselayout()
+        Core.VerifyBinaries()
+        Core.CopyRequiredFiles()
+        Core.CopyModules()
+        Core.CopyFirmware()
+        Core.CreateLinks()
+        Core.CopyDependencies()
+        Core.LastSteps()
+        Core.CreateInitramfs()
+        Tools.CleanAndExit(var.initrd)
 
 if __name__ == '__main__':
     Main.start()

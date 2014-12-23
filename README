@@ -1,4 +1,4 @@
-Bliss Initramfs Creator - v6.0.1
+Bliss Initramfs Creator - v6.1.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Gentoo Linux
 
@@ -39,7 +39,7 @@ Please have the following installed:
 - app-shells/bash
 - sys-apps/kmod
 - sys-apps/grep
-- sys-fs/udev or sys-apps/systemd (which provides udev: virtual/udev)
+- sys-fs/udev OR sys-fs/eudev OR sys-apps/systemd (UUIDs, Labels, etc)
 - sys-fs/zfs (ZFS support)
 - sys-fs/cryptsetup (LUKS support)
 - app-crypt/gnupg (LUKS support)

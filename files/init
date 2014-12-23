@@ -18,6 +18,7 @@
 _use_zfs=0
 _use_luks=0
 _use_addon=0
+_use_udev=0
 
 _version="0"
 
@@ -66,10 +67,10 @@ UnmountRequiredDevices()
 {
     Info "Unmounting kernel devices..."
 
-    umount /proc
-    umount /dev
-    umount /sys
-    umount /run
+    umount -l /proc
+    umount -l /dev
+    umount -l /sys
+    umount -l /run
 }
 
 # Parses an individual parameter from the command line
@@ -171,7 +172,7 @@ RetrieveDriveValue()
             ;;
         PARTUUID=*)
             eval "${tempDrive}"
-            echo "/dev/disk/by-partuuid/${UUID}"
+            echo "/dev/disk/by-partuuid/${PARTUUID}"
             ;;
         LABEL=*)
             eval "${tempDrive}"
@@ -370,7 +371,7 @@ LuksTrigger()
         fi
 
         # Mount the drive
-        mount "${_enc_key_drive}" "${_key_drive}" || die "Failed to mount your key drive"
+        mount "${_enc_key_drive}" "${_key_drive}" || Fail "Failed to mount your key drive"
 
         # Set path to keyfile
         _keyfile="${_key_drive}/${_enc_key}"
@@ -381,8 +382,13 @@ LuksTrigger()
 
     # Unmount the drive with the keyfile if we had one
     if [[ ${_enc_type} == "key" ]] || [[ ${_enc_type} == "key_gpg" ]]; then
-        umount "${_enc_key_drive}" || Warn "Error unmounting your key drive"
-        Info "Your key drive has been unmounted successfully."
+        umount "${_key_drive}"
+
+        if [[ $? -ne 0 ]]; then
+            Warn "Error unmounting your key drive"
+        else
+            Info "Your key drive has been unmounted successfully."
+        fi
     fi
 }
 
@@ -481,6 +487,8 @@ ZfsTrigger()
     elif [[ -f ${_cache} ]] && [[ ${_refresh} -eq 1 ]]; then
         Warn "Ignoring cache file and importing your pool..."
         Warn "Please recreate your initramfs so that it can use your new zpool.cache!"
+
+        sleep 2
 
         zpool export -f "${_pool_name}" 2> /dev/null
         zpool import -f -N -o cachefile= "${_pool_name}"
@@ -615,11 +623,14 @@ PreventVerboseKernel()
 ### Xian zai shi shen me shi jian? Kai shi de shi jian! ###
 
 WelcomeMessage
-MountRequiredDevices || die "Failed to mount kernel devices"
+MountRequiredDevices || Fail "Failed to mount kernel devices"
 PreventVerboseKernel
 ParseKernelParameters
-LoadModules || die "Failed to load kernel modules"
-StartUdev
+LoadModules || Fail "Failed to load kernel modules"
+
+if [[ ${_use_udev} -eq 1 ]]; then
+    StartUdev
+fi
 
 if [[ ${_recover} -eq 1 ]]; then
     RescueShell
@@ -636,8 +647,11 @@ if [[ ${_su} -eq 1 ]]; then
 fi
 
 # Let's clean up and go to the OS
-StopUdev
-UnmountRequiredDevices || Die "Failed to unmount kernel devices"
+if [[ ${_use_udev} -eq 1 ]]; then
+    StopUdev
+fi
+
+UnmountRequiredDevices || Fail "Failed to unmount kernel devices"
 
 # Switches into your root device
-SwitchToNewRoot
+SwitchToNewRoot || Fail "Failed to switch into your root filesystem"

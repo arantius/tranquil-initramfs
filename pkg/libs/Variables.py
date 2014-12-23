@@ -35,10 +35,7 @@ lmodules = ""
 initrd = "initrd"
 choice = ""
 
-rstring = str(random.randint(1000,2000)) + "-" + \
-          str(random.randint(2000,3000)) + "-" + \
-          str(random.randint(3000,4000)) + "-" + \
-          str(random.randint(4000,5000))
+rstring = str(random.randint(100000000,999999999))
 
 temp = "/tmp/" + rstring
 
@@ -73,6 +70,9 @@ prel_bin = [
     "/sbin/depmod",
 ]
 
+# Firmware directory
+firmwareDirectory = "/lib/firmware/"
+
 # Layout of the initramfs
 baselayout = [
     temp + "/etc",
@@ -92,3 +92,11 @@ baselayout = [
     temp + "/root",
     temp + "/run"
 ]
+
+# Line numbers in the 'init' script where sed will substitute its values in
+useZfsLine = "18"
+useLuksLine = "19"
+useAddonLine = "20"
+useUdevLine = "21"
+initrdVersionLine = "23"
+addonModulesLine = "46"

@@ -22,5 +22,6 @@ class Addon(Hook):
         #"dm-crypt",
 
         # Add your modules below
-        #"",
+        #"i915",
+        #"nouveau",
     ]

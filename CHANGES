@@ -1,8 +1,21 @@
 6.1.0
 ---------
-- The core engine has gone through refactoring as well
+- The core engine has gone through a complete refactoring as well
 - "Successfully decrypted: <>" message will no longer be displayed
 - udev support is now optional
+- You can now specify just the remaining portion (folder/firmware) of the firmware file
+  excluding the "/lib/firmware/" in the Firmware hook.
+- Added "/sbin/udevd" to the list of places where the application will try to find the udev binary.
+  This was done in order to fix the directory layout that sys-fs/eudev uses.
+- Fixed a bug where the keyfile drive wouldn't umount when passing the UUID of the keyfile to umount command.
+- Fixed a bug where if the keyfile drive didn't umount successfully, you would still receive a "successfully
+  unmounted message" right after the failed to umount message.
+- Fixed renmants of old "die" calls to the new "Fail" call in the 'init' file which could have caused bugs
+- Re-added 2 second delay when importing zpool without cachefile. The delay is to give the user enough time
+  to read the message about making sure to remake their initramfs to include their new zpool.cache.
+- Fixed a bug where using PARTUUID would actually use UUID.
+- When unmount devices before switching into root, it will now lazy umount rather than normal umount
+  to reduce the risk of an unnecessary lock up.
 
 6.0.1
 ---------
