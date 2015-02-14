@@ -1,8 +1,5 @@
 # Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# Licensed under the Simplified BSD License which can be found in the LICENSE file.
 
 import os
 import subprocess
@@ -14,8 +11,8 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.1.2"
-license = "MPL 2.0"
+version = "6.1.3"
+license = "Simplified BSD License"
 
 # Locations
 home = os.getcwd()
@@ -86,9 +83,9 @@ baselayout = [
 ]
 
 # Line numbers in the 'init' script where sed will substitute its values in
-useZfsLine = "10"
-useLuksLine = "11"
-useAddonLine = "12"
-useUdevLine = "13"
-initrdVersionLine = "15"
-addonModulesLine = "38"
+useZfsLine = "7"
+useLuksLine = "8"
+useAddonLine = "9"
+useUdevLine = "10"
+initrdVersionLine = "12"
+addonModulesLine = "35"
