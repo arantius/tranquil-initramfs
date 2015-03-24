@@ -11,7 +11,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.1.3"
+version = "6.1.4"
 license = "Simplified BSD License"
 
 # Locations

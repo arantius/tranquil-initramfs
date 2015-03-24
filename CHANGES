@@ -1,3 +1,9 @@
+6.1.4
+------------
+- Fixed a bug where regex expressions conducted on modules with "-" or "_" in their name
+  to fail. This caused modules (i.e dm-crypt) with the affected characters that were added
+  to "Addon.py" to not be copied into the initramfs.
+
 6.1.3
 ------------
 - Relicensed to the Simplified BSD License

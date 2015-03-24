@@ -435,7 +435,7 @@ class Core(object):
         # Get the dependencies for all the modules in our set
         for file in cls._modset:
             # Get only the name of the module
-            match = re.search('(?<=/)\w+.ko', file)
+            match = re.search('(?<=/)[a-zA-Z0-9_-]+.ko', file)
 
             if match:
                 sFile = match.group().split(".")[0]
