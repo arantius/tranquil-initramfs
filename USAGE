@@ -31,7 +31,6 @@ Add a new entry to /boot/grub/grub.cfg
 Normal Boot
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -46,15 +45,13 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Normal Boot w/ Mount Options
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
 
     set root=(hd0,gpt1)
 
-    # Mounts your root partition with 'acl'
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/sda3 options="acl" quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/sda3 options="noatime" quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -62,7 +59,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Normal ZFS
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -81,7 +77,6 @@ Encrypted Normal with one encrypted drive
          /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0,
          or use its UUID.
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -96,7 +91,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Encrypted ZFS with just a passphrase and four encrypted partitions
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -111,7 +105,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Encrypted ZFS with a gpg key and only one encrypted partition
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -126,7 +119,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Encrypted ZFS with an encrypted gpg key named "animal" in a folder called "farm" on a flash drive named /dev/sdc2 and two encrypted partitions
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -142,7 +134,6 @@ Encrypted ZFS with a gpg key, 3 encrypted drives for the tank pool, and mixing U
 and the key file on a usb which we also use a UUID for.
 =======================================
 
-# Gentoo
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
     insmod ext2
@@ -152,6 +143,15 @@ menuentry "Gentoo - 3.9.9-FB.02" {
     linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=UUID=4443433f-5f03-475f-974e-5345fd524c34,ID=ata-ST500LT012-9WS142_W0V788BP-part2,/dev/sda4
     enc_type=key enc_key_drive=PARTLABEL=Linux\x20filesystem quiet
     initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted btrfs w/ Mount Options and passphrase (one drive and the / is on a subvolume called tank/root)
+=======================================
+
+menuentry "Gentoo - 3.9.9-FB.02" {
+    linux /kernels/3.9.9-FB.02/vmlinuz root=/dev/mapper/vault_0 enc_drives=/dev/sda4 enc_type=pass options="compress=lzo,defaults,noatime,autodefrag,subvol=tank/root" quiet
+    initrd /kernels/3.9.9-FB.02/initrd
 }
 
 =======================================
@@ -276,3 +276,15 @@ filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci
 usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies
 are automatically gathered and compressed by the initramfs, and automatically
 loaded at boot in that order.
+
+=======================================
+Firmware Support:
+=======================================
+
+If you want to include firmware inside your initramfs, open up the pkg/hooks/Firmware.py file,
+enable the hook by changing the "_use" to "1" and then add the specific firmware name/path to
+the files list. If you don't want to specify a specific firmware but would rather copy all the
+firmware that's on your system, you can toggle the "_copy_all" flag by changing it to "1".
+The firmware files will be copied from your system's /lib/firmware directory. The firmware that
+you add to the "_files" list should be relative to this directory. More information can be found
+inside the hook.
