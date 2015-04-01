@@ -1,3 +1,9 @@
+6.1.5
+------------
+- Relicensed to the GPLv2 (Only GPLv2, Not GPLv2+)
+- Included some usage information on btrfs and firmware support
+- Drives that will be decrypted will now be displayed starting with a 1 rather than a 0.
+
 6.1.4
 ------------
 - Fixed a bug where regex expressions conducted on modules with "-" or "_" in their name

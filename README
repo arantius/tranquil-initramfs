@@ -1,8 +1,8 @@
-Bliss Initramfs Creator - v6.1.4
+Bliss Initramfs Creator - v6.1.5
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Designed for Gentoo Linux
 
-Licensed under the Simplified BSD License which can be found in the LICENSE file.
+Licensed under the GPLv2 which can be found in the LICENSE file.
 
 This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
