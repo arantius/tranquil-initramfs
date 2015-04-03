@@ -1,5 +1,5 @@
 # Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
-# Licensed under the GPLv2 which can be found in the LICENSE file.
+# Licensed under the Simplified BSD License which can be found in the LICENSE file.
 
 import os
 import subprocess
@@ -11,8 +11,8 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.1.5"
-license = "GPLv2"
+version = "6.1.6"
+license = "Simplified BSD License"
 
 # Locations
 home = os.getcwd()
