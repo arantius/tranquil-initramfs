@@ -1,3 +1,7 @@
+6.2.1
+------------
+- Relicensed to the Mozilla Public License 2.0
+
 6.2.0
 ------------
 - Implemented parts of the systemd initrd interface. This brings the ability to:
