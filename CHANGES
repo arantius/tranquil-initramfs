@@ -1,3 +1,20 @@
+6.2.0
+------------
+- Implemented parts of the systemd initrd interface. This brings the ability to:
+  > Mount a separate /usr partition onto your rootfs before the system starts.
+  > The /run partition will be pre-mounted on your rootfs before the system starts.
+      This allows systemd to detect that you already mounted your encrypted /, /home, swap or w/e other fs
+      that were encrypted. Which means systemd will no longer halt for 1m30s simply because you are using
+      an encrypted fs.
+
+  > /run/initramfs/shutdown was not implemented.
+  > "Storage daemons should follow systemd storage daemon guidelines" wasn't implemented/tested.
+
+  Link: http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
+
+- Minor message cleanups
+- Updated/slightly restructured USAGE's kernel options section
+
 6.1.6
 ------------
 - Relicensed back to the Simplified BSD License

@@ -173,11 +173,44 @@ Kernel Options:
 =======================================
 
 =======
-ZFS
+GENERAL
 =======
 
-root - ZFS root name
-    example: linux <kernel> root=tank/gentoo/root
+root - Location to rootfs
+    example for ZFS: linux <kernel> root=tank/gentoo/root
+    example for rootfs on luks partition: linux <kernel> root=/dev/mapper/vault_0
+    example for regular drive: linux <kernel> root=/dev/sda4
+
+usr - Location to separate /usr
+    example: linux <kernel> root=/dev/sda4 usr=/dev/sda3
+
+recover - Use this if you want the initrd to throw you into a rescue shell.
+      Useful for recovery purposes.
+
+      example: linux <kernel> recover
+
+su - Single User Mode. This is a really crappy implementation of a single user,
+     mode. But at least it will help you if you forgot to change your password,
+     after installation.
+
+     example: linux <kernel> root=tank/gentoo/root su
+
+init - Specifies the init system to use. If the init system isn't located in /sbin/init,
+       you can specific it explictly:
+
+     example: linux <kernel> root=tank/gentoo/root init=/path/to/init
+
+redetect - Use this if you want to have the option to re-scan your /dev/ directory for new devices.
+       You really only need this if you don't know where your enc_key_drive is.
+
+       Sometimes during the output of available drives, you won't see your drives listed, don't worry,
+       if it normally works on your machine, your drive will silently appear. You could just wait a few
+       seconds yourself until you feel it is ready, and then just press enter to attempt to mount
+       and decrypt the drive.
+
+=======
+ZFS
+=======
 
 refresh - ignores the zpool.cache in the initramfs, creates a new one
           at import and then copies it into the rootfs. You should recreate
@@ -228,34 +261,6 @@ asks you for it. When this happens, it will use the _same_ passphrase
 It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's say),
 and then you had to put the password for each one. If you still want to do this,
 then just leave the passphrase blank when the initramfs asks you for it.
-
-=======
-OTHER
-=======
-
-recover - Use this if you want the initrd to throw you into a rescue shell.
-      Useful for recovery purposes.
-
-      example: linux <kernel> recover
-
-su - Single User Mode. This is a really crappy implementation of a single user,
-     mode. But at least it will help you if you forgot to change your password,
-     after installation.
-
-     example: linux <kernel> root=tank/gentoo/root su
-
-init - Specifies the init system to use. If the init system isn't located in /sbin/init,
-       you can specific it explictly:
-
-     example: linux <kernel> root=tank/gentoo/root init=/path/to/init
-
-redetect - Use this if you want to have the option to re-scan your /dev/ directory for new devices.
-       You really only need this if you don't know where your enc_key_drive is.
-
-       Sometimes during the output of available drives, you won't see your drives listed, don't worry,
-       if it normally works on your machine, your drive will silently appear. You could just wait a few
-       seconds yourself until you feel it is ready, and then just press enter to attempt to mount
-       and decrypt the drive.
 
 =======================================
 Modules Support:

@@ -48,7 +48,7 @@ MountRequiredDevices()
     mount -t proc none /proc
     mount -t devtmpfs none /dev
     mount -t sysfs none /sys
-    mount -t tmpfs none /run
+    mount -t tmpfs -o mode=755,nodev none /run
 }
 
 # Cleanly umounts the required devices
@@ -59,7 +59,21 @@ UnmountRequiredDevices()
     umount -l /proc
     umount -l /dev
     umount -l /sys
-    umount -l /run
+}
+
+# Mounts /run onto the rootfs before switching
+PremountRunOnNewRoot()
+{
+    Info "Premounting /run onto the rootfs..."
+
+    # Mounts /run onto the rootfs before switching. Mounting this is a requirement
+    # to implement the systemd initrd interface. Without this, I've experienced that
+    # the luks decrypted drives passed through 'enc_devices' would actually stall systemd
+    # for 1m30s if they were listed in /etc/fstab.
+
+    # Link: http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
+    local targetRunDirectory="${_new_root}"/run
+    mount --rbind /run "${targetRunDirectory}" || Fail "Failed to bind /run into the rootfs!"
 }
 
 # Parses an individual parameter from the command line
@@ -79,7 +93,6 @@ StartUdev()
 # Starts udevadm and generates the device symlinks (uuid, label, etc)
 GenerateDeviceLinks()
 {
-        Info "Generating device symbolic links (UUIDs)..."
         udevadm trigger
         udevadm settle
 }
@@ -103,6 +116,9 @@ ParseKernelParameters()
             ;;
         options=*)
             _options=$(ParseOption "${param}")
+            ;;
+        usr=*)
+            _usr=$(ParseOption "${param}")
             ;;
         enc_options=*)
             _enc_options=$(ParseOption "${param}")
@@ -484,10 +500,10 @@ ZfsTrigger()
     fi
 }
 
-# Mounts your root device
+# Mounts your rootfs
 MountRoot()
 {
-    Info "Mounting your root device..."
+    Info "Mounting your rootfs..."
 
     # Using "" for the ${options} below so that if the user doesn't have any
     # options, the variable ends up expanding back to empty quotes and allows
@@ -505,14 +521,24 @@ MountRoot()
         InstallZpoolCache
     else
         mount -o "${_options}" "${_root}" "${_new_root}" || \
-        Fail "Failed to import your root device: ${_root}!"
+        Fail "Failed to import your rootfs: ${_root}!"
+    fi
+}
+
+# Mounts the /usr directory into your rootfs if it is separate
+MountUsrIfNeeded()
+{
+    if [[ ! -z ${_usr} ]]; then
+        Info "Mounting /usr onto your rootfs..."
+        local targetUsrDirectory="${_new_root}"/usr
+        mount "${_usr}" "${targetUsrDirectory}" || Fail "Failed to mount ${_usr} onto your rootfs!"
     fi
 }
 
 # Switches into your root device
 SwitchToNewRoot()
 {
-    Info "Switching into your root device..." && NewLine
+    Info "Switching into your rootfs..." && NewLine
     exec switch_root "${_new_root}" "${_init}"
 }
 
@@ -628,19 +654,20 @@ fi
 # Run all the triggers (Like LUKS, ZFS)
 CheckTriggers
 
-# Mounts your root device
 MountRoot
+
+# Mount /usr if needed
+MountUsrIfNeeded
 
 if [[ ${_su} -eq 1 ]]; then
     SingleUser
 fi
 
-# Let's clean up and go to the OS
+# Clean up and switch into rootfs
 if [[ ${_use_udev} -eq 1 ]]; then
     StopUdev
 fi
 
 UnmountRequiredDevices || Fail "Failed to unmount kernel devices"
-
-# Switches into your root device
+PremountRunOnNewRoot
 SwitchToNewRoot || Fail "Failed to switch into your root filesystem"
