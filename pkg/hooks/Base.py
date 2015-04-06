@@ -30,6 +30,9 @@ class Base(Hook):
         "/bin/egrep",
         "/bin/fgrep",
         "/bin/grep",
+
+        # sys-apps/kbd,
+        "/usr/bin/loadkeys",
     ]
 
     _kmod_links = [

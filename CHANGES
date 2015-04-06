@@ -1,3 +1,16 @@
+6.2.2
+------------
+- Implemented keymap support. The initramfs program will automatically dump the keys
+  that the host system was using at the time of the creation and attempt to use it in the initramfs.
+  Example: "dumpkeys" is ran on the host system and "loadkeys /etc/keymap" is ran in the initramfs.
+
+  Having "sys-apps/kbd" installed is mandatory since it provides the "dumpkeys" and "loadkeys" binaries,
+  This shouldn't be a problem since it's already part of the Gentoo base system.
+
+  Also, if for whatever reason the initramfs is unable to dump or load the keymap on the host system
+  or from the initramfs, the initramfs will still continue. So most of the critical functionality will
+  remain the same (only sys-apps/kbd installed is required).
+
 6.2.1
 ------------
 - Relicensed to the Mozilla Public License 2.0

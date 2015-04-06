@@ -259,6 +259,15 @@ class Core(object):
                 os.rename(var.temp + udev_path, var.temp + "/sbin/udevd")
                 os.rmdir(var.temp + systemd_dir)
 
+    # Dumps the current system's keymap
+    @classmethod
+    def DumpSystemKeymap(cls):
+        pathToKeymap = var.temp + "/etc/keymap"
+        result = call("dumpkeys > " + pathToKeymap, shell=True)
+
+        if result != 0 or not os.path.isfile(pathToKeymap):
+            Tools.Warn("There was an error dumping the system's current keymap. Ignoring.")
+
     # This functions does any last minute steps like copying zfs.conf,
     # giving init execute permissions, setting up symlinks, etc
     @classmethod
@@ -301,6 +310,7 @@ class Core(object):
             shutil.copytree("/etc/modprobe.d/", var.temp + "/etc/modprobe.d/")
 
         cls.CopyUdevSupportFiles()
+        cls.DumpSystemKeymap()
 
         # Any last substitutions or additions/modifications should be done here
         if Zfs.IsEnabled():

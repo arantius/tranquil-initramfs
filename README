@@ -1,8 +1,7 @@
-Bliss Initramfs - v6.2.1
+Bliss Initramfs - v6.2.2
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Designed for Gentoo Linux
-
-Licensed under the Mozilla Public License v2.0 which can be found in the LICENSE file.
+Licensed under the Mozilla Public License v2.0
 
 This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
@@ -12,18 +11,20 @@ Please have the following installed:
 - Linux Kernel
   ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared
   in the 'mods' variable in pkg/hooks/addon.py (Used for ZFS)
+  * If you don't compile these modules (or load them), you will get an
+    "unknown symbol" error when zfs is attempted to be used at boot.
 
   General setup --->
   > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
-  > () Initramfs source file(s)
+    () Initramfs source file(s)
 
   Device Drivers --->
   > Generic Driver Options --->
-  >> [*] Maintain a devtmpfs filesystem to mount at /dev
-  >> [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
-     [*] Multiple devices driver support (RAID and LVM) --->
-         <*> Device mapper support
-         <*> Crypt target support
+    [*] Maintain a devtmpfs filesystem to mount at /dev
+    [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
+  > [*] Multiple devices driver support (RAID and LVM) --->
+    <*> Device mapper support
+    <*> Crypt target support
 
   Cryptographic API --->
   <*> XTS support
@@ -34,11 +35,11 @@ Please have the following installed:
     them in the 'mods' variable in pkg/hooks/addon.py.
 
 - dev-lang/python 3.3 or greater
--
 - app-arch/cpio
 - app-shells/bash
 - sys-apps/kmod
 - sys-apps/grep
+- sys-apps/kbd (Keymap support)
 - sys-fs/udev OR sys-fs/eudev OR sys-apps/systemd (UUIDs, Labels, etc)
 - sys-fs/zfs (ZFS support)
 - sys-fs/cryptsetup (LUKS support)

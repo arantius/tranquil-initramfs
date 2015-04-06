@@ -79,6 +79,17 @@ PremountRunOnNewRoot()
     mount --rbind /run "${targetRunDirectory}" || Fail "Failed to bind /run into the rootfs!"
 }
 
+# Loads the user's keymap if it exists
+LoadKeymapIfNeeded()
+{
+    local path_to_keymap="/etc/keymap"
+
+    if [[ -f ${path_to_keymap} ]]; then
+        Info "Loading keymap..."
+        loadkeys "${path_to_keymap}" 1> /dev/null || Warn "There was an error loading the keymap file. Ignoring."
+    fi
+}
+
 # Parses an individual parameter from the command line
 ParseOption()
 {
@@ -641,6 +652,7 @@ PreventVerboseKernel()
 ### Xian zai shi shen me shi jian? Kai shi de shi jian! ###
 
 WelcomeMessage
+LoadKeymapIfNeeded
 MountRequiredDevices || Fail "Failed to mount kernel devices"
 PreventVerboseKernel
 ParseKernelParameters
