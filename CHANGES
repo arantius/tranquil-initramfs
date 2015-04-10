@@ -1,3 +1,29 @@
+6.3.0
+------------
+- Removed zpool.cache support since 0.6.4 and future versions are
+  starting to move away from using it and /etc/hostid.
+- New zfs import logic implemented:
+  > The initramfs will now look in /dev, /dev/disk/by-* directories when mounting your pool.
+  The first successfull directory that allows the pool to be mounted will be used.
+  > You can use the 'by=' kernel parameter to explictly specify what by-<> directory you want to use.
+    Some sanity checks are done in order to help you with setting the path.
+
+    Example: by=dev -> /dev
+             by=id -> /dev/disk/by-id
+             by=uuid -> /dev/disk/by-uuid
+             by=partuuid -> /dev/disk/by-partuuid
+             by=label -> /dev/disk/by-label
+             by=partlabel -> /dev/disk/by-partlabel
+             by=/dev/elephant -> /dev/elephant
+             ^ In the situation the value doesn't exist in our list, we will use whatever you put.
+
+             You could also put DEV, UUID, LABEL and it would default to its
+             correct path as well. (Mixed case [DeV] wouldn't though ;P).
+
+- Some bash files will be maintained by the initramfs rather than copying them from the system.
+- Minor refactoring
+- Minor message improvements
+
 6.2.2
 ------------
 - Implemented keymap support. The initramfs program will automatically dump the keys

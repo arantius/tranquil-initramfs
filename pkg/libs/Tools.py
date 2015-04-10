@@ -153,6 +153,19 @@ class Tools(object):
         if not os.path.isfile(path):
             cls.Fail("Unable to copy " + targetFile + " to " + path + "!")
 
+    # Copies a file to a target path and checks to see that it exists
+    @classmethod
+    def SafeCopy(cls, sourceFile, targetDest):
+        shutil.copy(sourceFile, targetDest)
+
+        splitResults = sourceFile.split("/")
+        lastPosition = len(splitResults)
+        sourceFileName = splitResults[lastPosition - 1]
+        targetFile = targetDest + "/" + sourceFileName
+
+        if not os.path.isfile(targetFile):
+            Tools.Fail("Error creating the " + sourceFileName + " file. Exiting.")
+
     ####### Message Functions #######
 
     # Returns the string with a color to be used in bash

@@ -212,10 +212,15 @@ redetect - Use this if you want to have the option to re-scan your /dev/ directo
 ZFS
 =======
 
-refresh - ignores the zpool.cache in the initramfs, creates a new one
-          at import and then copies it into the rootfs. You should recreate
-          your initramfs afterwards so that your initramfs has the new cache.
-    example: linux <kernel> root=tank/gentoo/root refresh
+by - Specifies what directory you want to use when looking for your zpool so that we can import it.
+
+     Supported:
+     by= dev, id, uuid, partuuid, label, partlabel, * (Wild card will just set the 'by' variable to whatever you specified.
+
+    example: by=label -> /dev/disk/by-label
+             by=uuid  -> /dev/disk/by-uuid
+             by=dev   -> /dev
+             by=/mystical/ninja -> /mystical/ninja
 
 =======
 LUKS

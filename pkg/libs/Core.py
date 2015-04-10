@@ -283,10 +283,7 @@ class Core(object):
         cls.CreateLibraryLinks()
 
         # Copy the init script
-        shutil.copy(var.phome + "/files/init", var.temp)
-
-        if not os.path.isfile(var.temp + "/init"):
-            Tools.Fail("Error creating the init file. Exiting.")
+        Tools.SafeCopy(var.files_dir + "/init", var.temp)
 
         # Give execute permissions to the script
         cr = call(["chmod", "u+x", var.temp + "/init"])
@@ -294,16 +291,19 @@ class Core(object):
         if cr != 0:
             Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
 
-        # Fix 'poweroff, reboot' commands
-        call("sed -i \"71a alias reboot='reboot -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
-        call("sed -i \"71a alias poweroff='poweroff -f' \" " + var.temp + "/etc/bash/bashrc", shell=True)
+        # Copy the bash related files
+        bash_files = [
+            var.files_dir + "/bash/profile",
+            var.files_dir + "/bash/DIR_COLORS"
+        ]
+
+        for bash_file in bash_files:
+            Tools.SafeCopy(bash_file, var.temp + "/etc/")
+
+        Tools.SafeCopy(var.files_dir + "/bash/bashrc", var.temp + "/etc/bash")
 
         # Sets initramfs script version number
         call(["sed", "-i", "-e", var.initrdVersionLine + "s/0/" + var.version + "/", var.temp + "/init"])
-
-        # Fix EDITOR/PAGER
-        call(["sed", "-i", "-e", "12s:/bin/nano:/bin/vi:", var.temp + "/etc/profile"])
-        call(["sed", "-i", "-e", "13s:/usr/bin/less:/bin/less:", var.temp + "/etc/profile"])
 
         # Copy all of the modprobe configurations
         if os.path.isdir("/etc/modprobe.d/"):
@@ -316,13 +316,6 @@ class Core(object):
         if Zfs.IsEnabled():
             # Enable ZFS in the init if ZFS is being used
             call(["sed", "-i", "-e", var.useZfsLine + "s/0/1/", var.temp + "/init"])
-
-            # Copy zpool.cache into initramfs
-            if os.path.isfile("/etc/zfs/zpool.cache"):
-                Tools.Flag("Using your zpool.cache file ...")
-                Tools.Copy("/etc/zfs/zpool.cache")
-            else:
-                Tools.Warn("No zpool.cache was found. It will not be used ...")
 
         # Enable LUKS in the init if LUKS is being used
         if Luks.IsEnabled():
