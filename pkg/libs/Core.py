@@ -321,6 +321,11 @@ class Core(object):
         if Luks.IsEnabled():
             call(["sed", "-i", "-e", var.useLuksLine + "s/0/1/", var.temp + "/init"])
 
+            # Copy over our keyfile if the user activated it
+            if Luks.IsKeyfileEnabled():
+                Tools.Flag("Embedding our keyfile into the initramfs...")
+                Tools.SafeCopy(Luks.GetKeyfilePath(), var.temp + "/etc", "keyfile")
+
         # Enable ADDON in the init and add our modules to the initramfs
         # if addon is being used
         if Addon.IsEnabled():

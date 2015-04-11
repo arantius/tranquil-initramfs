@@ -17,6 +17,7 @@ _version="0"
 _new_root="/mnt/root"
 _init="/sbin/init"
 _key_drive="/mnt/key"
+_embedded_keyfile="/etc/keyfile"
 
 # Hostnames for initrd and rootfs
 _hostn="initrd"
@@ -149,6 +150,9 @@ ParseKernelParameters()
         enc_key_drive=*)
             _enc_key_drive=$(RetrieveDriveValue "${param}")
             ;;
+        enc_key_ignore)
+            _enc_key_ignore=1
+            ;;
         enc_tries=*)
             _enc_tries=$(ParseOption "${param}")
             ;;
@@ -184,31 +188,38 @@ ParseByOption()
         Fail "No 'by' value was passed into this function!"
     fi
 
+    # Set the following shell property so that we can
+    # match regardless of case. This property will be unset
+    # at the end of the function.
+    shopt -s nocasematch
+
     local option=$(ParseOption "$1")
 
     case "${option}" in
-        dev|DEV)
+        dev)
             echo "/dev"
             ;;
-        id|ID)
+        id)
             echo "/dev/disk/by-id"
             ;;
-        uuid|UUID)
+        uuid)
             echo "/dev/disk/by-uuid"
             ;;
-        partuuid|PARTUUID)
+        partuuid)
             echo "/dev/disk/by-partuuid"
             ;;
-        label|LABEL)
+        label)
             echo "/dev/disk/by-label"
             ;;
-        partlabel|PARTLABEL)
+        partlabel)
             echo "/dev/disk/by-partlabel"
             ;;
         *)
             echo "${tempDrive}"
             ;;
     esac
+
+    shopt -u nocasematch
 }
 
 # Retrieves the proper value for the encrypted key drive
@@ -383,6 +394,35 @@ LuksTrigger()
 {
     Info "Gathering encrypted devices..." && GetDrivesNeededToDecrypt
 
+    # If we already have a keyfile in the initrd, but we don't want to ignore it,
+    # then we will try to use it to decrypt our drives. This was implemented in order to
+    # reduce the number of passphrases that are needed to be typed after GRUB decrypts a
+    # / partition that contains /boot inside of it.
+    if [[ -f ${_embedded_keyfile} ]] && [[ ${_enc_key_ignore} -ne 1 ]]; then
+        if [[ -z ${_enc_type} ]] || [[ ${_enc_type} != "key" ]]; then
+            Fail "You must set your \"enc_type\" to \"key\" if you want to use your embedded keyfile."
+        fi
+
+        _keyfile="${_embedded_keyfile}"
+    else
+        PrepareForLuks
+    fi
+
+    # Attempt to decrypt the drives
+    DecryptDrives
+
+    # If we ignored the embedded keyfile before, then that means
+    # that we possibly might need to unmount the key drive (If key or key_gpg
+    # was the enc_type).
+    if [[ ${_enc_key_ignore} -eq 1 ]]; then
+        UnmountKeyfileDriveIfNeeded
+    fi
+}
+
+# Gathers the required LUKS related information from the user.
+# (including mounting the drive with the user's keyfile)
+PrepareForLuks()
+{
     # If the user left their _enc_type blank (Could be intentional),
     # then let's ask them now to select the type.
     if [[ -z ${_enc_type} ]]; then
@@ -431,11 +471,11 @@ LuksTrigger()
         # Set path to keyfile
         _keyfile="${_key_drive}/${_enc_key}"
     fi
+}
 
-    # Attempt to decrypt the drives
-    DecryptDrives
-
-    # Unmount the drive with the keyfile if we had one
+# Unmounts the drive with the keyfile if we had one
+UnmountKeyfileDriveIfNeeded()
+{
     if [[ ${_enc_type} == "key" ]] || [[ ${_enc_type} == "key_gpg" ]]; then
         umount "${_key_drive}"
 

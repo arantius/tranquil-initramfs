@@ -7,6 +7,14 @@
 from pkg.hooks.Hook import Hook
 
 class Luks(Hook):
+    # Should we embed our keyfile into the initramfs?
+    _use_keyfile = 0
+
+    # Path to the keyfile you would like to embedded directly into the initramfs.
+    # This should be a non-encrypted keyfile since it will be used to automate
+    # the decryption of your / pool (when your /boot is also on /).
+    _keyfile_path = "/path/to/keyfile"
+
     # Required Files
     _files = [
         "/sbin/cryptsetup",
@@ -19,3 +27,13 @@ class Luks(Hook):
         # and stay at "waiting for zero"
         "/sbin/dmsetup",
     ]
+
+    # Is embedding the keyfile enabled?
+    @classmethod
+    def IsKeyfileEnabled(cls):
+        return cls._use_keyfile
+
+    # Return the keyfile path
+    @classmethod
+    def GetKeyfilePath(cls):
+        return cls._keyfile_path

@@ -103,6 +103,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
 =======================================
 Encrypted ZFS with a gpg key and only one encrypted partition
+(If an embedded keyfile is provided, it will automatically be used to try to decrypt the enc_drives)
 =======================================
 
 menuentry "Gentoo - 3.9.9-FB.02" {
@@ -253,6 +254,9 @@ enc_key - What is the path to the keyfile?
     In this example, once the initramfs mounts /dev/sdb1, it will look for the /keys/root.gpg at /dev/sdb1.
     So if the initramfs mounts /dev/sdb1 at /mnt/key, it will look for the key at /mnt/key/keys/root.gpg.
 
+enc_key_ignore - Ignores the embedded keyfile
+    example: linux <kernel> enc_key_ignore
+
 enc_options - Allows you to pass options to the 'cryptsetup' command
     example: linux <kernel> enc_drives=/dev/sda3,/dev/sda4 enc_options="--allow-discards"
 
@@ -268,7 +272,7 @@ and then you had to put the password for each one. If you still want to do this,
 then just leave the passphrase blank when the initramfs asks you for it.
 
 =======================================
-Modules Support:
+Modules Support
 =======================================
 
 If you have compiled some critical stuff as modules rather than them being built
@@ -288,7 +292,7 @@ are automatically gathered and compressed by the initramfs, and automatically
 loaded at boot in that order.
 
 =======================================
-Firmware Support:
+Firmware Support
 =======================================
 
 If you want to include firmware inside your initramfs, open up the pkg/hooks/Firmware.py file,
@@ -298,3 +302,30 @@ firmware that's on your system, you can toggle the "_copy_all" flag by changing 
 The firmware files will be copied from your system's /lib/firmware directory. The firmware that
 you add to the "_files" list should be relative to this directory. More information can be found
 inside the hook.
+
+=======================================
+Embedded Keyfile Support
+=======================================
+
+The initramfs has the ability to embed your encrypted drive(s)'s keyfile directly into itself.
+
+Some of the benefits this may provide are:
+> Not having to type multiple passphrases during boot.
+> Rely on an external drive in order to decrypt the drive.
+> If using an external drive, reduce the number of files on the /boot drive (just kernel and initramfs)
+
+This was primarily implemented in order to reduce the number of passphrases needed to 1, when you have your
+/boot directory inside of an encrypted / partition on LUKS. You will need to have GRUB decrypt your / partition
+and once the initramfs loads, it will automatically use the embedded keyfile to decrypt the drives, and start up
+your system.
+
+In order to activate this, go into pkg/hooks/Luks.py and change the "_use_keyfile" value to 1, and then
+set the "_keyfile_path" to the path on disk from where to copy your keyfile from. Once this is done,
+during initramfs generation, you will see a message that the initramfs is embedding the keyfile into itself.
+
+In your grub command line, you will need to have the "enc_type" set to "key".
+
+When the initramfs starts up, if it detects that your initramfs has an embedded keyfile, it will
+automatically try to decrypt the drives listed in "enc_drives" and not ask you any questions.
+If you want to use some other form of decryption (passphrase, key_gpg), but you don't want to remake
+the initramfs in order to remove the keyfile out of it, use the "enc_key_ignore" kernel line.

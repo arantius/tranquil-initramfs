@@ -14,7 +14,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.3.0"
+version = "6.4.0"
 license = "MPL 2.0"
 
 # Locations
@@ -71,7 +71,6 @@ firmwareDirectory = "/lib/firmware/"
 # Layout of the initramfs
 baselayout = [
     temp + "/etc",
-    temp + "/etc/zfs",
     temp + "/etc/bash",
     temp + "/dev",
     temp + "/proc",
@@ -95,4 +94,4 @@ useLuksLine = "11"
 useAddonLine = "12"
 useUdevLine = "13"
 initrdVersionLine = "15"
-addonModulesLine = "38"
+addonModulesLine = "39"

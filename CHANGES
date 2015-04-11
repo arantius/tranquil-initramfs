@@ -1,3 +1,15 @@
+6.4.0
+------------
+- The by=[value] is now case insensitive. Whether you put 'dev', 'DEV', or 'DeV',
+  it will still choose "/dev" correctly (or whatever other value you specified).
+- The initramfs now has support for it to embed a keyfile into it which will be used
+  to automatically decrypt your drive. This was done in order to reduce the amount of passphrases
+  needed to be entered when grub decrypts a / partition that has /boot in it.
+  You can use the "enc_key_ignore" if your initramfs has a keyfile but you would like to not use it.
+- More refactoring in order to improve decryption execution flow
+- Removed unused /etc/zfs directory
+- Improved the Tools.SafeCopy function
+
 6.3.0
 ------------
 - Removed zpool.cache support since 0.6.4 and future versions are

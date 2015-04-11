@@ -155,16 +155,19 @@ class Tools(object):
 
     # Copies a file to a target path and checks to see that it exists
     @classmethod
-    def SafeCopy(cls, sourceFile, targetDest):
-        shutil.copy(sourceFile, targetDest)
+    def SafeCopy(cls, sourceFile, targetDest, *desiredName):
+        if len(desiredName) == 0:
+            splitResults = sourceFile.split("/")
+            lastPosition = len(splitResults)
+            sourceFileName = splitResults[lastPosition - 1]
+        else:
+            sourceFileName = desiredName[0]
 
-        splitResults = sourceFile.split("/")
-        lastPosition = len(splitResults)
-        sourceFileName = splitResults[lastPosition - 1]
         targetFile = targetDest + "/" + sourceFileName
+        shutil.copy(sourceFile, targetFile)
 
         if not os.path.isfile(targetFile):
-            Tools.Fail("Error creating the " + sourceFileName + " file. Exiting.")
+            Tools.Fail("Error creating the \"" + sourceFileName + "\" file. Exiting.")
 
     ####### Message Functions #######
 
