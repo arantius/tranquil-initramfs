@@ -1,3 +1,28 @@
+6.5.0
+------------
+- Re-added support for LVM, RAID, LVM on RAID, and their encrypted counterparts.
+  Reason for this is because ZFS isn't good for all use cases (Running a ZFS host machine,
+  and also running ZFS clients inside of a virtual machine), and also because btrfs isn't
+  really stable yet. For these scenarios, using more stable technologies is recommended.
+
+- Improved the program parameter logic a bit. If you only pass in an option but no kernel,
+  and the initrd detects that you requested or need modules, it will ask you immediately
+  to confirm the version you want to make the initrd for (rather than making you re-run the app).
+
+- Scan output from the 'mdadm' command will now be displayed instead of stderr output
+  being sent to /dev/null.
+
+- The 'mdadm.conf' file will now be copied from the current system if it exists. This solves the
+  problem of the kernel raid auto-detector not knowing what to name your /dev/md# devices, and instead
+  deciding to name it on its own. Example, if no mdadm.conf was copied into the initramfs, your
+  /dev/md0, /dev/md1 devices that were made (let's say in sysresccd), would be named /dev/md126, /dev/md127.
+
+  By default, when you install the 'mdadm' program, it comes with a mdadm.conf file that is completely
+  commented. You will need to make sure you run 'mdadm --examine --scan > /etc/mdadm.conf' so that the
+  initramfs can copy the file with your changes.
+
+- The 'lvm.conf' file will also be copied into the initramfs from the current system if it exists.
+
 6.4.0
 ------------
 - The by=[value] is now case insensitive. Whether you put 'dev', 'DEV', or 'DeV',

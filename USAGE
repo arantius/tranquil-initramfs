@@ -70,6 +70,90 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 }
 
 =======================================
+Normal RAID
+=======================================
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Normal LVM
+=======================================
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted LVM with just a passphrase and one encrypted drive
+=======================================
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted RAID with just a passphrase and two encrypted drives
+=======================================
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
+Encrypted RAID + LVM with just a passphrase and two encrypted drives
+=======================================
+
+* Note: The initramfs only supports LVM on RAID, which means that your disks will first be decrypted, assembled,
+        then the lvm will activate the logical volumes on that assembled raid array and then boot your system.
+        Thus, the raid operations are actually transparent.
+
+ Layout Example:
+ ---------------
+ /dev/sda3 - LUKS (vault0) -|\ _ /dev/md0 (vault0, vault1) -> volume group on md0 (let's say 'lv') -> /dev/mapper/lv-root
+ /dev/sdb3 - LUKS (vault1) -|/
+
+# Gentoo
+menuentry "Gentoo - 3.9.9-FB.02" {
+    insmod part_gpt
+    insmod ext2
+
+    set root=(hd0,gpt1)
+
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+    initrd /initrd-3.9.9-FB.02
+}
+
+=======================================
 Encrypted Normal with one encrypted drive
 =======================================
 

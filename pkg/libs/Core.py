@@ -16,8 +16,10 @@ import pkg.libs.Variables as var
 
 from pkg.libs.Tools import Tools
 from pkg.hooks.Base import Base
-from pkg.hooks.Zfs import Zfs
 from pkg.hooks.Luks import Luks
+from pkg.hooks.Raid import Raid
+from pkg.hooks.Lvm import Lvm
+from pkg.hooks.Zfs import Zfs
 from pkg.hooks.Addon import Addon
 from pkg.hooks.Firmware import Firmware
 from pkg.hooks.Udev import Udev
@@ -53,20 +55,43 @@ class Core(object):
             Zfs.Enable()
             Addon.Enable()
             Addon.AddFile("zfs")
-        # Encrypted ZFS
+        # LVM
         elif var.choice == "2":
+            Lvm.Enable()
+        # RAID
+        elif var.choice == "3":
+            Raid.Enable()
+        # LVM on RAID
+        elif var.choice == "4":
+            Raid.Enable()
+            Lvm.Enable()
+        # Normal
+        elif var.choice == "5":
+            pass
+        # Encrypted ZFS
+        elif var.choice == "6":
             Luks.Enable()
             Zfs.Enable()
             Addon.Enable()
             Addon.AddFile("zfs")
-        # Normal
-        elif var.choice == "3":
-            pass
+        # Encrypted LVM
+        elif var.choice == "7":
+            Luks.Enable()
+            Lvm.Enable()
+        # Encrypted RAID
+        elif var.choice == "8":
+            Luks.Enable()
+            Raid.Enable()
+        # Encrypted LVM on RAID
+        elif var.choice == "9":
+            Luks.Enable()
+            Raid.Enable()
+            Lvm.Enable()
         # Encrypted Normal
-        elif var.choice == "4":
+        elif var.choice == "10":
             Luks.Enable()
         # Exit
-        elif var.choice == "5":
+        elif var.choice == "11":
             Tools.Warn("Exiting.")
             quit(1)
         # Invalid Option
@@ -313,23 +338,47 @@ class Core(object):
         cls.DumpSystemKeymap()
 
         # Any last substitutions or additions/modifications should be done here
-        if Zfs.IsEnabled():
-            # Enable ZFS in the init if ZFS is being used
-            call(["sed", "-i", "-e", var.useZfsLine + "s/0/1/", var.temp + "/init"])
 
         # Enable LUKS in the init if LUKS is being used
         if Luks.IsEnabled():
-            call(["sed", "-i", "-e", var.useLuksLine + "s/0/1/", var.temp + "/init"])
+            Tools.ActivateTriggerInInit(var.useLuksLine)
 
             # Copy over our keyfile if the user activated it
             if Luks.IsKeyfileEnabled():
                 Tools.Flag("Embedding our keyfile into the initramfs...")
                 Tools.SafeCopy(Luks.GetKeyfilePath(), var.temp + "/etc", "keyfile")
 
+        # Enable RAID in the init if RAID is being used
+        if Raid.IsEnabled():
+            Tools.ActivateTriggerInInit(var.useRaidLine)
+
+            # Make sure to copy the mdadm.conf from our current system.
+            # If not, the kernel autodetection while assembling the array
+            # will not know what name to give them, so it will name it something
+            # like /dev/md126, /dev/md127 rather than /dev/md0, /dev/md1.
+
+            # If the user didn't modify the default (all commented) mdadm.conf file,
+            # then they will obviously get wrong raid array numbers being assigned
+            # by the kernel. The user needs to run a "mdadm --examine --scan > /etc/mdadm.conf"
+            # to fix this, and re-run the initramfs creator.
+            mdadm_conf = "/etc/mdadm.conf"
+            Tools.CopyConfigOrWarn(mdadm_conf)
+
+        # Enable LVM in the init if LVM is being used
+        if Lvm.IsEnabled():
+            Tools.ActivateTriggerInInit(var.useLvmLine)
+
+            lvm_conf = "/etc/lvm/lvm.conf"
+            Tools.CopyConfigOrWarn(lvm_conf)
+
+        # Enable ZFS in the init if ZFS is being used
+        if Zfs.IsEnabled():
+            Tools.ActivateTriggerInInit(var.useZfsLine)
+
         # Enable ADDON in the init and add our modules to the initramfs
         # if addon is being used
         if Addon.IsEnabled():
-            call(["sed", "-i", "-e", var.useAddonLine + "s/0/1/", var.temp + "/init"])
+            Tools.ActivateTriggerInInit(var.useAddonLine)
             call(["sed", "-i", "-e", var.addonModulesLine + "s/\"\"/\"" + " ".join(Addon.GetFiles()) + "\"/", var.temp + "/init"])
 
     # Create the initramfs
@@ -362,15 +411,25 @@ class Core(object):
         else:
             Tools.Warn("Not including udev. Booting using UUIDs will not be supported.")
 
-        # Check required zfs files
-        if Zfs.IsEnabled():
-            Tools.Flag("Using ZFS")
-            cls.VerifyBinariesExist(Zfs.GetFiles())
-
         # Check required luks files
         if Luks.IsEnabled():
             Tools.Flag("Using LUKS")
             cls.VerifyBinariesExist(Luks.GetFiles())
+
+        # Check required raid files
+        if Raid.IsEnabled():
+            Tools.Flag("Using RAID")
+            cls.VerifyBinariesExist(Raid.GetFiles())
+
+        # Check required lvm files
+        if Lvm.IsEnabled():
+            Tools.Flag("Using LVM")
+            cls.VerifyBinariesExist(Lvm.GetFiles())
+
+        # Check required zfs files
+        if Zfs.IsEnabled():
+            Tools.Flag("Using ZFS")
+            cls.VerifyBinariesExist(Zfs.GetFiles())
 
     # Checks to see that all the binaries in the array exist and errors if they don't
     @classmethod
@@ -386,14 +445,20 @@ class Core(object):
 
         cls.FilterAndInstall(Base.GetFiles())
 
-        if Udev.IsEnabled():
-            cls.FilterAndInstall(Udev.GetFiles())
+        if Luks.IsEnabled():
+            cls.FilterAndInstall(Luks.GetFiles())
+
+        if Raid.IsEnabled():
+            cls.FilterAndInstall(Raid.GetFiles())
+
+        if Lvm.IsEnabled():
+            cls.FilterAndInstall(Lvm.GetFiles())
 
         if Zfs.IsEnabled():
             cls.FilterAndInstall(Zfs.GetFiles())
 
-        if Luks.IsEnabled():
-            cls.FilterAndInstall(Luks.GetFiles())
+        if Udev.IsEnabled():
+            cls.FilterAndInstall(Udev.GetFiles())
 
     # Filters and installs each file in the array into the initramfs
     @classmethod

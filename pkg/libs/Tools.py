@@ -26,9 +26,8 @@ class Tools(object):
 
         # Let the user directly create an initramfs if no modules are needed
         if len(arguments) == 1:
-            if arguments[0] != "1" and arguments[0] != "2":
-                if not Addon.GetFiles():
-                    var.choice = arguments[0]
+            if not Addon.GetFiles():
+                var.choice = arguments[0]
             else:
                 cls.Fail("You must pass a kernel parameter")
 
@@ -51,10 +50,16 @@ class Tools(object):
     def PrintOptions(cls):
         cls.NewLine()
         cls.Option("1. ZFS")
-        cls.Option("2. Encrypted ZFS")
-        cls.Option("3. Normal")
-        cls.Option("4. Encrypted Normal")
-        cls.Option("5. Exit Program")
+        cls.Option("2. LVM")
+        cls.Option("3. RAID")
+        cls.Option("4. LVM on RAID")
+        cls.Option("5. Normal")
+        cls.Option("6. Encrypted ZFS")
+        cls.Option("7. Encrypted LVM")
+        cls.Option("8. Encrypted RAID")
+        cls.Option("9. Encrypted LVM on RAID")
+        cls.Option("10. Encrypted Normal")
+        cls.Option("11. Exit Program")
         cls.NewLine()
 
     # Finds the path to a program on the system
@@ -67,6 +72,11 @@ class Tools(object):
             return results
         else:
             cls.Fail("The " + vProg + " program could not be found!")
+
+    # Activates the trigger in the init file
+    @classmethod
+    def ActivateTriggerInInit(cls, activateLine):
+        call(["sed", "-i", "-e", activateLine + "s/0/1/", var.temp + "/init"])
 
     # Returns the path to udev
     @classmethod
@@ -168,6 +178,16 @@ class Tools(object):
 
         if not os.path.isfile(targetFile):
             Tools.Fail("Error creating the \"" + sourceFileName + "\" file. Exiting.")
+
+    # Copies and verifies that a configuration file exists, and if not,
+    # warns the user that the default settings will be used.
+    @classmethod
+    def CopyConfigOrWarn(cls, targetConfig):
+        if os.path.isfile(targetConfig):
+            Tools.Flag("Copying the " + targetConfig + " from the current system...")
+            Tools.Copy(targetConfig)
+        else:
+            Tools.Warn(targetConfig + " was not detected on this system. The default settings will be used.")
 
     ####### Message Functions #######
 

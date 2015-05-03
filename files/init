@@ -7,8 +7,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # ========== Variables ==========
-_use_zfs=0
 _use_luks=0
+_use_raid=0
+_use_lvm=0
+_use_zfs=0
 _use_addon=0
 _use_udev=0
 
@@ -567,6 +569,28 @@ DecryptDrives()
     done
 }
 
+# If "use_raid" is enabled, raid specific code will be ran
+RaidTrigger()
+{
+    Info "Assembling your raid array..."
+
+    # Scan for raid arrays and save them in mdadm.conf
+    mdadm --examine --scan > /etc/mdadm.conf
+
+    # Assemble all raid devices
+    mdadm --assemble --scan
+}
+
+# If "use_lvm" is enabled, raid specific code will be ran
+LvmTrigger()
+{
+    Info "Activating your logical volumes..."
+
+    # Make LVM Volume Group/Pools available
+    lvm vgchange -a y
+    lvm vgscan --mknodes
+}
+
 # If "use_zfs" is enabled, zfs specific code will be ran
 ZfsTrigger()
 {
@@ -645,6 +669,14 @@ CheckTriggers()
 {
     if [[ ${_use_luks} -eq 1 ]]; then
         LuksTrigger
+    fi
+
+    if [[ ${_use_raid} -eq 1 ]]; then
+        RaidTrigger
+    fi
+
+    if [[ ${_use_lvm} -eq 1 ]]; then
+        LvmTrigger
     fi
 
     if [[ ${_use_zfs} -eq 1 ]]; then

@@ -14,7 +14,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.4.0"
+version = "6.5.0"
 license = "MPL 2.0"
 
 # Locations
@@ -89,9 +89,11 @@ baselayout = [
 ]
 
 # Line numbers in the 'init' script where sed will substitute its values in
-useZfsLine = "10"
-useLuksLine = "11"
-useAddonLine = "12"
-useUdevLine = "13"
-initrdVersionLine = "15"
-addonModulesLine = "39"
+useLuksLine = "10"
+useRaidLine = "11"
+useLvmLine = "12"
+useZfsLine = "13"
+useAddonLine = "14"
+useUdevLine = "15"
+initrdVersionLine = "17"
+addonModulesLine = "41"
