@@ -1,3 +1,16 @@
+6.5.1
+------------
+- Fixed a bug where /usr directory wasn't being mounted properly if the user had the /usr dir
+  in a zfs dataset.
+
+  The assumption for separate /usr is that your / either needs to be on zfs or not. Meaning that
+  if you have your / on a zfs dataset, than /usr needs to be on a zfs dataset as well. If your /
+  is on a traditional fs/partition, then so does your /usr. This is because depending if you are on
+  zfs or not, it will run both / and /usr through the same mount options (zfsutil, or just a regular mount).
+
+  I don't think this will be an issue since most people won't be having a mixed scenario where they put
+  / on a traditional fs, and /usr on a zfs dataset, or vice-versa.
+
 6.5.0
 ------------
 - Re-added support for LVM, RAID, LVM on RAID, and their encrypted counterparts.

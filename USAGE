@@ -266,8 +266,14 @@ root - Location to rootfs
     example for rootfs on luks partition: linux <kernel> root=/dev/mapper/vault_0
     example for regular drive: linux <kernel> root=/dev/sda4
 
-usr - Location to separate /usr
+usr - Location of separate /usr
     example: linux <kernel> root=/dev/sda4 usr=/dev/sda3
+
+    If you use this option, you need to make sure that /usr is on the same type of style as your /.
+    Meaning that if you have / in a zfs dataset, than /usr should be on a zfs dataset as well.
+    You cannot have / on a zfs dataset and /usr on a regular partition. I don't foresee a scenario or
+    a reason for why someone would want to put their / on zfs and exclude their /usr from it. So this
+    case should be a rare one.
 
 recover - Use this if you want the initrd to throw you into a rescue shell.
       Useful for recovery purposes.

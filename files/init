@@ -650,10 +650,17 @@ MountRoot()
 # Mounts the /usr directory into your rootfs if it is separate
 MountUsrIfNeeded()
 {
+    local usrFailMessage="Failed to mount \"${_usr}\" onto your rootfs!"
+
     if [[ ! -z ${_usr} ]]; then
         Info "Mounting /usr onto your rootfs..."
         local targetUsrDirectory="${_new_root}"/usr
-        mount "${_usr}" "${targetUsrDirectory}" || Fail "Failed to mount ${_usr} onto your rootfs!"
+
+        if [[ ${_use_zfs} -eq 1 ]]; then
+            mount -t zfs -o zfsutil,"${options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
+        else
+            mount -o "${_options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
+        fi
     fi
 }
 
