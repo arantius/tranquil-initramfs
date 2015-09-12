@@ -14,7 +14,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.5.1"
+version = "6.5.2"
 license = "MPL 2.0"
 
 # Locations

@@ -1,3 +1,9 @@
+6.5.2
+------------
+- Including man pages so that the 'sysresccd-moddat' scripts that generate
+  the sysresccd + zfs isos will also have them.
+- Also including other zfs binaries so that they can be in the iso.
+
 6.5.1
 ------------
 - Fixed a bug where /usr directory wasn't being mounted properly if the user had the /usr dir
