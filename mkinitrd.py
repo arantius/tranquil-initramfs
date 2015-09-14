@@ -15,7 +15,7 @@ from pkg.libs.Tools import Tools
 from pkg.hooks.Addon import Addon
 from pkg.hooks.Lvm import Lvm
 
-class Main(object):
+class Main:
     # Let the games begin ...
     @classmethod
     def start(cls):
@@ -32,7 +32,8 @@ class Main(object):
         Core.VerifyPreliminaryBinaries()
         Core.CreateBaselayout()
         Core.VerifyBinaries()
-        Core.CopyRequiredFiles()
+        Core.CopyBinaries()
+        Core.CopyManPages()
         Core.CopyModules()
         Core.CopyFirmware()
         Core.CreateLinks()

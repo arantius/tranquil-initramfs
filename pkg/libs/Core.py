@@ -25,7 +25,7 @@ from pkg.hooks.Firmware import Firmware
 from pkg.hooks.Udev import Udev
 
 # Contains the core of the application
-class Core(object):
+class Core:
      # List of binaries (That will be 'ldd'ed later)
     _binset = set()
 
@@ -43,7 +43,16 @@ class Core(object):
         if not var.choice:
             print("Which initramfs would you like to generate:")
             Tools.PrintOptions()
-            var.choice = Tools.Question("Current choice [1]: ")
+            temp_choice = Tools.Question("Current choice [1]: ")
+
+            # If the user leaves the choice blank (default choice),
+            # we won't be able to convert an empty string into an int.
+            # Do some checking beforehand.
+            if temp_choice:
+                var.choice = int(temp_choice)
+            else:
+                var.choice = 1
+
             Tools.NewLine()
 
         # Enable the addons if the addon has files (modules) listed
@@ -51,53 +60,55 @@ class Core(object):
             Addon.Enable()
 
         # ZFS
-        if var.choice == "1" or not var.choice:
+        if var.choice == 1:
             Zfs.Enable()
             Addon.Enable()
             Addon.AddFile("zfs")
         # LVM
-        elif var.choice == "2":
+        elif var.choice == 2:
             Lvm.Enable()
         # RAID
-        elif var.choice == "3":
+        elif var.choice == 3:
             Raid.Enable()
         # LVM on RAID
-        elif var.choice == "4":
+        elif var.choice == 4:
             Raid.Enable()
             Lvm.Enable()
         # Normal
-        elif var.choice == "5":
+        elif var.choice == 5:
             pass
         # Encrypted ZFS
-        elif var.choice == "6":
+        elif var.choice == 6:
             Luks.Enable()
             Zfs.Enable()
             Addon.Enable()
             Addon.AddFile("zfs")
         # Encrypted LVM
-        elif var.choice == "7":
+        elif var.choice == 7:
             Luks.Enable()
             Lvm.Enable()
         # Encrypted RAID
-        elif var.choice == "8":
+        elif var.choice == 8:
             Luks.Enable()
             Raid.Enable()
         # Encrypted LVM on RAID
-        elif var.choice == "9":
+        elif var.choice == 9:
             Luks.Enable()
             Raid.Enable()
             Lvm.Enable()
         # Encrypted Normal
-        elif var.choice == "10":
+        elif var.choice == 10:
             Luks.Enable()
         # Exit
-        elif var.choice == "11":
+        elif var.choice == 11:
             Tools.Warn("Exiting.")
             quit(1)
         # Invalid Option
         else:
             Tools.Warn("Invalid Option. Exiting.")
             quit(1)
+
+        Tools.PrintDesiredOption(var.choice)
 
     # Creates the base directory structure
     @classmethod
@@ -117,12 +128,12 @@ class Core(object):
             current_kernel = check_output(["uname", "-r"], universal_newlines=True).strip()
 
             message = "Do you want to use the current kernel: " + current_kernel + " [Y/n]: "
-            var.choice = Tools.Question(message)
+            choice = Tools.Question(message)
             Tools.NewLine()
 
-            if var.choice == 'y' or var.choice == 'Y' or not var.choice:
+            if choice == 'y' or choice == 'Y' or not choice:
                 var.kernel = current_kernel
-            elif var.choice == 'n' or var.choice == 'N':
+            elif choice == 'n' or choice == 'N':
                 var.kernel = Tools.Question("Please enter the kernel name: ")
                 Tools.NewLine()
 
@@ -440,8 +451,8 @@ class Core(object):
 
     # Copies the required files into the initramfs
     @classmethod
-    def CopyRequiredFiles(cls):
-        Tools.Info("Copying required files ...")
+    def CopyBinaries(cls):
+        Tools.Info("Copying binaries ...")
 
         cls.FilterAndInstall(Base.GetFiles())
 
@@ -456,13 +467,32 @@ class Core(object):
 
         if Zfs.IsEnabled():
             cls.FilterAndInstall(Zfs.GetFiles())
+            cls.FilterAndInstall(Zfs.GetOptionalFiles(), dontFail=True)
 
         if Udev.IsEnabled():
             cls.FilterAndInstall(Udev.GetFiles())
 
-    # Filters and installs each file in the array into the initramfs
+    # Copies the man pages (driver)
     @classmethod
-    def FilterAndInstall(cls, vFiles):
+    def CopyManPages(cls):
+        if Zfs.IsEnabled() and Zfs.IsManEnabled():
+            Tools.Info("Copying man pages ...")
+            cls.CopyMan(Zfs.GetManPages())
+
+    # Depending the ZFS version that the user is running,
+    # some manual pages that the initramfs wants to copy might not
+    # have yet been written. Therefore, attempt to copy the man pages,
+    # but if we are unable to copy, then just continue.
+    @classmethod
+    def CopyMan(cls, files):
+        for f in files:
+            Tools.Copy(f, dontFail=True)
+
+    # Filters and installs each file in the array into the initramfs
+    # Optional Args:
+    #   dontFail - Same description as the one in Tools.Copy
+    @classmethod
+    def FilterAndInstall(cls, vFiles, **optionalArgs):
         for file in vFiles:
             # If the application is a binary, add it to our binary set. If the application is not
             # a binary, then we will get a CalledProcessError because the output will be null.
@@ -473,7 +503,7 @@ class Core(object):
                 pass
 
             # Copy the file into the initramfs
-            Tools.Copy(file)
+            Tools.Copy(file, dontFail=optionalArgs.get("dontFail", False))
 
     # Copy modules and their dependencies
     @classmethod

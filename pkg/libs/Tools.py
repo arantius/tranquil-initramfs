@@ -13,7 +13,22 @@ import pkg.libs.Variables as var
 from subprocess import call
 from subprocess import check_output
 
-class Tools(object):
+class Tools:
+    # Available Options
+    _options = {
+        1: "ZFS",
+        2: "LVM",
+        3: "RAID",
+        4: "LVM on RAID",
+        5: "Normal",
+        6: "Encrypted ZFS",
+        7: "Encrypted LVM",
+        8: "Encrypted RAID",
+        9: "Encrypted LVM on RAID",
+        10: "Encrypted Normal",
+        11: "Exit Program",
+    }
+
     # Checks parameters and running user
     @classmethod
     def ProcessArguments(cls, Addon):
@@ -27,40 +42,38 @@ class Tools(object):
         # Let the user directly create an initramfs if no modules are needed
         if len(arguments) == 1:
             if not Addon.GetFiles():
-                var.choice = arguments[0]
+                var.choice = int(arguments[0])
             else:
                 cls.Fail("You must pass a kernel parameter")
 
         # If there are two parameters then we will use them, else just ignore them
         elif len(arguments) == 2:
-            var.choice = arguments[0]
+            var.choice = int(arguments[0])
             var.kernel = arguments[1]
 
     # Prints the header of the application
     @classmethod
     def PrintHeader(cls):
-        cls.Print(cls.Colorize("yellow", "----------------------------------"))
-        cls.Print(cls.Colorize("yellow", var.name + " - v" + var.version))
-        cls.Print(cls.Colorize("yellow", var.contact))
-        cls.Print(cls.Colorize("yellow", "Licensed under the " + var.license))
-        cls.Print(cls.Colorize("yellow", "----------------------------------") + "\n")
+        print("-----------------------------------")
+        Tools.Print(Tools.Colorize("yellow", var.name) + " - " + Tools.Colorize("pink", "v" + var.version))
+        Tools.Print(var.contact)
+        Tools.Print(var.license)
+        print("-----------------------------------\n")
 
     # Prints the available options
     @classmethod
     def PrintOptions(cls):
         cls.NewLine()
-        cls.Option("1. ZFS")
-        cls.Option("2. LVM")
-        cls.Option("3. RAID")
-        cls.Option("4. LVM on RAID")
-        cls.Option("5. Normal")
-        cls.Option("6. Encrypted ZFS")
-        cls.Option("7. Encrypted LVM")
-        cls.Option("8. Encrypted RAID")
-        cls.Option("9. Encrypted LVM on RAID")
-        cls.Option("10. Encrypted Normal")
-        cls.Option("11. Exit Program")
+
+        for option in cls._options:
+            cls.Option(str(option) + ". " + cls._options[option])
+
         cls.NewLine()
+
+    # Prints the option that you selected
+    @classmethod
+    def PrintDesiredOption(cls, option):
+        Tools.Print("[" + Tools.Colorize("pink", cls._options[option]) + "]\n")
 
     # Finds the path to a program on the system
     @classmethod
@@ -125,6 +138,9 @@ class Tools(object):
         quit()
 
     # Intelligently copies the file into the initramfs
+    # Optional Args:
+    #   directoryPrefix = Prefix that we should add when constructing the file path
+    #   dontFail = If the file wasn't able to be copied, do not fail.
     @classmethod
     def Copy(cls, vFile, **optionalArgs):
         # NOTE: shutil.copy will dereference all symlinks before copying.
@@ -159,9 +175,14 @@ class Tools(object):
             elif os.path.isdir(targetFile):
                 os.makedirs(path)
 
-        # Finally lets make sure that the file was copied to its destination
+        # Finally lets make sure that the file was copied to its destination (unless declared otherwise)
         if not os.path.isfile(path):
-            cls.Fail("Unable to copy " + targetFile + " to " + path + "!")
+            message = "Unable to copy " + targetFile
+
+            if optionalArgs.get("dontFail", False):
+                cls.Warn(message)
+            else:
+                cls.Fail(message)
 
     # Copies a file to a target path and checks to see that it exists
     @classmethod
@@ -195,19 +216,23 @@ class Tools(object):
     @classmethod
     def Colorize(cls, vColor, vMessage):
         if vColor == "red":
-            colored_message = "\e[1;31m" + vMessage + "\e[0;m"
+            coloredMessage = "\e[1;31m" + vMessage + "\e[0;m"
         elif vColor == "yellow":
-            colored_message = "\e[1;33m" + vMessage + "\e[0;m"
+            coloredMessage = "\e[1;33m" + vMessage + "\e[0;m"
         elif vColor == "green":
-            colored_message = "\e[1;32m" + vMessage + "\e[0;m"
+            coloredMessage = "\e[1;32m" + vMessage + "\e[0;m"
         elif vColor == "cyan":
-            colored_message = "\e[1;36m" + vMessage + "\e[0;m"
+            coloredMessage = "\e[1;36m" + vMessage + "\e[0;m"
         elif vColor == "purple":
-            colored_message = "\e[1;34m" + vMessage + "\e[0;m"
+            coloredMessage = "\e[1;34m" + vMessage + "\e[0;m"
+        elif vColor == "white":
+            coloredMessage = "\e[1;37m" + vMessage + "\e[0;m"
+        elif vColor == "pink":
+            coloredMessage = "\e[1;35m" + vMessage + "\e[0;m"
         elif vColor == "none":
-            colored_message = vMessage
+            coloredMessage = vMessage
 
-        return colored_message
+        return coloredMessage
 
     # Prints a message through the shell
     @classmethod

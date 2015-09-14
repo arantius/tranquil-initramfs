@@ -1,3 +1,19 @@
+6.6.0
+------------
+- The application will no longer fail to make an initramfs if one of the
+  man pages doesn't exist.
+- The application now supports "optional binaries", this basically just means
+  that the initramfs will attempt to copy a binary, but if it doesn't exist,
+  it won't fail.
+- The option you selected will now be displayed after you select it.
+  This allows you to better see which option you picked when you pass
+  the option in the command line.
+- Brought in some stylistic changes from 'bliss-toolkit - toostrap'
+- Fixed a bug where the user choice was being overriden when asked if
+  the user wants to use the current kernel (Doesn't actually affect
+  anyone due to the way the variable was being used, but still a bug).
+- Man pages will no longer be copied by default.
+
 6.5.2
 ------------
 - Including man pages so that the 'sysresccd-moddat' scripts that generate

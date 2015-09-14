@@ -14,8 +14,8 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.5.2"
-license = "MPL 2.0"
+version = "6.6.0"
+license = "Mozilla Public License 2.0"
 
 # Locations
 home = os.getcwd()
