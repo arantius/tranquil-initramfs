@@ -1,3 +1,14 @@
+6.7.0
+------------
+- The initramfs will no longer compress the modules and the cpio.
+  Only the cpio will be compressed (which compresses the modules inside).
+- The initramfs will now use the root pool's zpool.cache file inside the initramfs
+  at boot time. Since the cachefile is coming from the rootfs, it will always be
+  the correct cache information.
+- The 'refresh' option and functionality for regenerating a zpool.cache file
+  and placing it inside the rootfs has been reintroduced.
+- Small message improvements.
+
 6.6.0
 ------------
 - The application will no longer fail to make an initramfs if one of the

@@ -14,7 +14,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jvasquez1011@gmail.com"
 contact = author + " <" + email + ">"
-version = "6.6.0"
+version = "6.7.0"
 license = "Mozilla Public License 2.0"
 
 # Locations
@@ -72,6 +72,7 @@ firmwareDirectory = "/lib/firmware/"
 baselayout = [
     temp + "/etc",
     temp + "/etc/bash",
+    temp + "/etc/zfs",
     temp + "/dev",
     temp + "/proc",
     temp + "/sys",
@@ -96,4 +97,4 @@ useZfsLine = "13"
 useAddonLine = "14"
 useUdevLine = "15"
 initrdVersionLine = "17"
-addonModulesLine = "41"
+addonModulesLine = "43"

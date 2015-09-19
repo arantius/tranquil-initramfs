@@ -172,21 +172,6 @@ class Core:
             if not os.path.isfile(binary):
                 Tools.BinaryDoesntExist(binary)
 
-    # Compresses the kernel modules
-    @classmethod
-    def CompressKernelModules(cls):
-        Tools.Info("Compressing kernel modules ...")
-
-        cmd = "find " + var.lmodules + " -name " + "*.ko"
-        results = check_output(cmd, shell=True, universal_newlines=True).strip()
-
-        for module in results.split("\n"):
-            cmd = "gzip -9 " + module
-            callResult = call(cmd, shell=True)
-
-            if callResult != 0:
-                Tools.Fail("Unable to compress " + module + " !")
-
     # Generates the modprobe information
     @classmethod
     def GenerateModprobeInfo(cls):
@@ -557,8 +542,7 @@ class Core:
             for module in moddeps:
                 Tools.Copy(module)
 
-            # Compress the modules and update module dependency database inside the initramfs
-            cls.CompressKernelModules()
+            # Update module dependency database inside the initramfs
             cls.GenerateModprobeInfo()
 
     # Gets the library dependencies for all our binaries and copies them into our initramfs.

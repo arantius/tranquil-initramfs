@@ -1,4 +1,4 @@
-Bliss Initramfs - v6.6.0
+Bliss Initramfs - v6.7.0
 Jonathan Vasquez <jvasquez1011@gmail.com>
 Mozilla Public License v2.0
 
@@ -40,8 +40,8 @@ Please have the following installed:
 - app-shells/bash
 - sys-apps/kmod
 - sys-apps/grep
-- sys-apps/kbd (Keymap support)
 - sys-fs/udev OR sys-fs/eudev OR sys-apps/systemd (UUIDs, Labels, etc)
+- sys-apps/kbd (Keymap support)
 - sys-fs/zfs (ZFS support)
 - sys-fs/mdadm (RAID support)
 - sys-fs/lvm2 (LVM support)
