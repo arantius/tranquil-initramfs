@@ -27,7 +27,7 @@ lmodules = ""
 initrd = "initrd"
 choice = ""
 
-rstring = str(random.randint(100000000,999999999))
+rstring = str(random.randint(100000000, 999999999))
 
 temp = "/tmp/" + rstring
 

@@ -13,7 +13,6 @@ import pkg.libs.Variables as var
 from pkg.libs.Core import Core
 from pkg.libs.Tools import Tools
 from pkg.hooks.Addon import Addon
-from pkg.hooks.Lvm import Lvm
 
 class Main:
     # Let the games begin ...
