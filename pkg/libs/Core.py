@@ -26,7 +26,7 @@ from pkg.hooks.Udev import Udev
 
 # Contains the core of the application
 class Core:
-     # List of binaries (That will be 'ldd'ed later)
+    # List of binaries (That will be 'ldd'ed later)
     _binset = set()
 
     # List of modules that will be compressed
@@ -242,7 +242,7 @@ class Core:
     # Creates symlinks from library files found in each /usr/lib## dir to the /lib[32/64] directories
     @classmethod
     def CreateLibraryLinks(cls):
-         # Set library symlinks
+        # Set library symlinks
         if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
             pcmd = 'find /usr/lib -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
@@ -387,7 +387,7 @@ class Core:
         # the ${T} path.
         os.chdir(var.temp)
 
-        call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " +  var.home + "/" + var.initrd], shell=True)
+        call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " + var.home + "/" + var.initrd], shell=True)
 
         if not os.path.isfile(var.home + "/" + var.initrd):
             Tools.Fail("Error creating the initramfs. Exiting.")

@@ -119,7 +119,7 @@ class Tools:
             os.remove(var.tlink)
 
             if os.path.exists(var.tlink):
-                cls.Warn("Failed to delete the temporary link at: " + tlink + ". Exiting.")
+                cls.Warn("Failed to delete the temporary link at: " + var.tlink + ". Exiting.")
                 quit(1)
 
         # Removes the temporary directory
@@ -153,8 +153,8 @@ class Tools:
         # if it exists, delete it, then copy. If a directory, create the directory
         # before copying.
         if directoryPrefix:
-            path =  var.temp + "/" + directoryPrefix + "/" + vFile
-            targetFile = directoryPrefix + "/" +  vFile
+            path = var.temp + "/" + directoryPrefix + "/" + vFile
+            targetFile = directoryPrefix + "/" + vFile
         else:
             path = var.temp + "/" + vFile
             targetFile = vFile
