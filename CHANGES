@@ -1,3 +1,9 @@
+6.7.1
+------------
+- Fixed a bug where mounting a zfs dataset would fail. This seemed to only be
+  getting hit when the user is using full disk encryption zfs and letting GRUB 2
+  decrypt the zfs pool.
+
 6.7.0
 ------------
 - The initramfs will no longer compress the modules and the cpio.

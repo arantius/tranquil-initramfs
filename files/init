@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -607,7 +607,7 @@ GetZpoolCacheFromSystem()
         zpool import -d "${_by}" -f -N -o readonly=on "${_pool_name}"
     fi
 
-    mount -t zfs -o ro,zfsutil "${_root}" "${_new_root}"
+    PrepForSafeZfsMount && mount -t zfs -o ro,zfsutil "${_root}" "${_new_root}"
 
     if [[ -f "${_rootfs_cache_file}" ]]; then
         cp "${_rootfs_cache_file}" /etc/zfs
@@ -696,7 +696,7 @@ MountRoot()
     # options, the variable ends up expanding back to empty quotes and allows
     # the mount command to keep going.
     if [[ ${_use_zfs} -eq 1 ]]; then
-        mount -t zfs -o zfsutil,"${options}" "${_root}" "${_new_root}" || \
+        PrepForSafeZfsMount && mount -t zfs -o zfsutil,"${options}" "${_root}" "${_new_root}" || \
         Fail "Failed to import your zfs root dataset!"
 
         if [[ ${_refresh} -eq 1 ]] || [[ ! -f "${_rootfs_cache_file}" ]]; then
@@ -719,7 +719,7 @@ MountUsrIfNeeded()
         local targetUsrDirectory="${_new_root}"/usr
 
         if [[ ${_use_zfs} -eq 1 ]]; then
-            mount -t zfs -o zfsutil,"${options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
+            PrepForSafeZfsMount && mount -t zfs -o zfsutil,"${options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
         else
             mount -o "${_options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
         fi
@@ -731,6 +731,20 @@ SwitchToNewRoot()
 {
     Info "Switching into rootfs..." && NewLine
     exec switch_root "${_new_root}" "${_init}"
+}
+
+# Runs a zfs specific command that will allow a subsequent 'mount -t zfs -o zfsutil' command
+# to work properly without receiving a "device or resource busy" message.
+PrepForSafeZfsMount()
+{
+    # Using zfs list primarily for performance (zpool import is way slower because it tries to scan
+    # the devices in order to see if it can find anything to import).
+    # Normal commands that cause some sort of delay like if [[ $? -eq 0 ]] or 'sleep' will improve
+    # the success rate of a subsequent mount command to work, but it still has a high chance to fail.
+    # running a zfs specific command before calling a mount that mounts a zfs dataset seems to have a
+    # 100% mount success rate.
+    zfs list 2>&1 > /dev/null
+    return 0
 }
 
 # Checks all triggers
