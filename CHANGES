@@ -1,3 +1,14 @@
+6.8.0
+------------
+- udev/eudev/or systemd-udev is now required.
+- Adopted Arch Linux's 'crypto_keyfile.bin' default name and location
+  for automatic keyfile decryption in initramfs.
+- Fixed a bug in the SafeCopy function where we didn't check if the file
+  we wanted to copy existed.
+- Fixed a problem that apus@freenode detected where prepping calling PrepForSafeZfsMount
+  on a machine that had a lot of snapshots that had a listsnapshot property to show on,
+  would cause massive slowdowns.
+
 6.7.1
 ------------
 - Fixed a bug where mounting a zfs dataset would fail. This seemed to only be

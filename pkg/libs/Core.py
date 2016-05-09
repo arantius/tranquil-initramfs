@@ -1,4 +1,4 @@
-# Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,6 @@ from pkg.hooks.Lvm import Lvm
 from pkg.hooks.Zfs import Zfs
 from pkg.hooks.Addon import Addon
 from pkg.hooks.Firmware import Firmware
-from pkg.hooks.Udev import Udev
 
 # Contains the core of the application
 class Core:
@@ -261,24 +260,20 @@ class Core:
     # Copies files that udev uses, like /etc/udev/*, /lib/udev/*, etc
     @classmethod
     def CopyUdevSupportFiles(cls):
-        if Udev.IsEnabled():
-            # Activate udev support in 'init'
-            call(["sed", "-i", "-e", var.useUdevLine + "s/0/1/", var.temp + "/init"])
+        # Copy all of the udev files
+        if os.path.isdir("/etc/udev/"):
+            shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
 
-            # Copy all of the udev files
-            if os.path.isdir("/etc/udev/"):
-                shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
+        if os.path.isdir("/lib/udev/"):
+            shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
 
-            if os.path.isdir("/lib/udev/"):
-                shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
+        # Rename udevd and place in /sbin
+        udev_path = Tools.GetUdevPath()
+        systemd_dir = os.path.dirname(udev_path)
 
-            # Rename udevd and place in /sbin
-            udev_path = Tools.GetUdevPath()
-            systemd_dir = os.path.dirname(udev_path)
-
-            if os.path.isfile(var.temp + udev_path) and udev_path != "/sbin/udevd":
-                os.rename(var.temp + udev_path, var.temp + "/sbin/udevd")
-                os.rmdir(var.temp + systemd_dir)
+        if os.path.isfile(var.temp + udev_path) and udev_path != "/sbin/udevd":
+            os.rename(var.temp + udev_path, var.temp + "/sbin/udevd")
+            os.rmdir(var.temp + systemd_dir)
 
     # Dumps the current system's keymap
     @classmethod
@@ -400,13 +395,6 @@ class Core:
         # Check required base files
         cls.VerifyBinariesExist(Base.GetFiles())
 
-        # Check required udev files
-        if Udev.IsEnabled():
-            Tools.Flag("Using udev")
-            cls.VerifyBinariesExist(Udev.GetFiles())
-        else:
-            Tools.Warn("Not including udev. Booting using UUIDs will not be supported.")
-
         # Check required luks files
         if Luks.IsEnabled():
             Tools.Flag("Using LUKS")
@@ -453,9 +441,6 @@ class Core:
         if Zfs.IsEnabled():
             cls.FilterAndInstall(Zfs.GetFiles())
             cls.FilterAndInstall(Zfs.GetOptionalFiles(), dontFail=True)
-
-        if Udev.IsEnabled():
-            cls.FilterAndInstall(Udev.GetFiles())
 
     # Copies the man pages (driver)
     @classmethod

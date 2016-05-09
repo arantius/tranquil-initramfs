@@ -331,7 +331,7 @@ If you have your zpool on spread over multiple drives, you can pass them all
 to this variable as well:
     example: linux <kernel> enc_drives=/dev/sda2,/dev/sdb3,/dev/sdc4,/dev/sdd5,/dev/sde6
 
-enc_type - What type of method will are you using to decrypt?
+enc_type - What type of method will you use to decrypt?
     Types: pass - passphrase
            key - plain keyfile
            key_gpg - keyfile encrypted with gpg
@@ -423,4 +423,4 @@ In your grub command line, you will need to have the "enc_type" set to "key".
 When the initramfs starts up, if it detects that your initramfs has an embedded keyfile, it will
 automatically try to decrypt the drives listed in "enc_drives" and not ask you any questions.
 If you want to use some other form of decryption (passphrase, key_gpg), but you don't want to remake
-the initramfs in order to remove the keyfile out of it, use the "enc_key_ignore" kernel line.
+the initramfs in order to remove the keyfile out of it, use the "enc_key_ignore" kernel line option.

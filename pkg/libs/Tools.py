@@ -1,4 +1,4 @@
-# Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -195,10 +195,14 @@ class Tools:
             sourceFileName = desiredName[0]
 
         targetFile = targetDest + "/" + sourceFileName
-        shutil.copy(sourceFile, targetFile)
 
-        if not os.path.isfile(targetFile):
-            Tools.Fail("Error creating the \"" + sourceFileName + "\" file. Exiting.")
+        if os.path.exists(sourceFile):
+            shutil.copy(sourceFile, targetFile)
+
+            if not os.path.isfile(targetFile):
+                Tools.Fail("Error creating the \"" + sourceFileName + "\" file. Exiting.")
+        else:
+            Tools.Fail("The source file doesn't exist: " + sourceFile)
 
     # Copies and verifies that a configuration file exists, and if not,
     # warns the user that the default settings will be used.

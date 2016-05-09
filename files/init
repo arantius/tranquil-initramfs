@@ -12,7 +12,6 @@ _use_raid=0
 _use_lvm=0
 _use_zfs=0
 _use_addon=0
-_use_udev=0
 
 _version="0"
 
@@ -743,28 +742,19 @@ PrepForSafeZfsMount()
     # the success rate of a subsequent mount command to work, but it still has a high chance to fail.
     # running a zfs specific command before calling a mount that mounts a zfs dataset seems to have a
     # 100% mount success rate.
-    zfs list 2>&1 > /dev/null
+    
+    # Using "-H -t -o -s" flags so that if a system has a lot of snapshots, it doesn't slow things down.
+    zfs list -H -t filesystem -o name -s name 2>&1 > /dev/null
     return 0
 }
 
 # Checks all triggers
 CheckTriggers()
 {
-    if [[ ${_use_luks} -eq 1 ]]; then
-        LuksTrigger
-    fi
-
-    if [[ ${_use_raid} -eq 1 ]]; then
-        RaidTrigger
-    fi
-
-    if [[ ${_use_lvm} -eq 1 ]]; then
-        LvmTrigger
-    fi
-
-    if [[ ${_use_zfs} -eq 1 ]]; then
-        ZfsTrigger
-    fi
+    [[ ${_use_luks} -eq 1 ]] && LuksTrigger
+    [[ ${_use_raid} -eq 1 ]] && RaidTrigger
+    [[ ${_use_lvm} -eq 1 ]] && LvmTrigger
+    [[ ${_use_zfs} -eq 1 ]] && ZfsTrigger
 }
 
 # Installs the zpool.cache to the rootfs
@@ -842,7 +832,7 @@ PreventVerboseKernel()
     echo 0 > /proc/sys/kernel/printk
 }
 
-### Xian zai shi shen me shi jian? Kai shi de shi jian! ###
+### Let the games begin ###
 
 WelcomeMessage
 LoadKeymapIfNeeded
@@ -850,32 +840,18 @@ MountRequiredDevices || Fail "Failed to mount kernel devices"
 PreventVerboseKernel
 ParseKernelParameters
 LoadModules || Fail "Failed to load kernel modules"
+StartUdev
 
-if [[ ${_use_udev} -eq 1 ]]; then
-    StartUdev
-fi
+[[ ${_recover} -eq 1 ]] && RescueShell
 
-if [[ ${_recover} -eq 1 ]]; then
-    RescueShell
-fi
-
-# Run all the triggers (Like LUKS, ZFS)
 CheckTriggers
-
 MountRoot
-
-# Mount /usr if needed
 MountUsrIfNeeded
 
-if [[ ${_su} -eq 1 ]]; then
-    SingleUser
-fi
+[[ ${_su} -eq 1 ]] && SingleUser
 
 # Clean up and switch into rootfs
-if [[ ${_use_udev} -eq 1 ]]; then
-    StopUdev
-fi
-
+StopUdev
 UnmountRequiredDevices || Fail "Failed to unmount kernel devices"
 PremountRunOnNewRoot
 SwitchToNewRoot || Fail "Failed to switch into your root filesystem"

@@ -1,4 +1,4 @@
-# Copyright 2012-2015 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@ class Luks(Hook):
     # Path to the keyfile you would like to embedded directly into the initramfs.
     # This should be a non-encrypted keyfile since it will be used to automate
     # the decryption of your / pool (when your /boot is also on /).
-    _keyfile_path = "/path/to/keyfile"
+    _keyfile_path = "/crypto_keyfile.bin"
 
     # Required Files
     _files = [
