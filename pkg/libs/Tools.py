@@ -214,6 +214,14 @@ class Tools:
         else:
             Tools.Warn(targetConfig + " was not detected on this system. The default settings will be used.")
 
+    # Runs a shell command and returns its output
+    @classmethod
+    def Run(cls, command):
+        try:
+            return check_output(command, universal_newlines=True, shell=True).strip().split("\n")
+        except:
+            Tools.Fail("An error occured while processing the following command: " + command)
+
     ####### Message Functions #######
 
     # Returns the string with a color to be used in bash

@@ -1,3 +1,8 @@
+6.8.1
+------------
+- Including 'libgcc_s.so.1' in the initramfs due to ZFS 0.7.0's pthreads loading it during runtime.
+  https://github.com/zfsonlinux/zfs/issues/4749
+
 6.8.0
 ------------
 - udev/eudev/or systemd-udev is now required.

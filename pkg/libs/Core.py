@@ -372,6 +372,26 @@ class Core:
             Tools.ActivateTriggerInInit(var.useAddonLine)
             call(["sed", "-i", "-e", var.addonModulesLine + "s/\"\"/\"" + " ".join(Addon.GetFiles()) + "\"/", var.temp + "/init"])
 
+        cls.CopyLibGccLibrary()
+
+    # Copy the 'libgcc' library so that when libpthreads loads it during runtime, it works.
+    # https://github.com/zfsonlinux/zfs/issues/4749
+    @classmethod
+    def CopyLibGccLibrary(cls):
+        cmd = "gcc-config -L | cut -d ':' -f 1"
+        res = Tools.Run(cmd)
+
+        if len(res) < 1:
+            Tools.Fail("Unable to retrieve gcc library path!")
+
+        libgcc_filename = "libgcc_s.so"
+        libgcc_filename_main = libgcc_filename + ".1"
+        libgcc_path = res[0] + "/" + libgcc_filename_main
+
+        Tools.SafeCopy(libgcc_path, var.llib64)
+        os.chdir(var.llib64)
+        os.symlink(libgcc_filename_main, libgcc_filename)
+
     # Create the initramfs
     @classmethod
     def CreateInitramfs(cls):
