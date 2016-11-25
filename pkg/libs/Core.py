@@ -216,6 +216,18 @@ class Core:
     # Create the required symlinks
     @classmethod
     def CreateLinks(cls):
+        # In order to avoid errors in chroot, check for static busybox
+        # Can't assume package dependencies (in ebuild) are fulfilled
+        Tools.Info("Checking for statically linked busybox ...")
+        
+        # Requires 'file' command, but could also use ldd
+        cmd = 'file /bin/busybox'
+        callResult = Tools.Run(cmd)
+        
+        # Re-join output together into single string and check for absence of static
+        if not 'statically linked' in "\n".join(callResult):
+            Tools.Fail("Could not find statically linked busybox!")
+
         Tools.Info("Creating symlinks ...")
 
         # Needs to be from this directory so that the links are relative
