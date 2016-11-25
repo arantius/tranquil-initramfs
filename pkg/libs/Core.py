@@ -115,10 +115,16 @@ class Core:
         for dir in var.baselayout:
             call(["mkdir", "-p", dir])
 
-        # Create a symlink to this temporary directory at the home dir.
-        # This will help us debug if anything (since the dirs are randomly
-        # generated...)
-        os.symlink(var.temp, var.tlink)
+        # Ensure graceful symlink creation
+        try:
+            # Create a symlink to this temporary directory at the home dir.
+            # This will help us debug if anything (since the dirs are randomly
+            # generated...)
+            os.symlink(var.temp, var.tlink)
+
+        # When current directory is the temp directory (/tmp)
+        except FileExistsError:
+            Tools.Warn("Skipping temporary link creation: " + var.tlink + " -> " + var.temp)
 
     # Ask the user if they want to use their current kernel, or another one
     @classmethod
