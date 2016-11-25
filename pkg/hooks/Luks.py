@@ -15,6 +15,12 @@ class Luks(Hook):
     # the decryption of your / pool (when your /boot is also on /).
     _keyfile_path = "/crypto_keyfile.bin"
 
+    # Should we embed our LUKS header into the initramfs?
+    _use_detached_header = 0
+
+    # Path to the LUKS header you would like to embedded directly into the initramfs.
+    _detached_header_path = "/crypto_header.bin"
+
     # Required Files
     _files = [
         "/sbin/cryptsetup",
@@ -37,3 +43,13 @@ class Luks(Hook):
     @classmethod
     def GetKeyfilePath(cls):
         return cls._keyfile_path
+
+    # Is embedding the LUKS header enabled?
+    @classmethod
+    def IsDetachedHeaderEnabled(cls):
+        return cls._use_detached_header
+
+    # Return the LUKS header path
+    @classmethod
+    def GetDetachedHeaderPath(cls):
+        return cls._detached_header_path
