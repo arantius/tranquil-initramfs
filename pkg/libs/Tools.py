@@ -115,7 +115,7 @@ class Tools:
         os.chdir(var.home)
 
         # Removes the temporary link created at the start of the app
-        if os.path.exists(var.tlink):
+        if os.path.islink(var.tlink) and os.path.exists(var.tlink):
             os.remove(var.tlink)
 
             if os.path.exists(var.tlink):
