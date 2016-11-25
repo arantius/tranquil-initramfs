@@ -35,8 +35,13 @@ class Main:
         Core.CopyManPages()
         Core.CopyModules()
         Core.CopyFirmware()
-        Core.CreateLinks()
+
+        # Dependencies must be copied before we create links since the commands inside of
+        # the create links (i.e chroot) function require that the libraries are already
+        # in our chroot environment.
         Core.CopyDependencies()
+        Core.CreateLinks()
+
         Core.LastSteps()
         Core.CreateInitramfs()
         Tools.CleanAndExit(var.initrd)

@@ -1,3 +1,17 @@
+6.8.2
+------------
+- The initramfs now supports embedding a detached LUKS header file. Thanks to privb0x23 for implementing this.
+- Fixed an edge case where if you ran bliss-initramfs from within the /tmp directory, that would cause a
+  symlinking issue which led to a failure. Thanks to privb0x23 for implementing this.
+- Fixed an issue where the initramfs program would fail to create the busybox links
+  and fail creating the initramfs when busybox was built dynamically. The reason this
+  happened was because in the process of generating the initramfs, we were first calling
+  the "CreateLinks" function which actually makes a call to 'chroot' and performs some
+  operations inside of the initramfs itself in order to make the proper links. However,
+  in order for this to succeed, chroot needs to have the proper dependencies in /lib and /lib64.
+  However, the "CopyDependencies" function was being called directly afterwards. In order to fix
+  this issue, I swapped the functions so that the dependencies are copied before any links are created.
+
 6.8.1
 ------------
 - Including 'libgcc_s.so.1' in the initramfs due to ZFS 0.7.0's pthreads loading it during runtime.

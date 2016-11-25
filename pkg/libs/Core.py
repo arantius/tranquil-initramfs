@@ -216,18 +216,6 @@ class Core:
     # Create the required symlinks
     @classmethod
     def CreateLinks(cls):
-        # In order to avoid errors in chroot, check for static busybox
-        # Can't assume package dependencies (in ebuild) are fulfilled
-        Tools.Info("Checking for statically linked busybox ...")
-        
-        # Requires 'file' command, but could also use ldd
-        cmd = 'file /bin/busybox'
-        callResult = Tools.Run(cmd)
-        
-        # Re-join output together into single string and check for absence of static
-        if not 'statically linked' in "\n".join(callResult):
-            Tools.Fail("Could not find statically linked busybox!")
-
         Tools.Info("Creating symlinks ...")
 
         # Needs to be from this directory so that the links are relative
@@ -235,7 +223,6 @@ class Core:
 
         # Create busybox links
         cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
-
         callResult = call(cmd, shell=True)
 
         if callResult != 0:
@@ -358,7 +345,6 @@ class Core:
                 Tools.SafeCopy(Luks.GetKeyfilePath(), var.temp + "/etc", "keyfile")
 
             # Copy over our detached header if the user activated it
-            # In /etc/default/grub: Modify GRUB_CMDLINE_LINUX to include "enc_options=--header=/etc/header"
             if Luks.IsDetachedHeaderEnabled():
                 Tools.Flag("Embedding our detached header into the initramfs...")
                 Tools.SafeCopy(Luks.GetDetachedHeaderPath(), var.temp + "/etc", "header")

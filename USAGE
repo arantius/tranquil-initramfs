@@ -424,3 +424,22 @@ When the initramfs starts up, if it detects that your initramfs has an embedded 
 automatically try to decrypt the drives listed in "enc_drives" and not ask you any questions.
 If you want to use some other form of decryption (passphrase, key_gpg), but you don't want to remake
 the initramfs in order to remove the keyfile out of it, use the "enc_key_ignore" kernel line option.
+
+=================================
+LUKS Detached Header File Support
+=================================
+
+The initramfs has the ability to embed your detached luks header directly. This has a lot of security
+benefits, the main ones being that:
+
+1. Your LUKS device will look as if it was just a bunch of random data (Plausible Deniability)
+2. Your LUKS device will pretty much be impossible to decrypt with modern technological standards due
+   to the SALT no longer being on the same device as the LUKS device.
+
+In order to activate this feature, change the "_use_detached_header" from 0 to 1 in order to enable this support.
+After you do this, you can set the path of where you want the initramfs to automatically copy that file from by
+modifying the "_detached_header_path" variable. By default, it will attempt to copy it from "/crypto_header.bin",
+and it will automatically be placed inside the initramfs as "/etc/header".
+
+Once this is done, use "enc_options=--header=/etc/header" in the initramfs to tell the initramfs at boot time where
+to find the header file.
