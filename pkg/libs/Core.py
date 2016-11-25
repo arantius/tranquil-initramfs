@@ -339,6 +339,12 @@ class Core:
                 Tools.Flag("Embedding our keyfile into the initramfs...")
                 Tools.SafeCopy(Luks.GetKeyfilePath(), var.temp + "/etc", "keyfile")
 
+            # Copy over our detached header if the user activated it
+            # In /etc/default/grub: Modify GRUB_CMDLINE_LINUX to include "enc_options=--header=/etc/header"
+            if Luks.IsDetachedHeaderEnabled():
+                Tools.Flag("Embedding our detached header into the initramfs...")
+                Tools.SafeCopy(Luks.GetDetachedHeaderPath(), var.temp + "/etc", "header")
+
         # Enable RAID in the init if RAID is being used
         if Raid.IsEnabled():
             Tools.ActivateTriggerInInit(var.useRaidLine)
