@@ -1,8 +1,17 @@
-# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import subprocess
@@ -12,10 +21,10 @@ import random
 # Application Info
 name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
-email = "jvasquez1011@gmail.com"
+email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "6.8.2"
-license = "Mozilla Public License 2.0"
+version = "6.8.3"
+license = "GPL v3.0"
 
 # Locations
 home = os.getcwd()
@@ -30,10 +39,6 @@ choice = ""
 rstring = str(random.randint(100000000, 999999999))
 
 temp = "/tmp/" + rstring
-
-# Temporary symlink created at home in order to easily find the random
-# directory created. Gets deleted when program finishes successfully.
-tlink = home + "/" + rstring
 
 # Directory of Program
 phome = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -90,10 +95,10 @@ baselayout = [
 ]
 
 # Line numbers in the 'init' script where sed will substitute its values in
-useLuksLine = "10"
-useRaidLine = "11"
-useLvmLine = "12"
-useZfsLine = "13"
-useAddonLine = "14"
-initrdVersionLine = "16"
-addonModulesLine = "42"
+useLuksLine = "19"
+useRaidLine = "20"
+useLvmLine = "21"
+useZfsLine = "22"
+useAddonLine = "23"
+initrdVersionLine = "25"
+addonModulesLine = "51"

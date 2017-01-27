@@ -1,3 +1,12 @@
+6.8.3
+------------
+- Relicensed from MPLv2 to GPLv3.0 and updated contact information
+- Removed symlink creation since it was really just causing problems
+  (Can't symlink in UEFI /boot dir, probably because FAT32 doesnt support unix symlinks?)
+  A message letting you know where the initramfs is going to work in is now displayed.
+- Added [LUKS] at the end of ZFS since we will be supporting native ZFS encryption
+  once it's release (Maybe ZoL 0.7.0?), in conjunction with the existing ZFS encryption on LUKS.
+  
 6.8.2
 ------------
 - The initramfs now supports embedding a detached LUKS header file. Thanks to privb0x23 for implementing this.

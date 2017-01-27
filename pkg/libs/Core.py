@@ -1,8 +1,17 @@
-# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import shutil
@@ -76,7 +85,7 @@ class Core:
         # Normal
         elif var.choice == 5:
             pass
-        # Encrypted ZFS
+        # Encrypted ZFS [LUKS]
         elif var.choice == 6:
             Luks.Enable()
             Zfs.Enable()
@@ -112,19 +121,10 @@ class Core:
     # Creates the base directory structure
     @classmethod
     def CreateBaselayout(cls):
+        Tools.Info("Creating temporary directory at " + var.temp + " ...")
+
         for dir in var.baselayout:
             call(["mkdir", "-p", dir])
-
-        # Ensure graceful symlink creation
-        try:
-            # Create a symlink to this temporary directory at the home dir.
-            # This will help us debug if anything (since the dirs are randomly
-            # generated...)
-            os.symlink(var.temp, var.tlink)
-
-        # When current directory is the temp directory (/tmp)
-        except FileExistsError:
-            Tools.Warn("Skipping temporary link creation: " + var.tlink + " -> " + var.temp)
 
     # Ask the user if they want to use their current kernel, or another one
     @classmethod

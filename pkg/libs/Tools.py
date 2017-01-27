@@ -1,8 +1,17 @@
-# Copyright 2012-2016 Jonathan Vasquez <jvasquez1011@gmail.com>
+# Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import shutil
@@ -21,7 +30,7 @@ class Tools:
         3: "RAID",
         4: "LVM on RAID",
         5: "Normal",
-        6: "Encrypted ZFS",
+        6: "Encrypted ZFS [LUKS]",
         7: "Encrypted LVM",
         8: "Encrypted RAID",
         9: "Encrypted LVM on RAID",
@@ -113,14 +122,6 @@ class Tools:
         # Go back to the original working directory so that we are
         # completely sure that there will be no inteference cleaning up.
         os.chdir(var.home)
-
-        # Removes the temporary link created at the start of the app
-        if os.path.exists(var.tlink) and os.path.islink(var.tlink):
-            os.remove(var.tlink)
-
-            if os.path.exists(var.tlink):
-                cls.Warn("Failed to delete the temporary link at: " + var.tlink + ". Exiting.")
-                quit(1)
 
         # Removes the temporary directory
         if os.path.exists(var.temp):
