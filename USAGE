@@ -8,7 +8,7 @@ Run the script by running: ./mkinitrd
 * If the script doesn't run and gives you a permission denied message,
   give it execution permission: `chmod +x mkinitrd` and then try again.
 
-Select the option that you want, and tell it which kernel you want to use.
+Select the features that you want, and tell it which kernel you want to use.
 
 After that the required files will be gathered and packed into an initramfs and you
 will find the initramfs in the directory that you are currently in. Copy that file
@@ -65,7 +65,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root quiet
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root triggers=zfs quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -80,7 +80,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 triggers=raid quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -95,7 +95,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root triggers=lvm quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -110,7 +110,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass triggers=luks,lvm quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -125,7 +125,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass triggers=luks,raid quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -149,7 +149,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass triggers=luks,raid,lvm quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -167,7 +167,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/vault_0 enc_drives=/dev/sda3 quiet
+    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/vault_0 enc_drives=/dev/sda3 triggers=luks quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -181,7 +181,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass quiet
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3,/dev/sdc3,/dev/sdd3 enc_type=pass triggers=luks,zfs quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -196,7 +196,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3 enc_type=key quiet
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3 enc_type=key triggers=luks,zfs quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -210,7 +210,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 quiet
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 triggers=luks,zfs quiet
     initrd /initrd-3.9.9-FB.02
 }
 
@@ -225,7 +225,7 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 
     set root=(hd0,gpt1)
 
-    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=UUID=4443433f-5f03-475f-974e-5345fd524c34,ID=ata-ST500LT012-9WS142_W0V788BP-part2,/dev/sda4
+    linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=UUID=4443433f-5f03-475f-974e-5345fd524c34,ID=ata-ST500LT012-9WS142_W0V788BP-part2,/dev/sda4 triggers=luks,zfs
     enc_type=key enc_key_drive=PARTLABEL=Linux\x20filesystem quiet
     initrd /initrd-3.9.9-FB.02
 }
@@ -235,7 +235,7 @@ Encrypted btrfs w/ Mount Options and passphrase (one drive and the / is on a sub
 =======================================
 
 menuentry "Gentoo - 3.9.9-FB.02" {
-    linux /kernels/3.9.9-FB.02/vmlinuz root=/dev/mapper/vault_0 enc_drives=/dev/sda4 enc_type=pass options="compress=lzo,defaults,noatime,autodefrag,subvol=tank/root" quiet
+    linux /kernels/3.9.9-FB.02/vmlinuz root=/dev/mapper/vault_0 enc_drives=/dev/sda4 enc_type=pass options="compress=lzo,defaults,noatime,autodefrag,subvol=tank/root" triggers=luks quiet
     initrd /kernels/3.9.9-FB.02/initrd
 }
 
@@ -298,6 +298,41 @@ redetect - Use this if you want to have the option to re-scan your /dev/ directo
        if it normally works on your machine, your drive will silently appear. You could just wait a few
        seconds yourself until you feel it is ready, and then just press enter to attempt to mount
        and decrypt the drive.
+
+triggers - Use this to let the initramfs load what feature hooks it needs to run.
+       The order in which you write the list will determine how the hooks will be ran.
+
+       For example, if you designed your partition structure to have encryption
+       at the lowest level, and then you assembled those luks block devices into
+       an array, and then after the array was assembled, you had your lvm volumes
+       groups activate, you can say:
+
+       triggers=luks,raid,lvm
+
+       Which would run the encryption hook first, then raid assembly, then
+       volume group activation.
+
+       However, if you had raid at the lowest level, and then you had lvm, and then
+       inside of the lvm, you would have luks devices, you could possibly say:
+
+       triggers=raid,lvm,luks
+
+       The supported triggers are:
+
+       - luks
+       - zfs
+       - lvm
+       - raid
+
+       If you don't specify any triggers, than just the default initramfs
+       commands will be executed (As if you had a simple system with just a
+       regular filesystem on top of your drive block device directly -
+       i.e ext4 on /dev/sda1).
+
+       Given the permutations of how these triggers can be layed out, there
+       might be problems in booting with specific configurations. If this happens,
+       definitely let me know to see if we can work together to cleanly improve
+       support for that specific trigger order.
 
 =======
 ZFS

@@ -1,3 +1,53 @@
+7.0.0
+------------
+- Completely rewrote the way the initramfs decides what type of initramfs to
+  generate. Before, the user would pick a specific initramfs configuration from
+  a list of configurations (Example: Encrypted LVM on RAID), this assumed that
+  the partition layout the user had was: luks -> raid -> lvm, however, if the user
+  wanted to have LVM on RAID and have encrypted luks devices on top of the LVM,
+  this configuration wouldn't have been available. Now instead of having a
+  list of configuration options, I've made it so that the initramfs generation
+  only gives you a list of features that would your initramfs to include. Meaning
+  if you want the above configuration, you can say "I want LUKS support, LVM support,
+  and RAID support". After your initramfs is created, you can use a new kernel parameter:
+
+  triggers
+
+  to specifically specify the order in which you want the code for that feature to run.
+
+  Making the initramfs include support for LUKS, LVM, and RAID means that the user
+  can say:
+
+  triggers=luks,raid,lvm
+  triggers=luks,lvm,raid
+  triggers=raid,lvm,luks
+  ... and all of the other permutations.
+
+  This separates the initramfs support from the way the user wants that support to
+  be executed, and it does it in a way where we didn't make our bliss-initramfs
+  boot menu significantly bigger (Imagine a list of 30+ options!!). However,
+  due to the new possibilities, there could be problems with crazy configurations
+  that people might want to make. Nothing wrong with crazy configs (I probably have
+  one myself running Gentoo Linux directly on top of Native ZFS all encrypted:
+  triggers=luks,zfs), but it just means that the new flexibility and possibilities,
+  opens up our configurations to untested waters. If you run into a scenario that doesn't,
+  work, then send me a message and we can talk about it to see if we can make your
+  scenario work without making the code too complicated nor breaking existing configurations.
+
+- Changed the initramfs input interface so that it's easier for people to make
+  their initramfs without having to remember the feature list order.
+
+  Before: ./mkinitrd 1,4 4.4.39-FC.01
+
+  (1,4) = zfs,luks
+
+  New: ./mkinitrd zfs,luks 4.4.39-FC.01
+
+  While using the interactive initramfs generation, you can still say "1,4"
+  so that you can quickly pick your options. It's easier to allow 1,4 in the
+  interactive generation because you can actually see the available list of
+  features.
+
 6.8.3
 ------------
 - Relicensed from MPLv2 to GPLv3.0 and updated contact information

@@ -30,7 +30,7 @@ class Main:
         Tools.ProcessArguments(Addon)
         call(["clear"])
         Tools.PrintHeader()
-        Core.PrintMenu()
+        Core.PrintMenuAndGetDesiredFeatures()
 
         if var.kernel or Addon.GetFiles():
             Core.GetDesiredKernel()

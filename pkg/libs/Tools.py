@@ -23,19 +23,13 @@ from subprocess import call
 from subprocess import check_output
 
 class Tools:
-    # Available Options
-    _options = {
+    # Available Features
+    _features = {
         1: "ZFS",
         2: "LVM",
         3: "RAID",
-        4: "LVM on RAID",
-        5: "Normal",
-        6: "Encrypted ZFS [LUKS]",
-        7: "Encrypted LVM",
-        8: "Encrypted RAID",
-        9: "Encrypted LVM on RAID",
-        10: "Encrypted Normal",
-        11: "Exit Program",
+        4: "LUKS",
+        5: "Basic"
     }
 
     # Checks parameters and running user
@@ -51,38 +45,33 @@ class Tools:
         # Let the user directly create an initramfs if no modules are needed
         if len(arguments) == 1:
             if not Addon.GetFiles():
-                var.choice = int(arguments[0])
+                var.features = arguments[0]
             else:
                 cls.Fail("You must pass a kernel parameter")
 
         # If there are two parameters then we will use them, else just ignore them
         elif len(arguments) == 2:
-            var.choice = int(arguments[0])
+            var.features = arguments[0]
             var.kernel = arguments[1]
 
     # Prints the header of the application
     @classmethod
     def PrintHeader(cls):
-        print("-----------------------------------")
+        print('-' * 30)
         Tools.Print(Tools.Colorize("yellow", var.name) + " - " + Tools.Colorize("pink", "v" + var.version))
         Tools.Print(var.contact)
         Tools.Print(var.license)
-        print("-----------------------------------\n")
+        print("-" * 30 + "\n")
 
     # Prints the available options
     @classmethod
-    def PrintOptions(cls):
+    def PrintFeatures(cls):
         cls.NewLine()
 
-        for option in cls._options:
-            cls.Option(str(option) + ". " + cls._options[option])
+        for feature in cls._features:
+            cls.Option(str(feature) + ". " + cls._features[feature])
 
         cls.NewLine()
-
-    # Prints the option that you selected
-    @classmethod
-    def PrintDesiredOption(cls, option):
-        Tools.Print("[" + Tools.Colorize("pink", cls._options[option]) + "]\n")
 
     # Finds the path to a program on the system
     @classmethod

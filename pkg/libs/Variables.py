@@ -23,7 +23,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "6.8.3"
+version = "7.0.0"
 license = "GPL v3.0"
 
 # Locations
@@ -34,7 +34,7 @@ kernel = ""
 modules = ""
 lmodules = ""
 initrd = "initrd"
-choice = ""
+features = ""
 
 rstring = str(random.randint(100000000, 999999999))
 
@@ -95,10 +95,10 @@ baselayout = [
 ]
 
 # Line numbers in the 'init' script where sed will substitute its values in
-useLuksLine = "19"
-useRaidLine = "20"
-useLvmLine = "21"
-useZfsLine = "22"
-useAddonLine = "23"
-initrdVersionLine = "25"
-addonModulesLine = "51"
+useLuksLine = "21"
+useRaidLine = "22"
+useLvmLine = "23"
+useZfsLine = "24"
+useAddonLine = "25"
+initrdVersionLine = "19"
+addonModulesLine = "27"

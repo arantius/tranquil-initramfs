@@ -1,39 +1,25 @@
-Bliss Initramfs - v6.8.3
+Bliss Initramfs - v7.0.0
 Jonathan Vasquez <jon@xyinn.org>
 GNU General Public License v3.0
 
 Designed for Gentoo Linux
 
+Description
+==============
 This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
 
+It was designed primarily to be a simple alternative to genkernel
+for booting Gentoo Linux on Native ZFS (Not FUSE), but it supports a few
+other combinations such as LUKS, ZFS on LUKS, RAID, and LVM.
+
+All you need to do is run "./mkinitrd", select the options you want "a-la-carte",
+and then tell the initramfs via your bootloader parameters in what order you
+want those features to be trigerred in. Check the USAGE file for examples.
+
+Dependencies
+==============
 Please have the following installed:
-
-- Linux Kernel
-  ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared
-  in the 'mods' variable in pkg/hooks/addon.py (Used for ZFS)
-  * If you don't compile these modules (or load them), you will get an
-    "unknown symbol" error when zfs is attempted to be used at boot.
-
-  General setup --->
-  > [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
-    () Initramfs source file(s)
-
-  Device Drivers --->
-  > Generic Driver Options --->
-    [*] Maintain a devtmpfs filesystem to mount at /dev
-    [*] Automount devtmpfs at /dev, after the kernel mounted the rootfs
-  > [*] Multiple devices driver support (RAID and LVM) --->
-    <*> Device mapper support
-    <*> Crypt target support
-
-  Cryptographic API --->
-  * Any ciphers you need in order to unlock your encrypted drive should be
-    enabled as either a module or built into the kernel.
-
-  * All other drivers required to see your PATA/SATA drives (or USB devices)
-    need to be compiled in or you can compile them as a module and declare
-    them in the 'mods' variable in pkg/hooks/addon.py.
 
 - dev-lang/python 3.3 or greater
 - app-arch/cpio

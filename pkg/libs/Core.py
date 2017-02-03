@@ -44,79 +44,58 @@ class Core:
     Base.Enable()
 
     @classmethod
-    # Prints the menu and accepts user choice
-    def PrintMenu(cls):
-        # If the user didn't pass an option through the command line,
-        # then ask them which initramfs they would like to generate.
-        if not var.choice:
-            print("Which initramfs would you like to generate:")
-            Tools.PrintOptions()
-            temp_choice = Tools.Question("Current choice [1]: ")
+    # Prints the menu and accepts user features
+    def PrintMenuAndGetDesiredFeatures(cls):
+        # If the user didn't pass their desired features through the command
+        # line, then ask them which initramfs they would like to generate.
+        if not var.features:
+            print("Which initramfs features do you want? (Separated by a space):")
+            Tools.PrintFeatures()
+            var.features = Tools.Question("Features [1]: ")
 
-            # If the user leaves the choice blank (default choice),
-            # we won't be able to convert an empty string into an int.
-            # Do some checking beforehand.
-            if temp_choice:
-                var.choice = int(temp_choice)
+            if var.features:
+                var.features = cls.ConvertNumberedFeaturesToNamedList(var.features)
             else:
-                var.choice = 1
+                var.features = "zfs"
 
             Tools.NewLine()
+        else:
+            var.features = var.features.split(",")
 
         # Enable the addons if the addon has files (modules) listed
         if Addon.GetFiles():
             Addon.Enable()
 
-        # ZFS
-        if var.choice == 1:
-            Zfs.Enable()
-            Addon.Enable()
-            Addon.AddFile("zfs")
-        # LVM
-        elif var.choice == 2:
-            Lvm.Enable()
-        # RAID
-        elif var.choice == 3:
-            Raid.Enable()
-        # LVM on RAID
-        elif var.choice == 4:
-            Raid.Enable()
-            Lvm.Enable()
-        # Normal
-        elif var.choice == 5:
-            pass
-        # Encrypted ZFS [LUKS]
-        elif var.choice == 6:
-            Luks.Enable()
-            Zfs.Enable()
-            Addon.Enable()
-            Addon.AddFile("zfs")
-        # Encrypted LVM
-        elif var.choice == 7:
-            Luks.Enable()
-            Lvm.Enable()
-        # Encrypted RAID
-        elif var.choice == 8:
-            Luks.Enable()
-            Raid.Enable()
-        # Encrypted LVM on RAID
-        elif var.choice == 9:
-            Luks.Enable()
-            Raid.Enable()
-            Lvm.Enable()
-        # Encrypted Normal
-        elif var.choice == 10:
-            Luks.Enable()
-        # Exit
-        elif var.choice == 11:
-            Tools.Warn("Exiting.")
-            quit(1)
-        # Invalid Option
-        else:
-            Tools.Warn("Invalid Option. Exiting.")
-            quit(1)
+        for feature in var.features:
+            if feature == "zfs":
+                Zfs.Enable()
+                Addon.Enable()
+                Addon.AddFile("zfs")
+            elif feature == "lvm":
+                Lvm.Enable()
+            elif feature == "raid":
+                Raid.Enable()
+            elif feature == "luks":
+                Luks.Enable()
+            # Just a base initramfs with no additional stuff
+            # This can be used with other options though
+            # (i.e you have your rootfs directly on top of LUKS)
+            elif feature == "basic":
+                pass
+            else:
+                Tools.Warn("Exiting.")
+                quit(1)
 
-        Tools.PrintDesiredOption(var.choice)
+    # Returns the name equivalent list of a numbered list of features
+    @classmethod
+    def ConvertNumberedFeaturesToNamedList(cls, numbered_feature_list):
+        named_features = []
+
+        for feature in numbered_feature_list.split(","):
+            feature_as_string = Tools._features[int(feature)].lower()
+            named_features.append(feature_as_string)
+
+        return named_features
 
     # Creates the base directory structure
     @classmethod
