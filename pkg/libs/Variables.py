@@ -23,7 +23,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "7.0.0"
+version = "7.0.1"
 license = "GPL v3.0"
 
 # Locations

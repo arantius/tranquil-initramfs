@@ -49,7 +49,7 @@ class Core:
         # If the user didn't pass their desired features through the command
         # line, then ask them which initramfs they would like to generate.
         if not var.features:
-            print("Which initramfs features do you want? (Separated by a space):")
+            print("Which initramfs features do you want? (Separated by a comma):")
             Tools.PrintFeatures()
             var.features = Tools.Question("Features [1]: ")
 

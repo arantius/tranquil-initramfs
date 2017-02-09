@@ -199,7 +199,7 @@ class Tools:
     @classmethod
     def CopyConfigOrWarn(cls, targetConfig):
         if os.path.isfile(targetConfig):
-            Tools.Flag("Copying the " + targetConfig + " from the current system...")
+            Tools.Flag("Copying " + targetConfig + " from the current system...")
             Tools.Copy(targetConfig)
         else:
             Tools.Warn(targetConfig + " was not detected on this system. The default settings will be used.")
