@@ -554,8 +554,27 @@ class Core:
 
         bindeps = set()
 
-        # Get the interpreter name that is on this system
-        result = check_output("ls " + var.lib64 + "/ld-linux-x86-64.so*", shell=True, universal_newlines=True).strip()
+        # Attempt glibc and musl
+        libc_paths = [
+            var.lib64 + "/ld-linux-x86-64.so*",
+            "/lib/ld-musl-x86_64.so*",
+        ]
+
+        for libc in libc_paths:
+            try:
+                Tools.Info("Attempting libc path: " + libc)
+
+                # Get the interpreter name that is on this system
+                result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
+
+                if 0 == result:
+                    Tools.Info("Libc found")
+                    break
+                else:
+                    Tools.Info("Path not found")
+
+            except:
+                Tools.Warn("Error finding libc")
 
         # Add intepreter to deps since everything will depend on it
         bindeps.add(result)
