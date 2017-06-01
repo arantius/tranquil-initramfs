@@ -161,7 +161,7 @@ class Core:
 
         # If the required binaries don't exist, then exit
         for binary in var.prel_bin:
-            if not os.path.isfile(binary):
+            if not os.path.isfile(Tools.GetProgramPath(binary)):
                 Tools.BinaryDoesntExist(binary)
 
     # Generates the modprobe information
@@ -375,15 +375,35 @@ class Core:
     # https://github.com/zfsonlinux/zfs/issues/4749
     @classmethod
     def CopyLibGccLibrary(cls):
-        cmd = "gcc-config -L | cut -d ':' -f 1"
-        res = Tools.Run(cmd)
-
-        if len(res) < 1:
-            Tools.Fail("Unable to retrieve gcc library path!")
-
+        # Find the correct path for libgcc
         libgcc_filename = "libgcc_s.so"
         libgcc_filename_main = libgcc_filename + ".1"
-        libgcc_path = res[0] + "/" + libgcc_filename_main
+        libgcc_path = ""
+
+        # check for gcc-config
+        cmd = 'whereis gcc-config | cut -d " " -f 2'
+        res = Tools.Run(cmd)
+
+        if len(res) > 0:
+            # Try gcc-config
+            cmd = "gcc-config -L | cut -d ':' -f 1"
+            res = Tools.Run(cmd)
+
+            if len(res) > 0 and os.path.isfile(res[0]):
+                # Use path from gcc-config
+                libgcc_path = res[0] + "/" + libgcc_filename_main
+
+        if "" == libgcc_path:
+            # If gcc-config fails, try searching
+            cmd = 'whereis gcc-config | cut -d " " -f 2'
+            res = Tools.Run(cmd)
+
+            if len(res) > 0 and os.path.isfile(res[0]):
+                # Use path from whereis
+                libgcc_path = res[0] + "/" + libgcc_filename_main
+
+        if "" == libgccc_path:
+            Tools.Fail("Unable to retrieve gcc library path!")
 
         Tools.SafeCopy(libgcc_path, var.llib64)
         os.chdir(var.llib64)
