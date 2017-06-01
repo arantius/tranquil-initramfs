@@ -587,7 +587,7 @@ class Core:
                 # Get the interpreter name that is on this system
                 result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
 
-                if 0 == result:
+                if len(result) > 0:
                     Tools.Info("Libc found")
                     break
                 else:
