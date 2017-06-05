@@ -579,19 +579,17 @@ class Core:
             var.lib64 + "/ld-linux-x86-64.so*",
             "/lib/ld-musl-x86_64.so*",
         ]
+        result = ""
 
         for libc in libc_paths:
             try:
-                Tools.Info("Attempting libc path: " + libc)
-
                 # Get the interpreter name that is on this system
                 result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
 
-                if len(result) > 0:
-                    Tools.Info("Libc found")
+                if result:
                     break
                 else:
-                    Tools.Info("Path not found")
+                    result = ""
 
             except:
                 Tools.Warn("Error finding libc")
