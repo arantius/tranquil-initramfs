@@ -384,30 +384,30 @@ class Core:
         cmd = 'whereis gcc-config | cut -d " " -f 2'
         res = Tools.Run(cmd)
 
-        if len(res) > 0:
+        if res and os.path.isfile(res[0]):
             # Try gcc-config
             cmd = "gcc-config -L | cut -d ':' -f 1"
             res = Tools.Run(cmd)
 
-            if len(res) > 0 and os.path.isfile(res[0]):
+            if res and os.path.isfile(res[0]):
                 # Use path from gcc-config
                 libgcc_path = res[0] + "/" + libgcc_filename_main
+                Tools.SafeCopy(libgcc_path, var.llib64)
+                os.chdir(var.llib64)
+                os.symlink(libgcc_filename_main, libgcc_filename)
 
         if "" == libgcc_path:
             # If gcc-config fails, try searching
-            cmd = 'whereis gcc-config | cut -d " " -f 2'
+            cmd = 'whereis ' + libgcc_filename_main + ' | cut -d " " -f 2'
             res = Tools.Run(cmd)
 
-            if len(res) > 0 and os.path.isfile(res[0]):
+            if res and os.path.isfile(res[0]):
                 # Use path from whereis
-                libgcc_path = res[0] + "/" + libgcc_filename_main
+                libgcc_path = res[0]
+                Tools.SafeCopy(libgcc_path, var.temp + os.path.dirname(libgcc_path))
 
-        if "" == libgccc_path:
+        if "" == libgcc_path:
             Tools.Fail("Unable to retrieve gcc library path!")
-
-        Tools.SafeCopy(libgcc_path, var.llib64)
-        os.chdir(var.llib64)
-        os.symlink(libgcc_filename_main, libgcc_filename)
 
     # Create the initramfs
     @classmethod
