@@ -575,27 +575,27 @@ class Core:
         bindeps = set()
 
         # Attempt glibc and musl
-        libc_paths = [
+        possible_libc_paths = [
             var.lib64 + "/ld-linux-x86-64.so*",
             "/lib/ld-musl-x86_64.so*",
         ]
-        result = ""
+        libc_found = False
 
-        for libc in libc_paths:
+        for libc in possible_libc_paths:
             try:
                 # Get the interpreter name that is on this system
                 result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
 
                 if result:
-                    break
-                else:
-                    result = ""
+                    # Add intepreter to deps since everything will depend on it
+                    bindeps.add(result)
+                    libc_found = True
 
             except:
-                Tools.Warn("Error finding libc")
+                pass
 
-        # Add intepreter to deps since everything will depend on it
-        bindeps.add(result)
+        if not libc_found:
+            Tools.Fail("Error finding libc")
 
         # Get the dependencies for the binaries we've collected and add them to
         # our bindeps set. These will all be copied into the initramfs later.
