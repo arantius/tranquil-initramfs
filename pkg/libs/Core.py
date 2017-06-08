@@ -378,7 +378,7 @@ class Core:
         # Find the correct path for libgcc
         libgcc_filename = "libgcc_s.so"
         libgcc_filename_main = libgcc_filename + ".1"
-        libgcc_path = ""
+        libgcc_found = False
 
         # check for gcc-config
         cmd = 'whereis gcc-config | cut -d " " -f 2'
@@ -395,8 +395,9 @@ class Core:
                 Tools.SafeCopy(libgcc_path, var.llib64)
                 os.chdir(var.llib64)
                 os.symlink(libgcc_filename_main, libgcc_filename)
+                libgcc_found = True
 
-        if "" == libgcc_path:
+        if not libgcc_found:
             # If gcc-config fails, try searching
             cmd = 'whereis ' + libgcc_filename_main + ' | cut -d " " -f 2'
             res = Tools.Run(cmd)
@@ -405,8 +406,9 @@ class Core:
                 # Use path from whereis
                 libgcc_path = res[0]
                 Tools.SafeCopy(libgcc_path, var.temp + os.path.dirname(libgcc_path))
+                libgcc_found = True
 
-        if "" == libgcc_path:
+        if not libgcc_found:
             Tools.Fail("Unable to retrieve gcc library path!")
 
     # Create the initramfs
