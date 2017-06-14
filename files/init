@@ -870,7 +870,7 @@ NewLine()
 # Shows the welcome message
 WelcomeMessage()
 {
-    Info "Welcome to Bliss! [${_version}] (SL mod)"
+    Info "Welcome to Bliss! [${_version}]"
 }
 
 # Prevent kernel from printing on screen
