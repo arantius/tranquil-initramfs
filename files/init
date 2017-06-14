@@ -41,6 +41,7 @@ _embedded_keyfile="/etc/keyfile"
 _cache_file="/etc/zfs/zpool.cache"
 _rootfs_cache_file="${_new_root}${_cache_file}"
 
+
 # Hostnames for initrd and rootfs
 _hostn="initrd"
 _rhostn="rootfs"
@@ -160,6 +161,9 @@ ParseKernelParameters()
             ;;
         enc_drives=*)
             _enc_drives=$(ParseOption "${param}")
+            ;;
+        enc_targets=*)
+            _enc_targets=$(ParseOption "${param}")
             ;;
         enc_type=*)
             _enc_type=$(ParseOption "${param}")
@@ -296,7 +300,7 @@ GetDrivesNeededToDecrypt()
     fi
 
     IFS="," read -a tempDrives <<< "${_enc_drives}"
-
+    
     for i in "${!tempDrives[@]}"; do
         case ${tempDrives[i]} in
             UUID=*)
@@ -539,12 +543,23 @@ DecryptDrives()
     local count=0
     local max="${_enc_tries}"
 
+    if [[ ! -z ${_enc_targets// } ]]; then
+    	IFS="," read -a tempTargets <<< "${_enc_targets}"
+    fi 
+
     for i in "${!_drives[@]}"; do
+    
+    	if [[ -z ${tempTargets[i]// } ]]; then
+    		vaultname=vault_${i}
+    	else
+    		vaultname=${tempTargets[i]}
+    	fi
+    	    
         if [[ ${_enc_type} == "pass" ]]; then
             while [[ ${count} -lt ${max} ]]; do
                 # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
                 # and display an "unknown option" message.
-                echo "${_code}" | cryptsetup ${_enc_options} luksOpen "${_drives[i]}" "vault_${i}" && break
+                echo "${_code}" | cryptsetup ${_enc_options} luksOpen "${_drives[i]}" "${vaultname}" && break
 
                 if [[ $? -ne 0 ]]; then
                     count=$((count + 1))
@@ -563,10 +578,12 @@ DecryptDrives()
                 Fail "The keyfile doesn't exist in this path: ${_keyfile}"
             fi
 
-            cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen "${_drives[i]}" "vault_${i}"
+            cryptsetup --key-file "${_keyfile}" ${_enc_options} luksOpen "${_drives[i]}" "${vaultname}"
 
             if [[ $? -ne 0 ]]; then
                 Fail "Failed to decrypt ${_drives[i]}!"
+            else
+            	Flag "${_drives[i]} opened -> ${vaultname}"
             fi
         elif [[ ${_enc_type} == "key_gpg" ]]; then
             if [[ ! -e ${_keyfile} ]]; then
@@ -575,7 +592,7 @@ DecryptDrives()
 
             while [[ ${count} -lt ${max} ]]; do
                 echo "${_code}" | gpg --batch --passphrase-fd 0 -q -d "${_keyfile}" 2> /dev/null | \
-                cryptsetup --key-file=- ${_enc_options} luksOpen ${_drives[i]} vault_${i} && break
+                cryptsetup --key-file=- ${_enc_options} luksOpen ${_drives[i]} ${vaultname} && break
 
                 if [[ $? -ne 0 ]]; then
                     count=$((count + 1))
@@ -591,6 +608,8 @@ DecryptDrives()
             done
         fi
     done
+    
+    unset tempTargets
 }
 
 # If "use_raid" is enabled, raid specific code will be ran
@@ -851,7 +870,7 @@ NewLine()
 # Shows the welcome message
 WelcomeMessage()
 {
-    Info "Welcome to Bliss! [${_version}]"
+    Info "Welcome to Bliss! [${_version}] (SL mod)"
 }
 
 # Prevent kernel from printing on screen
