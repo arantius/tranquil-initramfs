@@ -157,9 +157,12 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 Encrypted Normal with one encrypted drive
 =======================================
 
-** Note: The program will auto mount all your encrypted drives as follows: /dev/mapper/vault_0, /dev/mapper/vault_1,
+** Note: The program will auto mount all your encrypted drives as follows BY DEFAULT: /dev/mapper/vault_0, /dev/mapper/vault_1,
          /dev/mapper/vault_2 ... etc. Thus if you only have one encrypted drive, make sure you name it /dev/mapper/vault_0,
          or use its UUID.
+         
+         OPTIONAL:  You may use enc_targets parameter to specify custom /dev/mapper/<mount_targets> names 
+                    (see LUKS section below)
 
 menuentry "Gentoo - 3.9.9-FB.02" {
     insmod part_gpt
@@ -213,6 +216,21 @@ menuentry "Gentoo - 3.9.9-FB.02" {
     linux /vmlinuz-3.9.9-FB.02 root=tank/gentoo/root enc_drives=/dev/sda3,/dev/sdb3 enc_type=key_gpg enc_key=/farm/animal enc_key_drive=/dev/sdc2 triggers=luks,zfs quiet
     initrd /initrd-3.9.9-FB.02
 }
+
+=======================================
+Encrypted ZFS with an key named "passphrase" in a folder called "lukskeys" on a USB stick drive labeled BOOTKEY, 4 encrypted whole disks and labeled /dev/mapper mountpoints
+=======================================
+
+insmod part_gpt
+insmod fat
+insmod efi_gop
+insmod efi_uga
+
+menuentry "Gentoo - 4.9.16" {
+    linux /@/4.9.16-1/vmlinuz-4.9.16-gentoo root=rpool/ROOT/gentoo enc_drives=/dev/sda,/dev/sdb,/dev/sdc,/dev/sdd enc_targets=csda,csdb,csdc,csdd enc_type=key enc_key=/lukskeys/passphrase enc_key_drive=/dev/disk/by-label/BOOTKEY elevator=noop logo.nologo triggers=luks,zfs
+    initrd /@/4.9.16-1/initrd
+}
+
 
 =======================================
 Encrypted ZFS with a gpg key, 3 encrypted drives for the tank pool, and mixing UUIDs, IDs, Labels, and regular drive naming,
@@ -392,6 +410,10 @@ enc_options - Allows you to pass options to the 'cryptsetup' command
 
 enc_tries - Allows you to set how many times you can retype your passphrase before the initramfs fails to unlock your drives (default is 5)
     example: linux <kernel> enc_tries=10
+    
+enc_targets - What /dev/mapper/TARGET_NAME to use? Comma separated list, same order as enc_drives!
+    example: linux <kernel> enc_drives=/dev/sda1,/dev/sdb1 enc_targets=crypt_sda,crypt_sdb
+
 
 LUKS passphrase/key:
 The easiest way to pass the passphrase is just to wait till the initramfs
