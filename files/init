@@ -544,17 +544,17 @@ DecryptDrives()
     local max="${_enc_tries}"
 
     if [[ ! -z ${_enc_targets// } ]]; then
-    	IFS="," read -a tempTargets <<< "${_enc_targets}"
+        IFS="," read -a tempTargets <<< "${_enc_targets}"
     fi 
 
     for i in "${!_drives[@]}"; do
     
-    	if [[ -z ${tempTargets[i]// } ]]; then
-    		vaultname=vault_${i}
-    	else
-    		vaultname=${tempTargets[i]}
-    	fi
-    	    
+        if [[ -z ${tempTargets[i]// } ]]; then
+            vaultname=vault_${i}
+        else
+            vaultname=${tempTargets[i]}
+        fi
+            
         if [[ ${_enc_type} == "pass" ]]; then
             while [[ ${count} -lt ${max} ]]; do
                 # Putting the _enc_options var in double quotes _will_ cause cryptsetup to fail
@@ -583,7 +583,7 @@ DecryptDrives()
             if [[ $? -ne 0 ]]; then
                 Fail "Failed to decrypt ${_drives[i]}!"
             else
-            	Flag "${_drives[i]} opened -> ${vaultname}"
+                Flag "${_drives[i]} opened -> ${vaultname}"
             fi
         elif [[ ${_enc_type} == "key_gpg" ]]; then
             if [[ ! -e ${_keyfile} ]]; then
@@ -640,12 +640,12 @@ GetZpoolCacheFromSystem()
     Info "Retrieving zpool.cache from \"${_pool_name}\"..."
 
     if [[ -z "${_by}" ]]; then
-        zpool import -f -N -o readonly=on "${_pool_name}"
+        PrepForSafeZfsCommand && zpool import -f -N -o readonly=on "${_pool_name}"
     else
-        zpool import -d "${_by}" -f -N -o readonly=on "${_pool_name}"
+        PrepForSafeZfsCommand && zpool import -d "${_by}" -f -N -o readonly=on "${_pool_name}"
     fi
 
-    PrepForSafeZfsMount && mount -t zfs -o ro,zfsutil "${_root}" "${_new_root}"
+    PrepForSafeZfsCommand && mount -t zfs -o ro,zfsutil "${_root}" "${_new_root}"
 
     if [[ -f "${_rootfs_cache_file}" ]]; then
         cp "${_rootfs_cache_file}" /etc/zfs
@@ -657,10 +657,11 @@ GetZpoolCacheFromSystem()
         Warn "It will automatically be copied into your system."
     fi
 
-    umount "${_new_root}"
+    # Let's also call the safe command before a normal unmount (since the unmount is ultimately acting on a zfs dataset)
+    PrepForSafeZfsCommand && umount "${_new_root}"
 
     # Use -F (undocumented flag) so that the copied zpool.cache is not nuked.
-    zpool export -F "${_pool_name}"
+    PrepForSafeZfsCommand && zpool export -F "${_pool_name}"
 }
 
 # If "use_zfs" is enabled, zfs specific code will be ran
@@ -681,7 +682,7 @@ ZfsTrigger()
         # pool was last explictly imported. In other words, the paths in the zpool.cache
         # for each drive must exist in the initramfs.
         Info "Loading zpool.cache..."
-        zpool import -aN -c "${_cache_file}"
+        PrepForSafeZfsCommand && zpool import -aN -c "${_cache_file}"
 
         if [[ $? -eq 0 ]]; then
             return
@@ -696,7 +697,7 @@ ZfsTrigger()
     # If the user specified the "by-<>" type that they would like to
     # use, then attempt to mount the pool from that directory.
     if [[ ! -z ${_by} ]]; then
-        zpool import -d "${_by}" -f -N -o cachefile= "${_pool_name}" || \
+        PrepForSafeZfsCommand && zpool import -d "${_by}" -f -N -o cachefile= "${_pool_name}" || \
         Fail "Failed to mount \"${_pool_name}\" from the \"${_by}\" directory."
 
         Info "Successfully mounted \"${_pool_name}\" using the \"${_by}\" directory."
@@ -710,7 +711,7 @@ ZfsTrigger()
 
         for i in ${!_device_dirs[@]}; do
             local dir=${_device_dirs[i]}
-            zpool import -d "${dir}" -f -N -o cachefile= "${_pool_name}"
+            PrepForSafeZfsCommand && zpool import -d "${dir}" -f -N -o cachefile= "${_pool_name}"
 
             if [[ $? == 0 ]]; then
                 Info "Successfully mounted \"${_pool_name}\" using the \"${dir}\" directory."
@@ -734,7 +735,7 @@ MountRoot()
     # options, the variable ends up expanding back to empty quotes and allows
     # the mount command to keep going.
     if [[ ${_use_zfs} -eq 1 ]]; then
-        PrepForSafeZfsMount && mount -t zfs -o zfsutil,"${options}" "${_root}" "${_new_root}" || \
+        PrepForSafeZfsCommand && mount -t zfs -o zfsutil,"${options}" "${_root}" "${_new_root}" || \
         Fail "Failed to import your zfs root dataset!"
 
         if [[ ${_refresh} -eq 1 ]] || [[ ! -f "${_rootfs_cache_file}" ]]; then
@@ -757,7 +758,7 @@ MountUsrIfNeeded()
         local targetUsrDirectory="${_new_root}"/usr
 
         if [[ ${_use_zfs} -eq 1 ]]; then
-            PrepForSafeZfsMount && mount -t zfs -o zfsutil,"${options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
+            PrepForSafeZfsCommand && mount -t zfs -o zfsutil,"${options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
         else
             mount -o "${_options}" "${_usr}" "${targetUsrDirectory}" || Fail "${usrFailMessage}"
         fi
@@ -771,9 +772,9 @@ SwitchToNewRoot()
     exec switch_root "${_new_root}" "${_init}"
 }
 
-# Runs a zfs specific command that will allow a subsequent 'mount -t zfs -o zfsutil' command
-# to work properly without receiving a "device or resource busy" message.
-PrepForSafeZfsMount()
+# Runs a zfs specific command that will allow a subsequent zfs mount or unmount
+# command to work properly without receiving a "device or resource busy" message.
+PrepForSafeZfsCommand()
 {
     # Using zfs list primarily for performance (zpool import is way slower because it tries to scan
     # the devices in order to see if it can find anything to import).

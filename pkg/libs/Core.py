@@ -1,5 +1,5 @@
 # Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
-# 
+#
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
 #
@@ -378,38 +378,34 @@ class Core:
         # Find the correct path for libgcc
         libgcc_filename = "libgcc_s.so"
         libgcc_filename_main = libgcc_filename + ".1"
-        libgcc_found = False
 
         # check for gcc-config
         cmd = 'whereis gcc-config | cut -d " " -f 2'
         res = Tools.Run(cmd)
 
-        if res and os.path.isfile(res[0]):
+        if res:
             # Try gcc-config
             cmd = "gcc-config -L | cut -d ':' -f 1"
             res = Tools.Run(cmd)
 
-            if res and os.path.isfile(res[0]):
+            if res:
                 # Use path from gcc-config
                 libgcc_path = res[0] + "/" + libgcc_filename_main
                 Tools.SafeCopy(libgcc_path, var.llib64)
                 os.chdir(var.llib64)
                 os.symlink(libgcc_filename_main, libgcc_filename)
-                libgcc_found = True
+                return
 
-        if not libgcc_found:
-            # If gcc-config fails, try searching
-            cmd = 'whereis ' + libgcc_filename_main + ' | cut -d " " -f 2'
-            res = Tools.Run(cmd)
+        # Doing a 'whereis <name of libgcc library>' will not work because it seems
+        # that it finds libraries in /lib, /lib64, /usr/lib, /usr/lib64, but not in
+        # /usr/lib/gcc/ (x86_64-pc-linux-gnu/5.4.0, etc)
 
-            if res and os.path.isfile(res[0]):
-                # Use path from whereis
-                libgcc_path = res[0]
-                Tools.SafeCopy(libgcc_path, var.temp + os.path.dirname(libgcc_path))
-                libgcc_found = True
+        # When a better approach is found, we can plug it in here directly and return
+        # in the event that it succeeds. If it fails, we just continue execution
+        # until the end of the function.
 
-        if not libgcc_found:
-            Tools.Fail("Unable to retrieve gcc library path!")
+        # If we've reached this point, we have failed to copy the gcc library.
+        Tools.Fail("Unable to retrieve gcc library path!")
 
     # Create the initramfs
     @classmethod
@@ -576,28 +572,37 @@ class Core:
 
         bindeps = set()
 
-        # Attempt glibc and musl
+        # Musl and non-musl systems are supported.
         possible_libc_paths = [
             var.lib64 + "/ld-linux-x86-64.so*",
-            "/lib/ld-musl-x86_64.so*",
+            var.lib + "/ld-musl-x86_64.so*",
         ]
         libc_found = False
 
         for libc in possible_libc_paths:
             try:
+                # (Dirty implementation) Use the exit code of grep with no messages being outputed to see if this interpreter exists.
+                # We don't know the name yet which is why we are using the wildcard in the variable declaration.
+                result = call("grep -Uqs thiswillnevermatch " + libc, shell=True)
+
+                # 0 = match found
+                # 1 = file exists but not found
+                # 2 = file doesn't exist
+                # In situations 0 or 1, we are good, since we just care that the file exists.
+                if result != 0 and result != 1:
+                    continue
+
                 # Get the interpreter name that is on this system
                 result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
 
-                if result:
-                    # Add intepreter to deps since everything will depend on it
-                    bindeps.add(result)
-                    libc_found = True
-
-            except:
+                # Add intepreter to deps since everything will depend on it
+                bindeps.add(result)
+                libc_found = True
+            except Exception as e:
                 pass
 
         if not libc_found:
-            Tools.Fail("Error finding libc")
+            Tools.Fail("No libc interpreters were found!")
 
         # Get the dependencies for the binaries we've collected and add them to
         # our bindeps set. These will all be copied into the initramfs later.
