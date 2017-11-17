@@ -31,7 +31,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "7.1.0"
+version = "7.1.1"
 license = "2-BSD"
 
 # Locations

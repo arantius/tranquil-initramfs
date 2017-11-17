@@ -43,7 +43,6 @@ class Luks(Hook):
         "/sbin/cryptsetup",
         "/usr/bin/gpg",
         "/usr/bin/gpg-agent",
-        "/usr/share/gnupg/gpg-conf.skel",
 
         # Used for udev cookie release when cryptsetup announces udev support
         # and attempts to decrypt the drive. Without this, the cryptsetup will lock up
