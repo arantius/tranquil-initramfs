@@ -1,4 +1,4 @@
-# Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
+# Copyright 2012-2018 Jonathan Vasquez <jon@xyinn.org>
 #
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -234,38 +234,82 @@ class Core:
     @classmethod
     def CreateLibraryLinks(cls):
         # Set library symlinks
+
+        # Lots of repetition here, probably could use regex and another function to reduce the duplication.
+        # The regex needs to detect both *.so and *.so.* files, and no more.
         if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib/ -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+            pcmd = 'find /usr/lib/ -iname "*.so" -exec ln -s "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
         if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
-            pcmd = 'find /usr/lib32 -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
+            pcmd = 'find /usr/lib32/ -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+            pcmd = 'find /usr/lib32/ -iname "*.so" -exec ln -s "{}" /lib32 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
         if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib64 -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib64/ -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-    # Copies files that udev uses, like /etc/udev/*, /lib/udev/*, etc
-    @classmethod
-    def CopyUdevSupportFiles(cls):
-        # Copy all of the udev files
-        if os.path.isdir("/etc/udev/"):
-            shutil.copytree("/etc/udev/", var.temp + "/etc/udev/")
+            pcmd = 'find /usr/lib64/ -iname "*.so" -exec ln -s "{}" /lib64 \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
 
-        if os.path.isdir("/lib/udev/"):
-            shutil.copytree("/lib/udev/", var.temp + "/lib/udev/")
+        # Create links to libraries found within /lib itself
+        if os.path.isdir(var.temp + "/lib") and os.path.isdir(var.temp + "/lib"):
+            pcmd = 'find /lib/ -iname "*.so.*" -exec ln -s "{}" /lib \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+            pcmd = 'find /lib/ -iname "*.so" -exec ln -s "{}" /lib \;'
+            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
+            call(cmd, shell=True)
+
+    # Copies udev and files that udev uses, like /etc/udev/*, /lib/udev/*, etc
+    @classmethod
+    def CopyUdevAndSupportFiles(cls):
+        # Copy all of the udev files
+        udev_conf_dir = "/etc/udev/"
+        temp_udev_conf_dir = var.temp + udev_conf_dir
+
+        if os.path.isdir(udev_conf_dir):
+            shutil.copytree(udev_conf_dir, temp_udev_conf_dir)
+
+        udev_lib_dir = "/lib/udev/"
+        temp_udev_lib_dir = var.temp + udev_lib_dir
+
+        if os.path.isdir(udev_lib_dir):
+            shutil.copytree(udev_lib_dir, temp_udev_lib_dir)
 
         # Rename udevd and place in /sbin
         udev_path = Tools.GetUdevPath()
         systemd_dir = os.path.dirname(udev_path)
 
-        if os.path.isfile(var.temp + udev_path) and udev_path != "/sbin/udevd":
-            os.rename(var.temp + udev_path, var.temp + "/sbin/udevd")
-            os.rmdir(var.temp + systemd_dir)
+        sbin_udevd = var.sbin + "/udevd"
+        udev_path_temp = var.temp + udev_path
+
+        if os.path.isfile(udev_path_temp) and udev_path != sbin_udevd:
+            udev_path_new = var.temp + sbin_udevd
+            os.rename(udev_path_temp, udev_path_new)
+
+            temp_systemd_dir = var.temp + systemd_dir
+
+            # If the directory is empty, than remove it.
+            # With the recent gentoo systemd root prefix move, it is moving to
+            # /lib/systemd. Thus this directory also contains systemd dependencies
+            # such as: libsystemd-shared-###.so
+            # https://gentoo.org/support/news-items/2017-07-16-systemd-rootprefix.html
+            if not os.listdir(temp_systemd_dir):
+                os.rmdir(temp_systemd_dir)
 
     # Dumps the current system's keymap
     @classmethod
@@ -317,7 +361,7 @@ class Core:
         if os.path.isdir("/etc/modprobe.d/"):
             shutil.copytree("/etc/modprobe.d/", var.temp + "/etc/modprobe.d/")
 
-        cls.CopyUdevSupportFiles()
+        cls.CopyUdevAndSupportFiles()
         cls.DumpSystemKeymap()
 
         # Any last substitutions or additions/modifications should be done here

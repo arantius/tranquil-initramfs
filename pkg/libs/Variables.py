@@ -1,4 +1,4 @@
-# Copyright 2012-2017 Jonathan Vasquez <jon@xyinn.org>
+# Copyright 2012-2018 Jonathan Vasquez <jon@xyinn.org>
 # 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "7.1.1"
+version = "7.1.2"
 license = "2-BSD"
 
 # Locations
