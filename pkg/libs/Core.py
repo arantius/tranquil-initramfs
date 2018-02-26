@@ -238,39 +238,39 @@ class Core:
         # Lots of repetition here, probably could use regex and another function to reduce the duplication.
         # The regex needs to detect both *.so and *.so.* files, and no more.
         if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib/ -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib/ -iname "*.so.*" -exec ln -sf "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-            pcmd = 'find /usr/lib/ -iname "*.so" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib/ -iname "*.so" -exec ln -sf "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
         if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
-            pcmd = 'find /usr/lib32/ -iname "*.so.*" -exec ln -s "{}" /lib32 \;'
+            pcmd = 'find /usr/lib32/ -iname "*.so.*" -exec ln -sf "{}" /lib32 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-            pcmd = 'find /usr/lib32/ -iname "*.so" -exec ln -s "{}" /lib32 \;'
+            pcmd = 'find /usr/lib32/ -iname "*.so" -exec ln -sf "{}" /lib32 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
         if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib64/ -iname "*.so.*" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib64/ -iname "*.so.*" -exec ln -sf "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-            pcmd = 'find /usr/lib64/ -iname "*.so" -exec ln -s "{}" /lib64 \;'
+            pcmd = 'find /usr/lib64/ -iname "*.so" -exec ln -sf "{}" /lib64 \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
         # Create links to libraries found within /lib itself
         if os.path.isdir(var.temp + "/lib") and os.path.isdir(var.temp + "/lib"):
-            pcmd = 'find /lib/ -iname "*.so.*" -exec ln -s "{}" /lib \;'
+            pcmd = 'find /lib/ -iname "*.so.*" -exec ln -sf "{}" /lib \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
-            pcmd = 'find /lib/ -iname "*.so" -exec ln -s "{}" /lib \;'
+            pcmd = 'find /lib/ -iname "*.so" -exec ln -sf "{}" /lib \;'
             cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
             call(cmd, shell=True)
 
