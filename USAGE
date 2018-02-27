@@ -429,7 +429,7 @@ Modules Support
 
 If you have compiled some critical stuff as modules rather than them being built
 into the kernel, you can now write which modules you need in the
-pkg/hooks/addon.sh "mods" variable. The initramfs will gather the module and
+pkg/hooks/Addon.py "_files" variable. The initramfs will gather the module and
 it's dependencies and put them in the initramfs for you. Then the initramfs will
 automatically load all those modules for you at boot.
 
