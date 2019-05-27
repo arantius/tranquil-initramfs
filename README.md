@@ -1,11 +1,11 @@
-Bliss Initramfs - v7.1.5
-Jonathan Vasquez <jon@xyinn.org>
-License: Apache License 2.0
+## This project is no longer in development. Please fork. Thank you.
 
-Designed for Gentoo Linux
+## Bliss Initramfs 7.1.5
+#### Jonathan Vasquez (fearedbliss)
+#### Designed for Gentoo Linux
 
-Description
-==============
+## Description
+
 This script generates an initramfs image with all the included files and
 dependencies needed to mount your filesystem.
 
@@ -17,8 +17,12 @@ All you need to do is run "./mkinitrd", select the options you want "a-la-carte"
 and then tell the initramfs via your bootloader parameters in what order you
 want those features to be trigerred in. Check the USAGE file for examples.
 
-Dependencies
-==============
+## License
+
+Released under the Apache License 2.0
+
+## Dependencies
+
 Please have the following installed:
 
 - dev-lang/python 3.3 or greater
