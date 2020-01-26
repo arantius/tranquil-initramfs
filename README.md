@@ -1,5 +1,3 @@
-## This project is no longer in development. Please fork. Thank you.
-
 ## Bliss Initramfs 7.1.5
 #### Jonathan Vasquez (fearedbliss)
 #### Designed for Gentoo Linux
