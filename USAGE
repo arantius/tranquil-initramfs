@@ -70,90 +70,6 @@ menuentry "Gentoo - 3.9.9-FB.02" {
 }
 
 =======================================
-Normal RAID
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-    insmod part_gpt
-    insmod ext2
-
-    set root=(hd0,gpt1)
-
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 triggers=raid quiet
-    initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Normal LVM
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-    insmod part_gpt
-    insmod ext2
-
-    set root=(hd0,gpt1)
-
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root triggers=lvm quiet
-    initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted LVM with just a passphrase and one encrypted drive
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-    insmod part_gpt
-    insmod ext2
-
-    set root=(hd0,gpt1)
-
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3 enc_type=pass triggers=luks,lvm quiet
-    initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted RAID with just a passphrase and two encrypted drives
-=======================================
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-    insmod part_gpt
-    insmod ext2
-
-    set root=(hd0,gpt1)
-
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/md0 enc_root=/dev/sda3,/dev/sdb3 enc_type=pass triggers=luks,raid quiet
-    initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
-Encrypted RAID + LVM with just a passphrase and two encrypted drives
-=======================================
-
-* Note: The initramfs only supports LVM on RAID, which means that your disks will first be decrypted, assembled,
-        then the lvm will activate the logical volumes on that assembled raid array and then boot your system.
-        Thus, the raid operations are actually transparent.
-
- Layout Example:
- ---------------
- /dev/sda3 - LUKS (vault0) -|\ _ /dev/md0 (vault0, vault1) -> volume group on md0 (let's say 'lv') -> /dev/mapper/lv-root
- /dev/sdb3 - LUKS (vault1) -|/
-
-# Gentoo
-menuentry "Gentoo - 3.9.9-FB.02" {
-    insmod part_gpt
-    insmod ext2
-
-    set root=(hd0,gpt1)
-
-    linux /vmlinuz-3.9.9-FB.02 root=/dev/mapper/lv-root enc_root=/dev/sda3,/dev/sdb3 enc_type=pass triggers=luks,raid,lvm quiet
-    initrd /initrd-3.9.9-FB.02
-}
-
-=======================================
 Encrypted Normal with one encrypted drive
 =======================================
 
@@ -294,7 +210,7 @@ usr - Location of separate /usr
     case should be a rare one.
 
 recover - Use this if you want the initrd to throw you into a rescue shell.
-      Useful for recovery purposes.
+      Useful for recovery and debugging purposes.
 
       example: linux <kernel> recover
 
@@ -321,26 +237,16 @@ triggers - Use this to let the initramfs load what feature hooks it needs to run
        The order in which you write the list will determine how the hooks will be ran.
 
        For example, if you designed your partition structure to have encryption
-       at the lowest level, and then you assembled those luks block devices into
-       an array, and then after the array was assembled, you had your lvm volumes
-       groups activate, you can say:
+       at the lowest level, and then you import your zpool, you can say:
 
-       triggers=luks,raid,lvm
+       triggers=luks,zfs
 
-       Which would run the encryption hook first, then raid assembly, then
-       volume group activation.
-
-       However, if you had raid at the lowest level, and then you had lvm, and then
-       inside of the lvm, you would have luks devices, you could possibly say:
-
-       triggers=raid,lvm,luks
+       Which would run the encryption hook first, and then zfs related stuff. 
 
        The supported triggers are:
 
        - luks
        - zfs
-       - lvm
-       - raid
 
        If you don't specify any triggers, than just the default initramfs
        commands will be executed (As if you had a simple system with just a
@@ -429,12 +335,12 @@ Modules Support
 
 If you have compiled some critical stuff as modules rather than them being built
 into the kernel, you can now write which modules you need in the
-pkg/hooks/Addon.py "_files" variable. The initramfs will gather the module and
+pkg/hooks/Modules.py "_files" variable. The initramfs will gather the module and
 it's dependencies and put them in the initramfs for you. Then the initramfs will
 automatically load all those modules for you at boot.
 
 Example:
-    mods = [ "i915", "zfs", "ahci", "ext2", "ext3", "ext4", "dm-crypt",
+    _files = [ "i915", "zfs", "ahci", "ext2", "ext3", "ext4", "dm-crypt",
           "ohci-hcd", "ehci-hcd", "xhci-hcd", "usb-storage" ]
 
 That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4

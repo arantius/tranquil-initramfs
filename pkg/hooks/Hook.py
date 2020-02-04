@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pkg.libs.Tools import Tools
+
 
 class Hook:
     _use = 0
@@ -62,7 +63,7 @@ class Hook:
         try:
             cls._files.remove(vFile)
         except ValueError:
-            Tools.Fail("The file \"" + vFile + "\" was not found on the list!")
+            Tools.Fail('The file "' + vFile + '" was not found on the list!')
 
     # Prints the files in the list
     @classmethod

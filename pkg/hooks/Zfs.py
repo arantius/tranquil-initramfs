@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +14,19 @@
 
 from pkg.hooks.Hook import Hook
 
+
 class Zfs(Hook):
     # Should we copy the man pages?
     _use_man = 0
 
     # Required Files
-    _files = [
-        "/sbin/fsck.zfs",
-        "/sbin/mount.zfs",
-        "/sbin/zdb",
-        "/sbin/zfs",
-        "/sbin/zpool",
-    ]
+    _files = ["/sbin/fsck.zfs", "/sbin/mount.zfs", "/sbin/zfs", "/sbin/zpool"]
 
     # Optional Files. Will not fail if we fail to copy them.
     _optional_files = [
+        "/sbin/zdb",
         "/sbin/zhack",
         "/sbin/zinject",
-        "/sbin/zpios",
         "/sbin/zstreamdump",
         "/sbin/ztest",
     ]

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,19 +21,14 @@ import pkg.libs.Variables as var
 from subprocess import call
 from subprocess import check_output
 
+
 class Tools:
     # Available Features
-    _features = {
-        1: "ZFS",
-        2: "LVM",
-        3: "RAID",
-        4: "LUKS",
-        5: "Basic"
-    }
+    _features = {1: "ZFS", 2: "LUKS", 3: "Basic"}
 
     # Checks parameters and running user
     @classmethod
-    def ProcessArguments(cls, Addon):
+    def ProcessArguments(cls, Modules):
         user = check_output(["whoami"], universal_newlines=True).strip()
 
         if user != "root":
@@ -43,10 +38,12 @@ class Tools:
 
         # Let the user directly create an initramfs if no modules are needed
         if len(arguments) == 1:
-            if not Addon.GetFiles():
+            if not Modules.GetFiles():
                 var.features = arguments[0]
             else:
-                cls.Fail("You must pass a kernel parameter")
+                cls.Fail(
+                    "You must pass a kernel parameter in order to retrieve the required kernel modules"
+                )
 
         # If there are two parameters then we will use them, else just ignore them
         elif len(arguments) == 2:
@@ -56,8 +53,12 @@ class Tools:
     # Prints the header of the application
     @classmethod
     def PrintHeader(cls):
-        print('-' * 30)
-        Tools.Print(Tools.Colorize("yellow", var.name) + " - " + Tools.Colorize("pink", "v" + var.version))
+        print("-" * 30)
+        Tools.Print(
+            Tools.Colorize("yellow", var.name)
+            + " - "
+            + Tools.Colorize("pink", "v" + var.version)
+        )
         Tools.Print(var.contact)
         Tools.Print(var.license)
         print("-" * 30 + "\n")
@@ -75,7 +76,7 @@ class Tools:
     # Finds the path to a program on the system
     @classmethod
     def GetProgramPath(cls, vProg):
-        cmd = 'whereis ' + vProg + ' | cut -d " " -f 2'
+        cmd = "whereis " + vProg + ' | cut -d " " -f 2'
         results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
         if results:
@@ -83,25 +84,20 @@ class Tools:
         else:
             cls.Fail("The " + vProg + " program could not be found!")
 
-    # Activates the trigger in the init file
-    @classmethod
-    def ActivateTriggerInInit(cls, activateLine):
-        call(["sed", "-i", "-e", activateLine + "s/0/1/", var.temp + "/init"])
-
     # Returns the path to udev
     @classmethod
     def GetUdevPath(cls):
-            udev_paths = [
-                "/usr/lib/systemd/systemd-udevd",
-                "/lib/systemd/systemd-udevd",
-                "/sbin/udevd",
-            ]
+        udev_paths = [
+            "/usr/lib/systemd/systemd-udevd",
+            "/lib/systemd/systemd-udevd",
+            "/sbin/udevd",
+        ]
 
-            for path in udev_paths:
-                if os.path.exists(path) and os.path.isfile(path):
-                    return path
+        for path in udev_paths:
+            if os.path.exists(path) and os.path.isfile(path):
+                return path
 
-            cls.Fail("udev was not found on the system!")
+        cls.Fail("udev was not found on the system!")
 
     # Check to see if the temporary directory exists, if it does,
     # delete it for a fresh start
@@ -123,7 +119,7 @@ class Tools:
     @classmethod
     def CleanAndExit(cls, vInitrd):
         cls.Clean()
-        cls.Info("Please copy \"" + vInitrd + "\" to your " + "/boot directory")
+        cls.Info('Please copy "' + vInitrd + '" to your ' + "/boot directory")
         quit()
 
     # Intelligently copies the file into the initramfs
@@ -189,7 +185,7 @@ class Tools:
             shutil.copy(sourceFile, targetFile)
 
             if not os.path.isfile(targetFile):
-                Tools.Fail("Error creating the \"" + sourceFileName + "\" file. Exiting.")
+                Tools.Fail('Error creating the "' + sourceFileName + '" file. Exiting.')
         else:
             Tools.Fail("The source file doesn't exist: " + sourceFile)
 
@@ -201,15 +197,24 @@ class Tools:
             Tools.Flag("Copying " + targetConfig + " from the current system...")
             Tools.Copy(targetConfig)
         else:
-            Tools.Warn(targetConfig + " was not detected on this system. The default settings will be used.")
+            Tools.Warn(
+                targetConfig
+                + " was not detected on this system. The default settings will be used."
+            )
 
     # Runs a shell command and returns its output
     @classmethod
     def Run(cls, command):
         try:
-            return check_output(command, universal_newlines=True, shell=True).strip().split("\n")
+            return (
+                check_output(command, universal_newlines=True, shell=True)
+                .strip()
+                .split("\n")
+            )
         except:
-            Tools.Fail("An error occured while processing the following command: " + command)
+            Tools.Fail(
+                "An error occured while processing the following command: " + command
+            )
 
     ####### Message Functions #######
 

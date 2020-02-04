@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 from pkg.hooks.Hook import Hook
 
+
 class Firmware(Hook):
     # Copy firmware?
     _use = 0
@@ -26,8 +27,8 @@ class Firmware(Hook):
     # A list of firmware files to include in the initramfs
     _files = [
         # Add your firmware files below
-        #"iwlwifi-6000g2a-6.ucode",
-        #"/yamaha/yss225_registers.bin",
+        # "iwlwifi-6000g2a-6.ucode",
+        # "/yamaha/yss225_registers.bin",
     ]
 
     # Gets the flag_all_firmware value

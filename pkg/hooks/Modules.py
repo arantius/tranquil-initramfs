@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,16 @@
 
 from pkg.hooks.Hook import Hook
 
-class Raid(Hook):
-    # Required Files
+
+class Modules(Hook):
+    # A list of kernel modules to include in the initramfs
+    # Format: "module1", "module2", "module3", ...
     _files = [
-        "/sbin/mdadm",
+        # Uncomment the module below if you have encryption support built as a module, rather than built into the kernel:
+        # "dm-crypt",
+        # Uncomment for NVMe support
+        # "nvme",
+        # Add your other kernel modules below
+        # "i915",
+        # "nouveau",
     ]

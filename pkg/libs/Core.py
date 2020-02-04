@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import pkg.libs.Variables as var
 from pkg.libs.Tools import Tools
 from pkg.hooks.Base import Base
 from pkg.hooks.Luks import Luks
-from pkg.hooks.Raid import Raid
-from pkg.hooks.Lvm import Lvm
 from pkg.hooks.Zfs import Zfs
-from pkg.hooks.Addon import Addon
+from pkg.hooks.Modules import Modules
 from pkg.hooks.Firmware import Firmware
 
 # Contains the core of the application
@@ -41,6 +39,10 @@ class Core:
 
     # Enable the 'base' hook since all initramfs will have this
     Base.Enable()
+
+    # Modules will now always be enabled since all initramfs can have
+    # the ability to have 0 or more modules.
+    Modules.Enable()
 
     @classmethod
     # Prints the menu and accepts user features
@@ -61,19 +63,10 @@ class Core:
         else:
             var.features = var.features.split(",")
 
-        # Enable the addons if the addon has files (modules) listed
-        if Addon.GetFiles():
-            Addon.Enable()
-
         for feature in var.features:
             if feature == "zfs":
                 Zfs.Enable()
-                Addon.Enable()
-                Addon.AddFile("zfs")
-            elif feature == "lvm":
-                Lvm.Enable()
-            elif feature == "raid":
-                Raid.Enable()
+                Modules.AddFile("zfs")
             elif feature == "luks":
                 Luks.Enable()
             # Just a base initramfs with no additional stuff
@@ -81,8 +74,11 @@ class Core:
             # (i.e you have your rootfs directly on top of LUKS)
             elif feature == "basic":
                 pass
-            else:
+            elif feature == "exit":
                 Tools.Warn("Exiting.")
+                quit(0)
+            else:
+                Tools.Warn("Invalid Option. Exiting.")
                 quit(1)
 
     # Returns the name equivalent list of a numbered list of features
@@ -90,9 +86,13 @@ class Core:
     def ConvertNumberedFeaturesToNamedList(cls, numbered_feature_list):
         named_features = []
 
-        for feature in numbered_feature_list.split(","):
-            feature_as_string = Tools._features[int(feature)].lower()
-            named_features.append(feature_as_string)
+        try:
+            for feature in numbered_feature_list.split(","):
+                feature_as_string = Tools._features[int(feature)].lower()
+                named_features.append(feature_as_string)
+        except KeyError:
+            named_features.clear()
+            named_features.append("exit")
 
         return named_features
 
@@ -108,15 +108,19 @@ class Core:
     @classmethod
     def GetDesiredKernel(cls):
         if not var.kernel:
-            current_kernel = check_output(["uname", "-r"], universal_newlines=True).strip()
+            current_kernel = check_output(
+                ["uname", "-r"], universal_newlines=True
+            ).strip()
 
-            message = "Do you want to use the current kernel: " + current_kernel + " [Y/n]: "
+            message = (
+                "Do you want to use the current kernel: " + current_kernel + " [Y/n]: "
+            )
             choice = Tools.Question(message)
             Tools.NewLine()
 
-            if choice == 'y' or choice == 'Y' or not choice:
+            if choice == "y" or choice == "Y" or not choice:
                 var.kernel = current_kernel
-            elif choice == 'n' or choice == 'N':
+            elif choice == "n" or choice == "N":
                 var.kernel = Tools.Question("Please enter the kernel name: ")
                 Tools.NewLine()
 
@@ -167,7 +171,9 @@ class Core:
         result = call(["depmod", "-b", var.temp, var.kernel])
 
         if result != 0:
-            Tools.Fail("Depmod was unable to refresh the dependency information for your initramfs!")
+            Tools.Fail(
+                "Depmod was unable to refresh the dependency information for your initramfs!"
+            )
 
     # Copies the firmware files if necessary
     @classmethod
@@ -185,7 +191,10 @@ class Core:
                             for fw in Firmware.GetFiles():
                                 Tools.Copy(fw, directoryPrefix=var.firmwareDirectory)
                         except FileNotFoundError:
-                            Tools.Warn("An error occured while copying the following firmware: " + fw)
+                            Tools.Warn(
+                                "An error occured while copying the following firmware: "
+                                + fw
+                            )
                     else:
                         Tools.Warn("No firmware files were found in the firmware list!")
             else:
@@ -200,7 +209,11 @@ class Core:
         os.chdir(var.lbin)
 
         # Create busybox links
-        cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
+        cmd = (
+            "chroot "
+            + var.temp
+            + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
+        )
         callResult = call(cmd, shell=True)
 
         if callResult != 0:
@@ -224,46 +237,44 @@ class Core:
     # Creates symlinks from library files found in each /usr/lib## dir to the /lib[32/64] directories
     @classmethod
     def CreateLibraryLinks(cls):
-        # Set library symlinks
-
-        # Lots of repetition here, probably could use regex and another function to reduce the duplication.
-        # The regex needs to detect both *.so and *.so.* files, and no more.
         if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib/ -iname "*.so.*" -exec ln -sf "{}" /lib64 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
+            cls.FindAndCreateLinks("/usr/lib/", "/lib64")
 
-            pcmd = 'find /usr/lib/ -iname "*.so" -exec ln -sf "{}" /lib64 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
+        if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(
+            var.temp + "/lib32"
+        ):
+            cls.FindAndCreateLinks("/usr/lib32/", "/lib32")
 
-        if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(var.temp + "/lib32"):
-            pcmd = 'find /usr/lib32/ -iname "*.so.*" -exec ln -sf "{}" /lib32 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
-
-            pcmd = 'find /usr/lib32/ -iname "*.so" -exec ln -sf "{}" /lib32 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
-
-        if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(var.temp + "/lib64"):
-            pcmd = 'find /usr/lib64/ -iname "*.so.*" -exec ln -sf "{}" /lib64 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
-
-            pcmd = 'find /usr/lib64/ -iname "*.so" -exec ln -sf "{}" /lib64 \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
+        if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(
+            var.temp + "/lib64"
+        ):
+            cls.FindAndCreateLinks("/usr/lib64/", "/lib64")
 
         # Create links to libraries found within /lib itself
         if os.path.isdir(var.temp + "/lib") and os.path.isdir(var.temp + "/lib"):
-            pcmd = 'find /lib/ -iname "*.so.*" -exec ln -sf "{}" /lib \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
+            cls.FindAndCreateLinks("/lib/", "/lib")
 
-            pcmd = 'find /lib/ -iname "*.so" -exec ln -sf "{}" /lib \;'
-            cmd = 'chroot ' + var.temp + ' /bin/busybox sh -c "' + pcmd + '"'
-            call(cmd, shell=True)
+    @classmethod
+    def FindAndCreateLinks(cls, sourceDirectory, targetDirectory):
+        pcmd = (
+            "find "
+            + sourceDirectory
+            + ' -iname "*.so.*" -exec ln -sf "{}" '
+            + targetDirectory
+            + " \;"
+        )
+        cmd = f'chroot {var.temp} /bin/busybox sh -c "{pcmd}"'
+        call(cmd, shell=True)
+
+        pcmd = (
+            "find "
+            + sourceDirectory
+            + ' -iname "*.so" -exec ln -sf "{}" '
+            + targetDirectory
+            + " \;"
+        )
+        cmd = f'chroot {var.temp} /bin/busybox sh -c "{pcmd}"'
+        call(cmd, shell=True)
 
     # Copies udev and files that udev uses, like /etc/udev/*, /lib/udev/*, etc
     @classmethod
@@ -309,7 +320,9 @@ class Core:
         result = call("dumpkeys > " + pathToKeymap, shell=True)
 
         if result != 0 or not os.path.isfile(pathToKeymap):
-            Tools.Warn("There was an error dumping the system's current keymap. Ignoring.")
+            Tools.Warn(
+                "There was an error dumping the system's current keymap. Ignoring."
+            )
 
     # This functions does any last minute steps like copying zfs.conf,
     # giving init execute permissions, setting up symlinks, etc
@@ -334,19 +347,9 @@ class Core:
         if cr != 0:
             Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
 
-        # Copy the bash related files
-        bash_files = [
-            var.files_dir + "/bash/profile",
-            var.files_dir + "/bash/DIR_COLORS"
-        ]
-
-        for bash_file in bash_files:
-            Tools.SafeCopy(bash_file, var.temp + "/etc/")
-
-        Tools.SafeCopy(var.files_dir + "/bash/bashrc", var.temp + "/etc/bash")
-
         # Sets initramfs script version number
-        call(["sed", "-i", "-e", var.initrdVersionLine + "s/0/" + var.version + "/", var.temp + "/init"])
+        cmd = f"echo {var.version} > {var.temp}/version.bliss"
+        call(cmd, shell=True)
 
         # Copy all of the modprobe configurations
         if os.path.isdir("/etc/modprobe.d/"):
@@ -357,10 +360,7 @@ class Core:
 
         # Any last substitutions or additions/modifications should be done here
 
-        # Enable LUKS in the init if LUKS is being used
         if Luks.IsEnabled():
-            Tools.ActivateTriggerInInit(var.useLuksLine)
-
             # Copy over our keyfile if the user activated it
             if Luks.IsKeyfileEnabled():
                 Tools.Flag("Embedding our keyfile into the initramfs...")
@@ -369,44 +369,18 @@ class Core:
             # Copy over our detached header if the user activated it
             if Luks.IsDetachedHeaderEnabled():
                 Tools.Flag("Embedding our detached header into the initramfs...")
-                Tools.SafeCopy(Luks.GetDetachedHeaderPath(), var.temp + "/etc", "header")
+                Tools.SafeCopy(
+                    Luks.GetDetachedHeaderPath(), var.temp + "/etc", "header"
+                )
 
-        # Enable RAID in the init if RAID is being used
-        if Raid.IsEnabled():
-            Tools.ActivateTriggerInInit(var.useRaidLine)
-
-            # Make sure to copy the mdadm.conf from our current system.
-            # If not, the kernel autodetection while assembling the array
-            # will not know what name to give them, so it will name it something
-            # like /dev/md126, /dev/md127 rather than /dev/md0, /dev/md1.
-
-            # If the user didn't modify the default (all commented) mdadm.conf file,
-            # then they will obviously get wrong raid array numbers being assigned
-            # by the kernel. The user needs to run a "mdadm --examine --scan > /etc/mdadm.conf"
-            # to fix this, and re-run the initramfs creator.
-            mdadm_conf = "/etc/mdadm.conf"
-            Tools.CopyConfigOrWarn(mdadm_conf)
-
-        # Enable LVM in the init if LVM is being used
-        if Lvm.IsEnabled():
-            Tools.ActivateTriggerInInit(var.useLvmLine)
-
-            lvm_conf = "/etc/lvm/lvm.conf"
-            Tools.CopyConfigOrWarn(lvm_conf)
-
-        # Enable ZFS in the init if ZFS is being used
-        if Zfs.IsEnabled():
-            Tools.ActivateTriggerInInit(var.useZfsLine)
-
-        # Enable ADDON in the init and add our modules to the initramfs
-        # if addon is being used
-        if Addon.IsEnabled():
-            Tools.ActivateTriggerInInit(var.useAddonLine)
-            call(["sed", "-i", "-e", var.addonModulesLine + "s/\"\"/\"" + " ".join(Addon.GetFiles()) + "\"/", var.temp + "/init"])
+        # Add any modules needed into the initramfs
+        requiredModules = ",".join(Modules.GetFiles())
+        cmd = f"echo {requiredModules} > {var.temp}/modules.bliss"
+        call(cmd, shell=True)
 
         cls.CopyLibGccLibrary()
 
-    # Copy the 'libgcc' library so that when libpthreads loads it during runtime, it works.
+    # Copy the 'libgcc' library so that when libpthreads loads it during runtime.
     # https://github.com/zfsonlinux/zfs/issues/4749
     @classmethod
     def CopyLibGccLibrary(cls):
@@ -440,7 +414,7 @@ class Core:
         # until the end of the function.
 
         # If we've reached this point, we have failed to copy the gcc library.
-        Tools.Fail("Unable to retrieve gcc library path!")
+        Tools.Fail("Unable to retrieve the gcc library path!")
 
     # Create the initramfs
     @classmethod
@@ -452,7 +426,15 @@ class Core:
         # the ${T} path.
         os.chdir(var.temp)
 
-        call(["find . -print0 | cpio -o --null --format=newc | gzip -9 > " + var.home + "/" + var.initrd], shell=True)
+        call(
+            [
+                "find . -print0 | cpio -o --null --format=newc | gzip -9 > "
+                + var.home
+                + "/"
+                + var.initrd
+            ],
+            shell=True,
+        )
 
         if not os.path.isfile(var.home + "/" + var.initrd):
             Tools.Fail("Error creating the initramfs. Exiting.")
@@ -469,16 +451,6 @@ class Core:
         if Luks.IsEnabled():
             Tools.Flag("Using LUKS")
             cls.VerifyBinariesExist(Luks.GetFiles())
-
-        # Check required raid files
-        if Raid.IsEnabled():
-            Tools.Flag("Using RAID")
-            cls.VerifyBinariesExist(Raid.GetFiles())
-
-        # Check required lvm files
-        if Lvm.IsEnabled():
-            Tools.Flag("Using LVM")
-            cls.VerifyBinariesExist(Lvm.GetFiles())
 
         # Check required zfs files
         if Zfs.IsEnabled():
@@ -501,12 +473,6 @@ class Core:
 
         if Luks.IsEnabled():
             cls.FilterAndInstall(Luks.GetFiles())
-
-        if Raid.IsEnabled():
-            cls.FilterAndInstall(Raid.GetFiles())
-
-        if Lvm.IsEnabled():
-            cls.FilterAndInstall(Lvm.GetFiles())
 
         if Zfs.IsEnabled():
             cls.FilterAndInstall(Zfs.GetFiles())
@@ -537,7 +503,11 @@ class Core:
             # If the application is a binary, add it to our binary set. If the application is not
             # a binary, then we will get a CalledProcessError because the output will be null.
             try:
-                check_output('file -L ' + file.strip() + ' | grep "linked"', shell=True, universal_newlines=True).strip()
+                check_output(
+                    "file -L " + file.strip() + ' | grep "linked"',
+                    shell=True,
+                    universal_newlines=True,
+                ).strip()
                 cls._binset.add(file)
             except CalledProcessError:
                 pass
@@ -551,17 +521,24 @@ class Core:
         moddeps = set()
 
         # Build the list of module dependencies
-        if Addon.IsEnabled():
-            Tools.Info("Copying modules ...")
+        Tools.Info("Copying modules ...")
 
-            # Checks to see if all the modules in the list exist
-            for file in Addon.GetFiles():
-                try:
-                    cmd = 'find ' + var.modules + ' -iname "' + file + '.ko" | grep ' + file + '.ko'
-                    result = check_output(cmd, universal_newlines=True, shell=True).strip()
-                    cls._modset.add(result)
-                except CalledProcessError:
-                    Tools.ModuleDoesntExist(file)
+        # Checks to see if all the modules in the list exist (if any)
+        for file in Modules.GetFiles():
+            try:
+                cmd = (
+                    "find "
+                    + var.modules
+                    + ' -iname "'
+                    + file
+                    + '.ko" | grep '
+                    + file
+                    + ".ko"
+                )
+                result = check_output(cmd, universal_newlines=True, shell=True).strip()
+                cls._modset.add(result)
+            except CalledProcessError:
+                Tools.ModuleDoesntExist(file)
 
         # If a kernel has been set, try to update the module dependencies
         # database before searching it
@@ -572,21 +549,27 @@ class Core:
                 if result:
                     Tools.Fail("Error updating module dependency database!")
             except FileNotFoundError:
-                    # This should never occur because the application checks
-                    # that root is the user that is running the application.
-                    # Non-administraative users normally don't have access
-                    # to the 'depmod' command.
-                    Tools.Fail("The 'depmod' command wasn't found.")
+                # This should never occur because the application checks
+                # that root is the user that is running the application.
+                # Non-administraative users normally don't have access
+                # to the 'depmod' command.
+                Tools.Fail("The 'depmod' command wasn't found.")
 
         # Get the dependencies for all the modules in our set
         for file in cls._modset:
             # Get only the name of the module
-            match = re.search('(?<=/)[a-zA-Z0-9_-]+.ko', file)
+            match = re.search("(?<=/)[a-zA-Z0-9_-]+.ko", file)
 
             if match:
                 sFile = match.group().split(".")[0]
 
-                cmd = "modprobe -S " + var.kernel + " --show-depends " + sFile + " | awk -F ' ' '{print $2}'"
+                cmd = (
+                    "modprobe -S "
+                    + var.kernel
+                    + " --show-depends "
+                    + sFile
+                    + " | awk -F ' ' '{print $2}'"
+                )
                 results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
                 for i in results.split("\n"):
@@ -628,7 +611,9 @@ class Core:
                     continue
 
                 # Get the interpreter name that is on this system
-                result = check_output("ls " + libc, shell=True, universal_newlines=True).strip()
+                result = check_output(
+                    "ls " + libc, shell=True, universal_newlines=True
+                ).strip()
 
                 # Add intepreter to deps since everything will depend on it
                 bindeps.add(result)
@@ -642,7 +627,11 @@ class Core:
         # Get the dependencies for the binaries we've collected and add them to
         # our bindeps set. These will all be copied into the initramfs later.
         for binary in cls._binset:
-            cmd = "ldd " + binary + " | awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'"
+            cmd = (
+                "ldd "
+                + binary
+                + " | awk -F '=>' '{print $2}' | awk -F ' ' '{print $1}' | sed '/^ *$/d'"
+            )
             results = check_output(cmd, shell=True, universal_newlines=True).strip()
 
             if results:

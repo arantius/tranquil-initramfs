@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,40 +15,30 @@
 from pkg.hooks.Hook import Hook
 from pkg.libs.Tools import Tools
 
+
 class Base(Hook):
     @classmethod
     # Returns the kmod links
     def GetKmodLinks(cls):
         return cls._kmod_links
 
+    # Dependencies
+    # 1. sys-apps/busybox
+    # 2. sys-apps/kmod
+    # 3. app-shells/bash
+    # 4. sys-apps/grep
+    # 5. sys-apps/kbd
+    # 6. udev
     _files = [
-        # sys-apps/busybox
         "/bin/busybox",
-
-        # sys-apps/kmod
         Tools.GetProgramPath("kmod"),
-
-        # app-shells/bash
         "/bin/bash",
-
-        # sys-apps/grep
         "/bin/egrep",
         "/bin/fgrep",
         "/bin/grep",
-
-        # sys-apps/kbd,
         "/usr/bin/loadkeys",
-
-        # udev
         Tools.GetUdevPath(),
         Tools.GetProgramPath("udevadm"),
     ]
 
-    _kmod_links = [
-        "depmod",
-        "insmod",
-        "lsmod",
-        "modinfo",
-        "modprobe",
-        "rmmod",
-    ]
+    _kmod_links = ["depmod", "insmod", "lsmod", "modinfo", "modprobe", "rmmod"]

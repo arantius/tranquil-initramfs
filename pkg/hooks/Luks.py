@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pkg.hooks.Hook import Hook
+
 
 class Luks(Hook):
     # Should we embed our keyfile into the initramfs?
@@ -34,7 +35,6 @@ class Luks(Hook):
         "/sbin/cryptsetup",
         "/usr/bin/gpg",
         "/usr/bin/gpg-agent",
-
         # Used for udev cookie release when cryptsetup announces udev support
         # and attempts to decrypt the drive. Without this, the cryptsetup will lock up
         # and stay at "waiting for zero"

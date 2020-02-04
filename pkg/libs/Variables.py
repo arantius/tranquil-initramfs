@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ name = "Bliss Initramfs"
 author = "Jonathan Vasquez"
 email = "jon@xyinn.org"
 contact = author + " <" + email + ">"
-version = "7.1.5"
+version = "8.0.0"
 license = "Apache License 2.0"
 
 # Locations
@@ -68,10 +68,7 @@ arch = subprocess.check_output(["uname", "-m"], universal_newlines=True).strip()
 
 # Preliminary binaries needed for the success of creating the initrd
 # but that are not needed to be placed inside the initrd
-prel_bin = [
-    "/bin/cpio",
-    "/sbin/depmod",
-]
+prel_bin = ["/bin/cpio", "/sbin/depmod"]
 
 # Firmware directory
 firmwareDirectory = "/lib/firmware/"
@@ -94,14 +91,5 @@ baselayout = [
     temp + "/sbin",
     temp + "/usr",
     temp + "/root",
-    temp + "/run"
+    temp + "/run",
 ]
-
-# Line numbers in the 'init' script where sed will substitute its values in
-initrdVersionLine = "18"
-addonModulesLine = "19"
-useLuksLine = "20"
-useRaidLine = "21"
-useLvmLine = "22"
-useZfsLine = "23"
-useAddonLine = "24"

@@ -2,7 +2,7 @@ Required Kernel Options for ZFS
 ======================
 - Linux Kernel
   ZLIB_INFLATE/ZLIB_DEFLATE can be compiled as a module but must be declared
-  in the 'mods' variable in pkg/hooks/addon.py (Used for ZFS)
+  in the '_files' variable in pkg/hooks/Modules.py
   * If you don't compile these modules (or load them), you will get an
     "unknown symbol" error when zfs is attempted to be used at boot.
   * ZLIB_DEFLATE cannot be told to be compiled in directly. You need to look
@@ -41,5 +41,5 @@ Other
 ======================
   * All other drivers required to see your PATA/SATA drives (or USB devices)
     need to be compiled in or you can compile them as a module and declare
-    them in the 'mods' variable in pkg/hooks/addon.py.
+    them in the '_files' variable in pkg/hooks/Modules.py.
 

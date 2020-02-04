@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,18 +20,19 @@ import pkg.libs.Variables as var
 
 from pkg.libs.Core import Core
 from pkg.libs.Tools import Tools
-from pkg.hooks.Addon import Addon
+from pkg.hooks.Modules import Modules
+
 
 class Main:
     # Let the games begin ...
     @classmethod
     def start(cls):
-        Tools.ProcessArguments(Addon)
+        Tools.ProcessArguments(Modules)
         call(["clear"])
         Tools.PrintHeader()
         Core.PrintMenuAndGetDesiredFeatures()
 
-        if var.kernel or Addon.GetFiles():
+        if var.kernel or Modules.GetFiles():
             Core.GetDesiredKernel()
 
         Core.VerifySupportedArchitecture()
@@ -54,5 +55,6 @@ class Main:
         Core.CreateInitramfs()
         Tools.CleanAndExit(var.initrd)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     Main.start()

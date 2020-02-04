@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2012-2019 Jonathan Vasquez <jon@xyinn.org>
+# Copyright (C) 2012-2020 Jonathan Vasquez <jon@xyinn.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,42 +15,39 @@
 # limitations under the License.
 
 # ========== Variables ==========
-_version="0"
-_modules=""
-_use_luks=0
-_use_raid=0
-_use_lvm=0
 _use_zfs=0
-_use_addon=0
-
 _new_root="/mnt/root"
 _init="/sbin/init"
 _key_drive="/mnt/key"
 _embedded_keyfile="/etc/keyfile"
 _cache_file="/etc/zfs/zpool.cache"
 _rootfs_cache_file="${_new_root}${_cache_file}"
-
-# Hostnames for initrd and rootfs
-_hostn="initrd"
-_rhostn="rootfs"
+_bliss_version_file="/version.bliss"
+_bliss_modules_file="/modules.bliss"
 
 # Starts a rescue shell
 RescueShell()
 {
     Warn "Booting into rescue shell..." && NewLine
-    hostname "${_hostn}" && setsid cttyhack /bin/bash -l
+    setsid sh -c 'exec sh < /dev/tty1 > /dev/tty1 2>&1'
+}
+
+# Loads Bliss Version (Information Purposes Only)
+LoadVersion()
+{
+    _version=$(cat ${_bliss_version_file})
 }
 
 # Module loading function
 LoadModules()
 {
-    if [[ ${_use_zfs} -eq 1 ]] || [[ ${_use_addon} -eq 1 ]]; then
-        Info "Loading modules..."
+    Info "Loading modules..."
 
-        for module in ${_modules}; do
-            modprobe ${module}
-        done
-    fi
+    IFS="," read -a _modules <<< $(cat ${_bliss_modules_file})
+
+    for module in ${_modules[@]}; do
+        modprobe ${module}
+    done
 }
 
 # Cleanly mounts the required devices
@@ -96,7 +93,7 @@ LoadKeymapIfNeeded()
 
     if [[ -f ${path_to_keymap} ]]; then
         Info "Loading keymap..."
-        loadkeys "${path_to_keymap}" 1> /dev/null || Warn "There was an error loading the keymap file. Ignoring."
+        loadkeys "${path_to_keymap}" > /dev/null 2>&1
     fi
 }
 
@@ -380,7 +377,7 @@ AskEncryptionType()
 # Prints the available drives
 PrintAvailableDrives()
 {
-    Info "Detecting available drives..." && sleep "${_timer}" && ls /dev/[sv]d*
+    Info "Detecting available drives..." && sleep "${_timer}" && ls /dev/*
 }
 
 # Detects the available drives
@@ -407,7 +404,7 @@ DetectAvailableDrives()
     fi
 }
 
-# If "use_luks" is enabled, luks specific code will be ran
+# Run LUKS Specific Code
 LuksTrigger()
 {
     Info "Gathering encrypted devices..." && GetDrivesNeededToDecrypt
@@ -600,28 +597,6 @@ DecryptDrives()
     unset tempTargets
 }
 
-# If "use_raid" is enabled, raid specific code will be ran
-RaidTrigger()
-{
-    Info "Assembling your raid array..."
-
-    # Scan for raid arrays and save them in mdadm.conf
-    mdadm --examine --scan > /etc/mdadm.conf
-
-    # Assemble all raid devices
-    mdadm --assemble --scan
-}
-
-# If "use_lvm" is enabled, raid specific code will be ran
-LvmTrigger()
-{
-    Info "Activating your logical volumes..."
-
-    # Make LVM Volume Group/Pools available
-    lvm vgchange -a y
-    lvm vgscan --mknodes
-}
-
 # Retrieves the zpool.cache file from the rootfs
 GetZpoolCacheFromSystem()
 {
@@ -652,7 +627,7 @@ GetZpoolCacheFromSystem()
     PrepForSafeZfsCommand && zpool export -F "${_pool_name}"
 }
 
-# If "use_zfs" is enabled, zfs specific code will be ran
+# Run ZFS Specific Code
 ZfsTrigger()
 {
     _pool_name="${_root%%/*}"
@@ -669,8 +644,16 @@ ZfsTrigger()
         # cache file need to be in the initramfs exactly as they were when the
         # pool was last explictly imported. In other words, the paths in the zpool.cache
         # for each drive must exist in the initramfs.
-        Info "Loading zpool.cache..."
-        PrepForSafeZfsCommand && zpool import -aN -c "${_cache_file}"
+        Info "Loading \"${_pool_name}\" from zpool.cache..."
+
+        # We are going to use the zpool.cache file but we will only mount from the pool that
+        # contains our root dataset. Post early boot should be responsible for mounting the rest
+        # of the pools/datasets. If we attempt to mount all the pools at this point, there is a
+        # possibility that the boot will fail (Example: You had an encrypted backup drive/pool enabled,
+        # then you rebooted your machine, and the initramfs fails because the backup pool is listed in
+        # the cache, but all the drives are locked.)
+
+        PrepForSafeZfsCommand && zpool import -N -c "${_cache_file}" "${_pool_name}"
 
         if [[ $? -eq 0 ]]; then
             return
@@ -692,6 +675,7 @@ ZfsTrigger()
     else
         _device_dirs=(
             /dev
+            /dev/mapper
             /dev/disk/by-*
         )
 
@@ -768,7 +752,7 @@ PrepForSafeZfsCommand()
     # the devices in order to see if it can find anything to import).
     # Normal commands that cause some sort of delay like if [[ $? -eq 0 ]] or 'sleep' will improve
     # the success rate of a subsequent mount command to work, but it still has a high chance to fail.
-    # running a zfs specific command before calling a mount that mounts a zfs dataset seems to have a
+    # Running a zfs specific command before calling a mount that mounts a zfs dataset seems to have a
     # 100% mount success rate.
 
     # Using "-H -t -o -s" flags so that if a system has a lot of snapshots, it doesn't slow things down.
@@ -776,18 +760,14 @@ PrepForSafeZfsCommand()
     return 0
 }
 
-# Checks if a trigger is enabled, and if it is, it will run the trigger
-# in the order specified in the trigger order variable (basically a stack)
+# Run each trigger defined by the user in the exact order they defined them.
 CheckAndRunTriggers()
 {
     for trigger in ${_triggers[@]}; do
-        if [[ ${_use_luks} -eq 1 ]] && [[ ${trigger} == "luks" ]]; then
+        if [[ ${trigger} == "luks" ]]; then
             LuksTrigger
-        elif [[ ${_use_raid} -eq 1 ]] && [[ ${trigger} == "raid" ]]; then
-            RaidTrigger
-        elif [[ ${_use_lvm} -eq 1 ]] && [[ ${trigger} == "lvm" ]]; then
-            LvmTrigger
-        elif [[ ${_use_zfs} -eq 1 ]] && [[ ${trigger} == "zfs" ]]; then
+        elif [[ ${trigger} == "zfs" ]]; then
+            _use_zfs=1
             ZfsTrigger
         fi
     done
@@ -809,6 +789,8 @@ SingleUser()
     mount --rbind /dev "${_new_root}"/dev
     mount --rbind /sys "${_new_root}"/sys
     mount --rbind /run "${_new_root}"/run
+
+    _rhostn="rootfs"
 
     setsid cttyhack /bin/bash -c "chroot ${_new_root} /bin/bash -c 'hostname ${_rhostn}' && chroot ${_new_root} /bin/bash -l"
 
@@ -870,6 +852,7 @@ PreventVerboseKernel()
 
 ### Let the games begin ###
 
+LoadVersion
 WelcomeMessage
 LoadKeymapIfNeeded
 MountRequiredDevices || Fail "Failed to mount kernel devices"
