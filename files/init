@@ -230,7 +230,7 @@ ParseByOption()
             echo "/dev/disk/by-partlabel"
             ;;
         *)
-            echo "${tempDrive}"
+            echo "${option}"
             ;;
     esac
 
