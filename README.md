@@ -1,6 +1,9 @@
-## Bliss Initramfs 8.0.0
-#### Jonathan Vasquez (fearedbliss)
-#### Designed for Gentoo Linux
+## Bliss Initramfs
+
+A fork with the primary goal of keeping full LUKS + ZFS support.
+Originally 
+[fearedbliss/bliss-initramfs](https://github.com/fearedbliss/bliss-initramfs)
+by Jonathan Vasquez, designed for Gentoo Linux.
 
 ## Description
 
