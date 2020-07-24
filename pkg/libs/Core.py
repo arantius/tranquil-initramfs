@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import configparser
+import getpass
+import glob
 import os
 import shutil
 import re
@@ -153,7 +155,9 @@ class Core:
         Tools.Copy(var.modules + "/modules.order")
         Tools.Copy(var.modules + "/modules.builtin")
 
-        result = call(["depmod", "-b", var.temp, var.kernel])
+        cmd_ = ["depmod", "-b", var.temp, var.kernel]
+        cls.SudoWrapCommand(cmd_)
+        result = call(cmd_)
 
         if result != 0:
             Tools.Fail(
@@ -190,76 +194,45 @@ class Core:
     def CreateLinks(cls):
         Tools.Info("Creating symlinks ...")
 
-        # Needs to be from this directory so that the links are relative
-        os.chdir(var.lbin)
-
         # Create busybox links
-        cmd = (
-            "chroot "
-            + var.temp
-            + ' /bin/busybox sh -c "cd /bin && /bin/busybox --install -s ."'
-        )
-        callResult = call(cmd, shell=True)
-
-        if callResult != 0:
-            Tools.Fail("Unable to create busybox links via chroot!")
+        for applet in Tools.Run(var.temp + '/bin/busybox --list'):
+          if applet == 'busybox': continue
+          if os.path.exists(var.lbin + '/' + applet): continue
+          os.symlink('busybox', var.lbin + '/' + applet)
 
         # Create 'sh' symlink to 'bash'
-        os.remove(var.temp + "/bin/sh")
-        os.symlink("bash", "sh")
+        os.remove(var.lbin + '/sh')
+        os.symlink('bash', var.lbin + '/sh')
 
-        # Switch to the kmod directory, delete the corresponding busybox
-        # symlink and create the symlinks pointing to kmod
+        # Replace busybox symlinks and with kmod
+        dest = '/bin/'
         if os.path.isfile(var.lsbin + "/kmod"):
-            os.chdir(var.lsbin)
-        elif os.path.isfile(var.lbin + "/kmod"):
-            os.chdir(var.lbin)
-
+            dest = '/sbin/'
         for link in Base.GetKmodLinks():
-            os.remove(var.temp + "/bin/" + link)
-            os.symlink("kmod", link)
+            os.remove(var.lbin + '/' + link)
+            os.symlink("kmod", var.temp + dest + link)
 
     # Creates symlinks from library files found in each /usr/lib## dir to the /lib[32/64] directories
     @classmethod
     def CreateLibraryLinks(cls):
-        if os.path.isdir(var.temp + "/usr/lib") and os.path.isdir(var.temp + "/lib64"):
-            cls.FindAndCreateLinks("/usr/lib/", "/lib64")
-
-        if os.path.isdir(var.temp + "/usr/lib32") and os.path.isdir(
-            var.temp + "/lib32"
-        ):
-            cls.FindAndCreateLinks("/usr/lib32/", "/lib32")
-
-        if os.path.isdir(var.temp + "/usr/lib64") and os.path.isdir(
-            var.temp + "/lib64"
-        ):
-            cls.FindAndCreateLinks("/usr/lib64/", "/lib64")
-
-        # Create links to libraries found within /lib itself
-        if os.path.isdir(var.temp + "/lib") and os.path.isdir(var.temp + "/lib"):
-            cls.FindAndCreateLinks("/lib/", "/lib")
+        cwd = os.getcwd()
+        os.chdir(var.temp)
+        for (src, dst) in (
+                ('/usr/lib', '/lib64'),
+                ('/usr/lib32', '/lib32'),
+                ('/usr/lib64', '/lib64'),
+                ('/lib', '/lib'),
+                ):
+            if os.path.isdir(var.temp + src) and os.path.isdir(var.temp + dst):
+                cls.FindAndCreateLinks(src, dst)
+        os.chdir(cwd)
 
     @classmethod
     def FindAndCreateLinks(cls, sourceDirectory, targetDirectory):
-        pcmd = (
-            "find "
-            + sourceDirectory
-            + ' -iname "*.so.*" -exec ln -sf "{}" '
-            + targetDirectory
-            + " \;"
-        )
-        cmd = f'chroot {var.temp} /bin/busybox sh -c "{pcmd}"'
-        call(cmd, shell=True)
-
-        pcmd = (
-            "find "
-            + sourceDirectory
-            + ' -iname "*.so" -exec ln -sf "{}" '
-            + targetDirectory
-            + " \;"
-        )
-        cmd = f'chroot {var.temp} /bin/busybox sh -c "{pcmd}"'
-        call(cmd, shell=True)
+        for p in ('/**/*.so.*', '/**/*.so'):
+          for f in glob.glob('.' + sourceDirectory + p, recursive=True):
+            dst = var.temp + targetDirectory + '/' + os.path.basename(f)
+            os.symlink(f[1:], dst)
 
     # Copies udev and files that udev uses, like /etc/udev/*, /lib/udev/*, etc
     @classmethod
@@ -302,8 +275,7 @@ class Core:
     @classmethod
     def DumpSystemKeymap(cls):
         pathToKeymap = var.temp + "/etc/keymap"
-        result = call("dumpkeys > " + pathToKeymap, shell=True)
-
+        result = call("sudo dumpkeys > " + pathToKeymap, shell=True)
         if result != 0 or not os.path.isfile(pathToKeymap):
             Tools.Warn(
                 "There was an error dumping the system's current keymap. Ignoring."
@@ -328,9 +300,8 @@ class Core:
 
         # Give execute permissions to the script
         cr = call(["chmod", "u+x", var.temp + "/init"])
-
         if cr != 0:
-            Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
+            Tools.Fail("Failed to give execute privileges to " + var.temp + "/init")
 
         # Sets initramfs script version number
         cmd = f"echo {var.version} > {var.temp}/version.tranquil"
@@ -411,9 +382,13 @@ class Core:
         # the ${T} path.
         os.chdir(var.temp)
 
-        call(
+        rc = call(
             [
-                "find . -print0 | cpio -o --null --format=newc | gzip -9 > "
+                (
+                "find . -print0 "
+                "| sudo cpio -o --null --format=newc "
+                "| gzip -9 > "
+                )
                 + var.home
                 + "/"
                 + var.initrd
@@ -423,6 +398,11 @@ class Core:
 
         if not os.path.isfile(var.home + "/" + var.initrd):
             Tools.Fail("Error creating the initramfs. Exiting.")
+
+    @staticmethod
+    def SudoWrapCommand(cmd_):
+        if getpass.getuser() != 'root':
+            cmd_.insert(0, 'sudo')
 
     # Checks to see if the binaries exist, if not then emerge
     @classmethod
@@ -529,7 +509,9 @@ class Core:
         # database before searching it
         if var.kernel:
             try:
-                result = call(["depmod", var.kernel])
+                cmd_ = ["depmod", var.kernel]
+                cls.SudoWrapCommand(cmd_)
+                result = call(cmd_)
 
                 if result:
                     Tools.Fail("Error updating module dependency database!")
@@ -548,17 +530,14 @@ class Core:
             if match:
                 sFile = match.group().split(".")[0]
 
-                cmd = (
-                    "modprobe -S "
-                    + var.kernel
-                    + " --show-depends "
-                    + sFile
-                    + " | awk -F ' ' '{print $2}'"
-                )
-                results = check_output(cmd, shell=True, universal_newlines=True).strip()
+                cmd_ = [
+                    "modprobe", "-S", var.kernel, "--show-depends", sFile]
+                cls.SudoWrapCommand(cmd_)
+                results = check_output(cmd_, universal_newlines=True)
 
-                for i in results.split("\n"):
-                    moddeps.add(i.strip())
+                for v in results.strip().splitlines():
+                    v = v.split()
+                    moddeps.add(v[1])
 
         # Copy the modules/dependencies
         if moddeps:

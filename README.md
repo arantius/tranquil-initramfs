@@ -73,7 +73,7 @@ want those features to be trigered in.
 ### Creating the initramfs
 
 Run the script with the command `./mkinitrd` .
-(It must be run as root since root is the only user that can run `depmod`.)
+If not run as root it will use `sudo` for the subprocesses which require it.
 
 Select the features that you want, and tell it which kernel you want to use.
 

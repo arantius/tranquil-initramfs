@@ -28,13 +28,9 @@ class Tools:
     # Available Features
     _features = {1: "ZFS", 2: "LUKS", 3: "Basic"}
 
-    # Checks parameters and running user
+    # Checks parameters
     @classmethod
     def ProcessArguments(cls, Modules):
-        user = check_output(["whoami"], universal_newlines=True).strip()
-        if user != "root":
-            cls.Fail("This program must be ran as root")
-
         parser = argparse.ArgumentParser(
             description="Builds an initramfs for booting from OpenZFS.")
         parser.add_argument(
