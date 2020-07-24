@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import pathlib
 import subprocess
 import sys
 import random
@@ -24,6 +25,8 @@ license = "Apache License 2.0"
 
 # Locations
 home = os.getcwd()
+config_default_file = pathlib.Path(os.path.dirname(__file__)) / '../../config-default.ini'
+config_file = pathlib.Path(os.path.dirname(__file__)) / '../../config.ini'
 
 # Kernel and Menu Choice
 kernel = ""

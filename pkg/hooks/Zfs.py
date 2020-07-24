@@ -58,3 +58,7 @@ class Zfs(Hook):
         "/usr/share/man/man8/zpool.8.bz2",
         "/usr/share/man/man8/zstreamdump.8.bz2",
     ]
+
+    @classmethod
+    def LoadConfig(cls, config):
+      cls._use_man = config['Zfs'].getboolean('use_man', False)

@@ -28,9 +28,7 @@ class Main:
     @classmethod
     def start(cls):
         Tools.ProcessArguments(Modules)
-        call(["clear"])
-        Tools.PrintHeader()
-        Core.PrintMenuAndGetDesiredFeatures()
+        Core.LoadConfig()
 
         if var.kernel or Modules.GetFiles():
             Core.GetDesiredKernel()

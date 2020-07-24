@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import glob
 import os
 import shutil
 import sys
@@ -30,48 +32,30 @@ class Tools:
     @classmethod
     def ProcessArguments(cls, Modules):
         user = check_output(["whoami"], universal_newlines=True).strip()
-
         if user != "root":
             cls.Fail("This program must be ran as root")
 
-        arguments = sys.argv[1:]
+        parser = argparse.ArgumentParser(
+            description="Builds an initramfs for booting from OpenZFS.")
+        parser.add_argument(
+            "-c", "--config", help="Path to the config.ini file.") 
+        parser.add_argument(
+            "kernel", nargs='?',
+            help="The name of the kernel to build the initramfs for. "
+                  "Optional, most-newly-built kernel if omitted. "
+                  "(e.g.: 4.14.170-FC.01)")
+        args = parser.parse_args()   
 
-        # Let the user directly create an initramfs if no modules are needed
-        if len(arguments) == 1:
-            if not Modules.GetFiles():
-                var.features = arguments[0]
-            else:
-                cls.Fail(
-                    "You must pass a kernel parameter in order to retrieve the required kernel modules"
-                )
-
-        # If there are two parameters then we will use them, else just ignore them
-        elif len(arguments) == 2:
-            var.features = arguments[0]
-            var.kernel = arguments[1]
-
-    # Prints the header of the application
-    @classmethod
-    def PrintHeader(cls):
-        print("-" * 30)
-        Tools.Print(
-            Tools.Colorize("yellow", var.name)
-            + " - "
-            + Tools.Colorize("pink", "v" + var.version)
-        )
-        Tools.Print(var.contact)
-        Tools.Print(var.license)
-        print("-" * 30 + "\n")
-
-    # Prints the available options
-    @classmethod
-    def PrintFeatures(cls):
-        cls.NewLine()
-
-        for feature in cls._features:
-            cls.Option(str(feature) + ". " + cls._features[feature])
-
-        cls.NewLine()
+        if args.config:
+          var.config_file = args.config
+        if args.kernel:
+          var.kernel = args.kernel
+        else:
+          kernels = glob.glob('/lib/modules/*')
+          kernels.sort(
+              key=lambda f: os.stat(f).st_mtime,
+              reverse=True)
+          var.kernel = os.path.basename(kernels[0])
 
     # Finds the path to a program on the system
     @classmethod

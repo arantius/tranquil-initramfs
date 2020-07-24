@@ -16,18 +16,9 @@ from pkg.hooks.Hook import Hook
 
 
 class Luks(Hook):
-    # Should we embed our keyfile into the initramfs?
     _use_keyfile = 0
-
-    # Path to the keyfile you would like to embedded directly into the initramfs.
-    # This should be a non-encrypted keyfile since it will be used to automate
-    # the decryption of your / pool (when your /boot is also on /).
     _keyfile_path = "/crypto_keyfile.bin"
-
-    # Should we embed our LUKS header into the initramfs?
     _use_detached_header = 0
-
-    # Path to the LUKS header you would like to embedded directly into the initramfs.
     _detached_header_path = "/crypto_header.bin"
 
     # Required Files
@@ -60,3 +51,11 @@ class Luks(Hook):
     @classmethod
     def GetDetachedHeaderPath(cls):
         return cls._detached_header_path
+
+    @classmethod
+    def LoadConfig(cls, config):
+      c = config['Luks']
+      cls._use_keyfile = c.getboolean('use_keyfile', False)
+      cls._keyfile_path = c.get('keyfile_path', '')
+      cls._use_detached_header = c.getboolean('use_detached_header', False)
+      cls._detached_header_path = c.get('detached_header_path', '')

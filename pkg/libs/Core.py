@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import configparser
 import os
 import shutil
 import re
@@ -45,41 +46,25 @@ class Core:
     Modules.Enable()
 
     @classmethod
-    # Prints the menu and accepts user features
-    def PrintMenuAndGetDesiredFeatures(cls):
-        # If the user didn't pass their desired features through the command
-        # line, then ask them which initramfs they would like to generate.
-        if not var.features:
-            print("Which initramfs features do you want? (Separated by a comma):")
-            Tools.PrintFeatures()
-            var.features = Tools.Question("Features [1]: ")
+    def LoadConfig(cls):
+      """Load `config.ini` settings into each hook."""
+      config = configparser.ConfigParser(allow_no_value=True)
+      config.read([var.config_default_file, var.config_file])
 
-            if var.features:
-                var.features = cls.ConvertNumberedFeaturesToNamedList(var.features)
-            else:
-                var.features = ["zfs"]
+      Base.LoadConfig(config)
+      Firmware.LoadConfig(config)
+      Luks.LoadConfig(config)
+      Modules.LoadConfig(config)
+      Zfs.LoadConfig(config)
 
-            Tools.NewLine()
-        else:
-            var.features = var.features.split(",")
-
-        for feature in var.features:
-            if feature == "zfs":
-                Zfs.Enable()
-                Modules.AddFile("zfs")
-            elif feature == "luks":
-                Luks.Enable()
-            # Just a base initramfs with no additional stuff
-            # This can be used with other options though
-            # (i.e you have your rootfs directly on top of LUKS)
-            elif feature == "basic":
-                pass
-            elif feature == "exit":
-                Tools.Warn("Exiting.")
-                quit(0)
-            else:
-                Tools.Warn("Invalid Option. Exiting.")
-                quit(1)
+      var.features = []
+      if config['Luks'].getboolean('include', True):
+        var.features.append('luks')
+        Luks.Enable()
+      if config['Zfs'].getboolean('include', True):
+        var.features.append('zfs')
+        Zfs.Enable()
+        Modules.AddFile("zfs")
 
     # Returns the name equivalent list of a numbered list of features
     @classmethod

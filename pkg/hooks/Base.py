@@ -42,3 +42,7 @@ class Base(Hook):
     ]
 
     _kmod_links = ["depmod", "insmod", "lsmod", "modinfo", "modprobe", "rmmod"]
+
+    @classmethod
+    def LoadConfig(cls, config):
+      cls._files.extend(config['ExtraFiles'].keys())
