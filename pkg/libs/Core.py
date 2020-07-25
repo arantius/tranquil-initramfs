@@ -348,7 +348,7 @@ class Core:
             Tools.Fail("Failed to give executive privileges to " + var.temp + "/init")
 
         # Sets initramfs script version number
-        cmd = f"echo {var.version} > {var.temp}/version.bliss"
+        cmd = f"echo {var.version} > {var.temp}/version.tranquil"
         call(cmd, shell=True)
 
         # Copy all of the modprobe configurations
@@ -375,7 +375,7 @@ class Core:
 
         # Add any modules needed into the initramfs
         requiredModules = ",".join(Modules.GetFiles())
-        cmd = f"echo {requiredModules} > {var.temp}/modules.bliss"
+        cmd = f"echo {requiredModules} > {var.temp}/modules.tranquil"
         call(cmd, shell=True)
 
         cls.CopyLibGccLibrary()

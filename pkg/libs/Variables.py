@@ -18,11 +18,8 @@ import sys
 import random
 
 # Application Info
-name = "Bliss Initramfs"
-author = "Jonathan Vasquez"
-email = "jon@xyinn.org"
-contact = author + " <" + email + ">"
-version = "8.0.0"
+name = "Tranquil Initramfs"
+version = "v1"
 license = "Apache License 2.0"
 
 # Locations
@@ -38,8 +35,8 @@ features = ""
 rstring = str(random.randint(100000000, 999999999))
 
 # Temporary directory will now be in 'home' rather than
-# in /tmp since people may have executed their /tmp with 'noexec'
-# which would cause bliss-initramfs to fail to execute any binaries
+# in /tmp since people may have mounted their /tmp with 'noexec'
+# which would cause tranquil-initramfs to fail to execute any binaries
 # in the temp dir.
 temp = home + "/bi-" + rstring
 

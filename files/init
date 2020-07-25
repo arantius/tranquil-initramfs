@@ -22,8 +22,8 @@ _key_drive="/mnt/key"
 _embedded_keyfile="/etc/keyfile"
 _cache_file="/etc/zfs/zpool.cache"
 _rootfs_cache_file="${_new_root}${_cache_file}"
-_bliss_version_file="/version.bliss"
-_bliss_modules_file="/modules.bliss"
+_tranquil_version_file="/version.tranquil"
+_tranquil_modules_file="/modules.tranquil"
 
 # Starts a rescue shell
 RescueShell()
@@ -32,10 +32,10 @@ RescueShell()
     setsid sh -c 'exec sh < /dev/tty1 > /dev/tty1 2>&1'
 }
 
-# Loads Bliss Version (Information Purposes Only)
+# Loads Tranquil Version (Information Purposes Only)
 LoadVersion()
 {
-    _version=$(cat ${_bliss_version_file})
+    _version=$(cat ${_tranquil_version_file})
 }
 
 # Module loading function
@@ -43,7 +43,7 @@ LoadModules()
 {
     Info "Loading modules..."
 
-    IFS="," read -a _modules <<< $(cat ${_bliss_modules_file})
+    IFS="," read -a _modules <<< $(cat ${_tranquil_modules_file})
 
     for module in ${_modules[@]}; do
         modprobe ${module}
@@ -841,7 +841,7 @@ NewLine()
 # Shows the welcome message
 WelcomeMessage()
 {
-    Info "Welcome to Bliss! [${_version}]"
+    Info "Welcome to Tranquil! [${_version}]"
 }
 
 # Prevent kernel from printing on screen

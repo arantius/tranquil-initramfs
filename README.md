@@ -1,10 +1,11 @@
 
-## Bliss Initramfs
+## Tranquil Initramfs
 
-A fork with the primary goal of keeping full LUKS + ZFS support.
-Originally 
+A fork of
 [fearedbliss/bliss-initramfs](https://github.com/fearedbliss/bliss-initramfs)
 by Jonathan Vasquez, designed for Gentoo Linux.
+The original goal is to keep full LUKS + ZFS support (removed in 9.0.0) and
+avoid systemd by default (assumed after 8.0.0).
 
 ## Description
 
