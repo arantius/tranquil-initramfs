@@ -77,8 +77,8 @@ If not run as root it will use `sudo` for the subprocesses which require it.
 
 Select the features that you want, and tell it which kernel you want to use.
 
-After that the required files will be gathered and packed into an initramfs and 
-you will find the initramfs in the directory that you are currently in. Copy 
+After that the required files will be gathered and packed into an initramfs and
+you will find the initramfs in the directory that you are currently in. Copy
 that file to your boot directory and name it whatever you want.
 
 ### Kernel Options
@@ -93,11 +93,11 @@ that file to your boot directory and name it whatever you want.
 `usr` - Location of separate /usr
 * example: linux <kernel> root=/dev/sda4 usr=/dev/sda3
 
-If you use this option, you need to make sure that /usr is on the same type of 
-style as your /. Meaning that if you have / in a ZFS dataset then /usr should be 
-on a ZFS dataset as well. You cannot have / on a ZFS dataset and /usr on a 
-regular partition. I don't foresee a scenario or a reason for why someone would 
-want to put their / on zfs and exclude their /usr from it. So this case should 
+If you use this option, you need to make sure that /usr is on the same type of
+style as your /. Meaning that if you have / in a ZFS dataset then /usr should be
+on a ZFS dataset as well. You cannot have / on a ZFS dataset and /usr on a
+regular partition. I don't foresee a scenario or a reason for why someone would
+want to put their / on zfs and exclude their /usr from it. So this case should
 be a rare one.
 
 `recover` - Use this if you want the initrd to throw you into a rescue shell.
@@ -109,24 +109,24 @@ mode. But at least it will help you if you forgot to change your password,
 after installation.
 * example: linux \<kernel\> root=tank/gentoo/root su
 
-`init` - Specifies the init system to use. If the init system isn't located in 
+`init` - Specifies the init system to use. If the init system isn't located in
 /sbin/init, you can specific it explictly:
 * example: linux \<kernel\> root=tank/gentoo/root init=/path/to/init
 
-`redetect` - Use this if you want to have the option to re-scan your /dev/ 
+`redetect` - Use this if you want to have the option to re-scan your /dev/
 directory for new devices.
 
-Sometimes during the output of available drives, you won't see your drives 
-listed, don't worry, if it normally works on your machine, your drive will 
-silently appear. You could just wait a few seconds yourself until you feel it is 
+Sometimes during the output of available drives, you won't see your drives
+listed, don't worry, if it normally works on your machine, your drive will
+silently appear. You could just wait a few seconds yourself until you feel it is
 ready, and then just press enter to attempt to mount and decrypt the drive.
 
 triggers - Use this to let the initramfs load what feature hooks it needs to run.
 The order in which you write the list will determine how the hooks will be ran.
 
-For example, if you designed your partition structure to have encryption at the 
-lowest level, and then you import your zpool, you can say `triggers=luks,zfs` 
-which would run the encryption hook first, and then ZFS related stuff. 
+For example, if you designed your partition structure to have encryption at the
+lowest level, and then you import your zpool, you can say `triggers=luks,zfs`
+which would run the encryption hook first, and then ZFS related stuff.
 
 The supported triggers are:
 
@@ -138,7 +138,7 @@ commands will be executed.
 
 #### ZFS
 
-`by` - Specifies what directory you want to use when looking for your zpool so 
+`by` - Specifies what directory you want to use when looking for your zpool so
 that we can import it.
 
 Supported: by= dev, id, uuid, partuuid, label, partlabel, literal path.
@@ -155,8 +155,8 @@ inside the initramfs at import, and then copies it into the rootfs.
 
 #### LUKS
 
-Follow the same instructions as above, but also add "enc_drives=" and "enc_type" 
-to your kernel line. If you don't enter them, the initramfs will just ask you 
+Follow the same instructions as above, but also add "enc_drives=" and "enc_type"
+to your kernel line. If you don't enter them, the initramfs will just ask you
 for it.
 
 `enc_drives` - Encrypted drives (You need the enc_type variable below as well)
@@ -178,13 +178,13 @@ Types: pass - passphrase
 * example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
 * example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=UUID=4443433f-5f03-475f-974e-5345fd524c34
 
-`enc_key` - What is the path to the keyfile? You basically pass to grub where in 
-the drive the file is located (After the initramfs mounts the drive that you 
+`enc_key` - What is the path to the keyfile? You basically pass to grub where in
+the drive the file is located (After the initramfs mounts the drive that you
 have the key in).
 * example: linux <kernel> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1 enc_key=/keys/root.gpg
 
-In this example, once the initramfs mounts /dev/sdb1, it will look for the 
-/keys/root.gpg at /dev/sdb1. So if the initramfs mounts /dev/sdb1 at /mnt/key, 
+In this example, once the initramfs mounts /dev/sdb1, it will look for the
+/keys/root.gpg at /dev/sdb1. So if the initramfs mounts /dev/sdb1 at /mnt/key,
 it will look for the key at /mnt/key/keys/root.gpg.
 
 `enc_key_ignore` - Ignores the embedded keyfile
@@ -195,15 +195,15 @@ it will look for the key at /mnt/key/keys/root.gpg.
 
 `enc_tries` - Allows you to set how many times you can retype your passphrase before the initramfs fails to unlock your drives (default is 5)
 * example: linux <kernel> enc_tries=10
-    
+
 `enc_targets` - What /dev/mapper/TARGET_NAME to use? Comma separated list, same order as `enc_drives`!  Optional, if not specified names will be generated based on `enc_drives`.
 * example: linux \<kernel\> enc_drives=/dev/sda1,/dev/sdb1 enc_targets=crypt_sda,crypt_sdb
 
-LUKS passphrase/key: The easiest way to pass the passphrase is just to wait till 
-the initramfs asks you for it. When this happens, it will use the _same_ 
-passphrase (or same key) for all your pools. This is to make it convenient for 
-you. It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's 
-say), and then you had to put the password for each one. If you still want to do 
+LUKS passphrase/key: The easiest way to pass the passphrase is just to wait till
+the initramfs asks you for it. When this happens, it will use the _same_
+passphrase (or same key) for all your pools. This is to make it convenient for
+you. It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's
+say), and then you had to put the password for each one. If you still want to do
 this, then just leave the passphrase blank when the initramfs asks you for it.
 
 ### Bootloader
@@ -213,83 +213,71 @@ use the kernel options above.
 
 ### Modules
 
-If you have compiled some critical stuff as modules rather than them being built
-into the kernel, you can now write which modules you need in the
-pkg/hooks/Modules.py "_files" variable. The initramfs will gather the module and
-it's dependencies and put them in the initramfs for you. Then the initramfs will
-automatically load all those modules for you at boot.
-
-Example:
-    _files = [ "i915", "zfs", "ahci", "ext2", "ext3", "ext4", "dm-crypt",
-          "ohci-hcd", "ehci-hcd", "xhci-hcd", "usb-storage" ]
-
-That example basically loads the intel i915 gfx driver, zfs, ahci, ext2-4
-filesystem hdd drivers, dm-crypt for luks support driver, ohci/ehci/xhci
-usb 1.1,2.0,3.0 drivers and the usb-storage driver. All the dependencies
-are automatically gathered and compressed by the initramfs, and automatically
-loaded at boot in that order.
+If you require certain kernel modules for boot, you'll need them built into
+the initramfs.  Create or update a `config.ini` (see `config-default.ini` for
+more details and examples) and include a `[Modules]` section, with one module
+name per line.  These modules (and their dependencies) will be included when
+building the initramfs.
 
 ### Firmware
 
-If you want to include firmware inside your initramfs, open up the 
-pkg/hooks/Firmware.py file, enable the hook by changing the "_use" to "1" and 
-then add the specific firmware name/path to the files list. If you don't want to 
-specify a specific firmware but would rather copy all the firmware that's on 
-your system, you can toggle the "_copy_all" flag by changing it to "1". The 
-firmware files will be copied from your system's /lib/firmware directory. The 
-firmware that you add to the "_files" list should be relative to this directory. 
-More information can be found inside the hook.
+If you want to include firmware inside your initramfs, create or update a
+`config.ini` (see `config-default.ini` for more details and examples) and:
+
+1. Include a `[Firmware]` section which specifies `use = 1`
+2. Either:
+   * Also specify `copy_all = 1` or
+   * (Better:) Include a `[FirmwareFiles]` section, with one file per line.
+     these files will be copied from your system's /lib/firmware directory.
+     Entries here should be relative to this directory.
 
 ### Embedded Keyfile
 
-The initramfs has the ability to embed your encrypted drive(s)'s keyfile 
+The initramfs has the ability to embed your encrypted drive(s)'s keyfile
 directly into itself.
 
 Some of the benefits this may provide are:
 * Not having to type multiple passphrases during boot.
 * Rely on an external drive in order to decrypt the drive.
-* If using an external drive, reduce the number of files on the /boot drive 
+* If using an external drive, reduce the number of files on the /boot drive
   (just kernel and initramfs).
 
-This was primarily implemented in order to reduce the number of passphrases 
-needed to 1, when you have your /boot directory inside of an encrypted / 
-partition on LUKS. You will need to have GRUB decrypt your / partition and once 
-the initramfs loads, it will automatically use the embedded keyfile to decrypt 
+This was primarily implemented in order to reduce the number of passphrases
+needed to 1, when you have your /boot directory inside of an encrypted /
+partition on LUKS. You will need to have GRUB decrypt your / partition and once
+the initramfs loads, it will automatically use the embedded keyfile to decrypt
 the drives, and start up your system.
 
-In order to activate this, go into pkg/hooks/Luks.py and change the 
-"_use_keyfile" value to 1, and then set the "_keyfile_path" to the path on disk 
-from where to copy your keyfile from. Once this is done, during initramfs 
-generation, you will see a message that the initramfs is embedding the keyfile 
+In order to activate this, go into pkg/hooks/Luks.py and change the
+"_use_keyfile" value to 1, and then set the "_keyfile_path" to the path on disk
+from where to copy your keyfile from. Once this is done, during initramfs
+generation, you will see a message that the initramfs is embedding the keyfile
 into itself.
 
 In your grub command line, you will need to have the "enc_type" set to "key".
 
-When the initramfs starts up, if it detects that your initramfs has an embedded 
-keyfile, it will automatically try to decrypt the drives listed in "enc_drives" 
-and not ask you any questions. If you want to use some other form of decryption 
-(passphrase, key_gpg), but you don't want to remake the initramfs in order to 
+When the initramfs starts up, if it detects that your initramfs has an embedded
+keyfile, it will automatically try to decrypt the drives listed in "enc_drives"
+and not ask you any questions. If you want to use some other form of decryption
+(passphrase, key_gpg), but you don't want to remake the initramfs in order to
 remove the keyfile out of it, use the "enc_key_ignore" kernel line option.
 
 ### LUKS Detached Header File Support
 
-The initramfs has the ability to embed your detached luks header directly. This 
+The initramfs has the ability to embed your detached luks header directly. This
 has a lot of security benefits, the main ones being that:
 
-1. Your LUKS device will look as if it was just a bunch of random data 
+1. Your LUKS device will look as if it was just a bunch of random data
    (plausible deniability).
-2. Your LUKS device will pretty much be impossible to decrypt with modern 
-   technological standards due to the SALT no longer being on the same device as 
+2. Your LUKS device will pretty much be impossible to decrypt with modern
+   technological standards due to the SALT no longer being on the same device as
    the LUKS device.
 
-In order to activate this feature, change the "_use_detached_header" from 0 to 1 
-in order to enable this support. After you do this, you can set the path of 
-where you want the initramfs to automatically copy that file from by modifying 
-the "_detached_header_path" variable. By default, it will attempt to copy it 
-from "/crypto_header.bin", and it will automatically be placed inside the 
-initramfs as "/etc/header".
+In order to activate this feature, customize the `[Luks]` section of your
+`config.ini` file (create one if necessary).  Refer to `config-default.ini` for
+documentation and examples for the relevant settings.
 
-Once this is done, use "enc_options=--header=/etc/header" in the initramfs to 
+Once this is done, use `enc_options=--header=/etc/header` in the initramfs to
 tell the initramfs at boot time where to find the header file.
 
 ## License
