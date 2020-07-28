@@ -81,37 +81,17 @@ After that the required files will be gathered and packed into an initramfs and
 you will find the initramfs in the directory that you are currently in. Copy
 that file to your boot directory and name it whatever you want.
 
-### Kernel Options
+### Kernel Parameters
 
 #### General
-
-`root` - Location to rootfs
-* example for ZFS: linux <kernel> root=tank/gentoo/root
-* example for rootfs on luks partition: linux <kernel> root=/dev/mapper/vault_0
-* example for regular drive: linux <kernel> root=/dev/sda4
-
-`usr` - Location of separate /usr
-* example: linux <kernel> root=/dev/sda4 usr=/dev/sda3
-
-If you use this option, you need to make sure that /usr is on the same type of
-style as your /. Meaning that if you have / in a ZFS dataset then /usr should be
-on a ZFS dataset as well. You cannot have / on a ZFS dataset and /usr on a
-regular partition. I don't foresee a scenario or a reason for why someone would
-want to put their / on zfs and exclude their /usr from it. So this case should
-be a rare one.
-
-`recover` - Use this if you want the initrd to throw you into a rescue shell.
-Useful for recovery and debugging purposes.
-* example: linux \<kernel\> recover
-
-`su` - Single User Mode. This is a really crappy implementation of a single user
-mode. But at least it will help you if you forgot to change your password,
-after installation.
-* example: linux \<kernel\> root=tank/gentoo/root su
 
 `init` - Specifies the init system to use. If the init system isn't located in
 /sbin/init, you can specific it explictly:
 * example: linux \<kernel\> root=tank/gentoo/root init=/path/to/init
+
+`recover` - Use this if you want the initrd to throw you into a rescue shell.
+Useful for recovery and debugging purposes.
+* example: linux \<kernel\> recover
 
 `redetect` - Use this if you want to have the option to re-scan your /dev/
 directory for new devices.
@@ -121,7 +101,17 @@ listed, don't worry, if it normally works on your machine, your drive will
 silently appear. You could just wait a few seconds yourself until you feel it is
 ready, and then just press enter to attempt to mount and decrypt the drive.
 
-triggers - Use this to let the initramfs load what feature hooks it needs to run.
+`root` - Location to rootfs
+* example for ZFS: linux <kernel> root=tank/gentoo/root
+* example for rootfs on luks partition: linux <kernel> root=/dev/mapper/vault_0
+* example for regular drive: linux <kernel> root=/dev/sda4
+
+`su` - Single User Mode. This is a really crappy implementation of a single user
+mode. But at least it will help you if you forgot to change your password,
+after installation.
+* example: linux \<kernel\> root=tank/gentoo/root su
+
+`triggers` - Use this to let the initramfs load what feature hooks it needs to run.
 The order in which you write the list will determine how the hooks will be ran.
 
 For example, if you designed your partition structure to have encryption at the
@@ -133,8 +123,18 @@ The supported triggers are:
 * luks
 * zfs
 
-If you don't specify any triggers, than just the default initramfs
-commands will be executed.
+If you don't specify any triggers, then the default initramfs
+commands will be executed (both triggers).
+
+`usr` - Location of separate /usr
+* example: linux <kernel> root=/dev/sda4 usr=/dev/sda3
+
+If you use this option, you need to make sure that /usr is on the same type of
+style as your /. Meaning that if you have / in a ZFS dataset then /usr should be
+on a ZFS dataset as well. You cannot have / on a ZFS dataset and /usr on a
+regular partition. I don't foresee a scenario or a reason for why someone would
+want to put their / on zfs and exclude their /usr from it. So this case should
+be a rare one.
 
 #### ZFS
 
@@ -167,17 +167,6 @@ to this variable as well:
 * example: linux \<kernel\> enc_drives=/dev/sd?2
 * example: linux \<kernel\> enc_drives=/dev/disk/by-id/ata-*-part2
 
-`enc_type` - What type of method will you use to decrypt?
-Types: pass - passphrase
-
-`key` - plain keyfile
-
-`key_gpg` - keyfile encrypted with gpg
-
-`enc_key_drive` - What drive the keyfile in?
-* example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
-* example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=UUID=4443433f-5f03-475f-974e-5345fd524c34
-
 `enc_key` - What is the path to the keyfile? You basically pass to grub where in
 the drive the file is located (After the initramfs mounts the drive that you
 have the key in).
@@ -187,14 +176,15 @@ In this example, once the initramfs mounts /dev/sdb1, it will look for the
 /keys/root.gpg at /dev/sdb1. So if the initramfs mounts /dev/sdb1 at /mnt/key,
 it will look for the key at /mnt/key/keys/root.gpg.
 
+`enc_key_drive` - What drive the keyfile in?
+* example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=/dev/sdb1
+* example: linux \<kernel\> enc_drives=/dev/sda3 enc_type=key enc_key_drive=UUID=4443433f-5f03-475f-974e-5345fd524c34
+
 `enc_key_ignore` - Ignores the embedded keyfile
 * example: linux <kernel> enc_key_ignore
 
 `enc_options` - Allows you to pass options to the 'cryptsetup' command
 * example: linux <kernel> enc_drives=/dev/sda3,/dev/sda4 enc_options="--allow-discards"
-
-`enc_tries` - Allows you to set how many times you can retype your passphrase before the initramfs fails to unlock your drives (default is 5)
-* example: linux <kernel> enc_tries=10
 
 `enc_targets` - What /dev/mapper/TARGET_NAME to use? Comma separated list, same order as `enc_drives`!  Optional, if not specified names will be generated based on `enc_drives`.
 * example: linux \<kernel\> enc_drives=/dev/sda1,/dev/sdb1 enc_targets=crypt_sda,crypt_sdb
@@ -206,7 +196,17 @@ you. It would be annoying to have a zpool on 6 drives (Encrypted RAIDZ2 let's
 say), and then you had to put the password for each one. If you still want to do
 this, then just leave the passphrase blank when the initramfs asks you for it.
 
-### Bootloader
+`enc_tries` - Allows you to set how many times you can retype your passphrase before the initramfs fails to unlock your drives (default is 5)
+* example: linux <kernel> enc_tries=10
+
+`enc_type` - What type of method will you use to decrypt?
+Types: pass - passphrase
+
+`key` - plain keyfile
+
+`key_gpg` - keyfile encrypted with gpg
+
+### Bootloader Configuration
 
 See [bootloader.txt](bootloader.txt) for more detailed examples of how to
 use the kernel options above.
