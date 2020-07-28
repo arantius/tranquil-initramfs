@@ -90,11 +90,11 @@ that file to your boot directory and name it whatever you want.
 * example: linux \<kernel\> root=tank/gentoo/root init=/path/to/init
 
 `recover` - Use this if you want the initrd to throw you into a rescue shell.
-Useful for recovery and debugging purposes.
+Useful for recovery and debugging purposes.  No value.
 * example: linux \<kernel\> recover
 
 `redetect` - Use this if you want to have the option to re-scan your /dev/
-directory for new devices.
+directory for new devices.  No value.
 
 Sometimes during the output of available drives, you won't see your drives
 listed, don't worry, if it normally works on your machine, your drive will
@@ -108,7 +108,7 @@ ready, and then just press enter to attempt to mount and decrypt the drive.
 
 `su` - Single User Mode. This is a really crappy implementation of a single user
 mode. But at least it will help you if you forgot to change your password,
-after installation.
+after installation.  No value.
 * example: linux \<kernel\> root=tank/gentoo/root su
 
 `triggers` - Use this to let the initramfs load what feature hooks it needs to run.
@@ -149,8 +149,14 @@ Examples:
 * by=dev   -> /dev
 * by=/mystical/ninja -> /mystical/ninja
 
-`refresh` - Ignores the zpool.cache in the rootfs, creates a new one
-inside the initramfs at import, and then copies it into the rootfs.
+`do_cache`, `no_cache` - Two boolean options for the same setting.  When set to
+"no", all `zpool.cache` features are skipped at boot.  If you have only one pool
+and it is the root, this skips the time spent importing the pool just to read
+`zpool.cache` from it and export it again.  Default is "no", "do" enables this
+feature.  No value.
+
+`refresh` - Ignores the zpool.cache in the rootfs, creates a new one inside the
+initrams at import, and then copies it into the rootfs.  No value.
 * example: linux <kernel> root=tank/gentoo/root refresh
 
 #### LUKS

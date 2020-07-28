@@ -15,15 +15,16 @@
 # limitations under the License.
 
 # ========== Variables ==========
-_use_zfs=0
-_new_root="/mnt/root"
+_cache_file="/etc/zfs/zpool.cache"
+_do_zpool_cache=0
+_embedded_keyfile="/etc/keyfile"
 _init="/sbin/init"
 _key_drive="/mnt/key"
-_embedded_keyfile="/etc/keyfile"
-_cache_file="/etc/zfs/zpool.cache"
+_new_root="/mnt/root"
 _rootfs_cache_file="${_new_root}${_cache_file}"
-_tranquil_version_file="/version.tranquil"
 _tranquil_modules_file="/modules.tranquil"
+_tranquil_version_file="/version.tranquil"
+_use_zfs=0
 
 # Starts a rescue shell
 RescueShell()
@@ -132,26 +133,14 @@ ParseKernelParameters()
 
     for param in $(</proc/cmdline); do
         case "${param}" in
-        root=*)
-            _root=$(RetrieveDriveValue "${param}")
+        by=*)
+            _by=$(ParseByOption "${param}")
             ;;
-        options=*)
-            _options=$(ParseOption "${param}")
-            ;;
-        usr=*)
-            _usr=$(ParseOption "${param}")
-            ;;
-        enc_options=*)
-            _enc_options=$(ParseOption "${param}")
+        do_cache)
+            _do_zpool_cache=1
             ;;
         enc_drives=*)
             _enc_drives=$(ParseOption "${param}")
-            ;;
-        enc_targets=*)
-            _enc_targets=$(ParseOption "${param}")
-            ;;
-        enc_type=*)
-            _enc_type=$(ParseOption "${param}")
             ;;
         enc_key=*)
             _enc_key=$(ParseOption "${param}")
@@ -162,29 +151,47 @@ ParseKernelParameters()
         enc_key_ignore)
             _enc_key_ignore=1
             ;;
+        enc_options=*)
+            _enc_options=$(ParseOption "${param}")
+            ;;
+        enc_targets=*)
+            _enc_targets=$(ParseOption "${param}")
+            ;;
+        enc_type=*)
+            _enc_type=$(ParseOption "${param}")
+            ;;
         enc_tries=*)
             _enc_tries=$(ParseOption "${param}")
             ;;
         init=*)
             _init=$(ParseOption "${param}")
             ;;
-        by=*)
-            _by=$(ParseByOption "${param}")
+        no_cache)
+            _do_zpool_cache=0
             ;;
-        refresh)
-            _refresh=1
+        options=*)
+            _options=$(ParseOption "${param}")
             ;;
         recover)
             _recover=1
             ;;
-        su)
-            _su=1
-            ;;
         redetect)
             _redetect=1
             ;;
+        refresh)
+            _refresh=1
+            ;;
+        root=*)
+            _root=$(RetrieveDriveValue "${param}")
+            ;;
+        su)
+            _su=1
+            ;;
         triggers=*)
             IFS="," read -a _triggers <<< $(ParseOption "${param}")
+            ;;
+        usr=*)
+            _usr=$(ParseOption "${param}")
             ;;
         esac
     done
@@ -600,6 +607,10 @@ DecryptDrives()
 # Retrieves the zpool.cache file from the rootfs
 GetZpoolCacheFromSystem()
 {
+    if [[ ${_do_zpool_cache} -ne 1 ]]; then
+        return
+    fi
+
     Info "Retrieving zpool.cache from \"${_pool_name}\"..."
 
     if [[ -z "${_by}" ]]; then
@@ -776,6 +787,10 @@ CheckAndRunTriggers()
 # Installs the zpool.cache to the rootfs
 InstallZpoolCache()
 {
+    if [[ ${_do_zpool_cache} -ne 1 ]]; then
+        return
+    fi
+
     Info "Installing zpool.cache into \"${_pool_name}\"..."
     cp -f "${_cache_file}" "${_rootfs_cache_file}"
 }
