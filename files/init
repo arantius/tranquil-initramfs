@@ -542,7 +542,7 @@ DecryptDrives()
     for i in "${!_drives[@]}"; do
     
         if [[ -z ${tempTargets[i]// } ]]; then
-            vaultname="vault_${i}_$(basename "${_drives[i]}")"
+            vaultname="source_${i}_$(basename "${_drives[i]}")"
         else
             vaultname=${tempTargets[i]}
         fi
