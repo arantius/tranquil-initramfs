@@ -52,6 +52,7 @@ files_dir = phome + "/files"
 # System Directories
 bin = "/bin"
 sbin = "/sbin"
+ubin = "/usr/bin"
 lib = "/lib"
 lib64 = "/lib64"
 etc = "/etc"
@@ -59,6 +60,7 @@ etc = "/etc"
 # Paths in Temp (Local)
 lbin = temp + bin
 lsbin = temp + sbin
+ubin = temp + ubin
 llib = temp + lib
 llib64 = temp + lib64
 letc = temp + etc

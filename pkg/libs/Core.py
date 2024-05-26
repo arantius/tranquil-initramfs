@@ -208,9 +208,11 @@ class Core:
         dest = '/bin/'
         if os.path.isfile(var.lsbin + "/kmod"):
             dest = '/sbin/'
+        if os.path.isfile(var.ubin + "/kmod"):
+            dest = '/usr/bin/'
         for link in Base.GetKmodLinks():
             os.remove(var.lbin + '/' + link)
-            os.symlink("kmod", var.temp + dest + link)
+            os.symlink('kmod', var.temp + dest + link)
 
     # Creates symlinks from library files found in each /usr/lib## dir to the /lib[32/64] directories
     @classmethod
