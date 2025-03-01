@@ -1,3 +1,8 @@
+# OBSOLETE
+
+This repository is unmaintained and likely does not work any longer.
+Its author has switched to dracut for generating initramfs, with the
+[mass-luks-unlock](https://github.com/arantius/mass-luks-unlock) plugin.
 
 ## Tranquil Initramfs
 
